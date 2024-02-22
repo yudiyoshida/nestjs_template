@@ -1,0 +1,1 @@
+- revisar guards (tentar abstrair o context.switchToHttp() para possibilitar testes dos guards)
