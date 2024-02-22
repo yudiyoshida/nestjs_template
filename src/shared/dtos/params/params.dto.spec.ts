@@ -60,5 +60,15 @@ describe('Params', () => {
 
       expect(errors.constraints).toHaveProperty('isString', 'id deve ser do tipo string.');
     });
+
+    it('should throw an error about invalid type when providing an array to id', () => {
+      const dto = new Params();
+      dto.id = ([] as unknown as string);
+
+      const result = validateDto(dto);
+      const errors = getFieldErrors<Params>(result, 'id');
+
+      expect(errors.constraints).toHaveProperty('isString', 'id deve ser do tipo string.');
+    });
   });
 });

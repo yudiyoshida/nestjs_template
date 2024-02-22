@@ -59,6 +59,16 @@ describe('Queries', () => {
       expect(errors.constraints).toHaveProperty('isInt', 'page deve ser um número inteiro.');
     });
 
+    it('should throw an error about integer value when providing an array to page', () => {
+      const dto = new Queries();
+      dto.page = ([] as unknown as number);
+
+      const result = validateDto(dto);
+      const errors = getFieldErrors<Queries>(result, 'page');
+
+      expect(errors.constraints).toHaveProperty('isInt', 'page deve ser um número inteiro.');
+    });
+
     it('should throw an error about integer value when providing a decimal number to page', () => {
       const dto = new Queries();
       dto.page = 1.5;
@@ -140,6 +150,16 @@ describe('Queries', () => {
     it('should throw an error about integer value when providing an object to size', () => {
       const dto = new Queries();
       dto.size = ({} as unknown as number);
+
+      const result = validateDto(dto);
+      const errors = getFieldErrors<Queries>(result, 'size');
+
+      expect(errors.constraints).toHaveProperty('isInt', 'size deve ser um número inteiro.');
+    });
+
+    it('should throw an error about integer value when providing an array to size', () => {
+      const dto = new Queries();
+      dto.size = ([] as unknown as number);
 
       const result = validateDto(dto);
       const errors = getFieldErrors<Queries>(result, 'size');
