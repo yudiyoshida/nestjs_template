@@ -3,7 +3,7 @@ import { Params } from './params.dto';
 
 describe('Params', () => {
   describe('id field', () => {
-    it('should not throw an error when providing a strin id', () => {
+    it('should not throw an error when providing a string to id', () => {
       const dto = new Params();
       dto.id = 'id-teste';
 
@@ -31,7 +31,7 @@ describe('Params', () => {
       expect(errors.constraints).toHaveProperty('isNotEmpty', 'id é um campo obrigatório.');
     });
 
-    it('should throw an error about invalid type when providing a numeric id', () => {
+    it('should throw an error about invalid type when providing a number to id', () => {
       const dto = new Params();
       dto.id = (123 as unknown as string);
 
@@ -41,9 +41,19 @@ describe('Params', () => {
       expect(errors.constraints).toHaveProperty('isString', 'id deve ser do tipo string.');
     });
 
-    it('should throw an error about invalid type when providing a boolean id', () => {
+    it('should throw an error about invalid type when providing a boolean to id', () => {
       const dto = new Params();
       dto.id = (false as unknown as string);
+
+      const result = validateDto(dto);
+      const errors = getFieldErrors<Params>(result, 'id');
+
+      expect(errors.constraints).toHaveProperty('isString', 'id deve ser do tipo string.');
+    });
+
+    it('should throw an error about invalid type when providing an object to id', () => {
+      const dto = new Params();
+      dto.id = ({} as unknown as string);
 
       const result = validateDto(dto);
       const errors = getFieldErrors<Params>(result, 'id');
