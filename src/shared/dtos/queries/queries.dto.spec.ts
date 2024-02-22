@@ -7,8 +7,9 @@ describe('Queries', () => {
       const dto = new Queries();
 
       const result = validateDto(dto);
+      const errors = getFieldErrors<Queries>(result, 'page');
 
-      expect(result).toBeArrayOfSize(0);
+      expect(errors?.constraints).toBeUndefined();
     });
 
     it('should not throw an error when providing null to page', () => {
@@ -16,8 +17,9 @@ describe('Queries', () => {
       dto.page = null;
 
       const result = validateDto(dto);
+      const errors = getFieldErrors<Queries>(result, 'page');
 
-      expect(result).toBeArrayOfSize(0);
+      expect(errors?.constraints).toBeUndefined();
     });
 
     it('should not throw an error when providing a positive integer number to page', () => {
@@ -25,8 +27,9 @@ describe('Queries', () => {
       dto.page = 10;
 
       const result = validateDto(dto);
+      const errors = getFieldErrors<Queries>(result, 'page');
 
-      expect(result).toBeArrayOfSize(0);
+      expect(errors?.constraints).toBeUndefined();
     });
 
     it('should throw an error about integer value when providing a text to page', () => {
@@ -105,8 +108,9 @@ describe('Queries', () => {
       const dto = new Queries();
 
       const result = validateDto(dto);
+      const errors = getFieldErrors<Queries>(result, 'size');
 
-      expect(result).toBeArrayOfSize(0);
+      expect(errors?.constraints).toBeUndefined();
     });
 
     it('should not throw an error when providing null to size', () => {
@@ -114,8 +118,9 @@ describe('Queries', () => {
       dto.size = null;
 
       const result = validateDto(dto);
+      const errors = getFieldErrors<Queries>(result, 'size');
 
-      expect(result).toBeArrayOfSize(0);
+      expect(errors?.constraints).toBeUndefined();
     });
 
     it('should not throw an error when providing a positive integer number to size', () => {
@@ -123,8 +128,9 @@ describe('Queries', () => {
       dto.size = 10;
 
       const result = validateDto(dto);
+      const errors = getFieldErrors<Queries>(result, 'size');
 
-      expect(result).toBeArrayOfSize(0);
+      expect(errors?.constraints).toBeUndefined();
     });
 
     it('should throw an error about integer value when providing a text to size', () => {

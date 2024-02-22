@@ -8,8 +8,9 @@ describe('Params', () => {
       dto.id = 'id-teste';
 
       const result = validateDto(dto);
+      const errors = getFieldErrors<Params>(result, 'id');
 
-      expect(result).toBeArrayOfSize(0);
+      expect(errors?.constraints).toBeUndefined();
     });
 
     it('should throw an error about required field when not providing a value to id', () => {
