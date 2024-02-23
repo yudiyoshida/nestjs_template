@@ -14,9 +14,10 @@ export class AuthorizationGuard implements CanActivate {
   ) {}
 
   public async canActivate(ctx: ExecutionContext): Promise<boolean> {
+    // handler first, then class. This way, the value in the controller will be overwritten by the method (more specific).
     const permission = this.reflector.getAllAndOverride<AccountPermissionsEnum>(PERMISSION_KEY, [
-      ctx.getClass(),
       ctx.getHandler(),
+      ctx.getClass(),
     ]);
 
     try {

@@ -9,14 +9,20 @@ describe('GetAccountByIdService', () => {
   let service: GetAccountByIdService;
   let repositoryMock: IAccountRepository;
 
+  let findByIdMock: jest.Mock;
+
   beforeEach(async() => {
+    findByIdMock = jest.fn()
+      .mockResolvedValueOnce({})
+      .mockResolvedValueOnce(null);
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         GetAccountByIdService,
         {
           provide: TOKENS.IAccountRepository,
           useFactory: () => ({
-            findById: jest.fn().mockResolvedValueOnce({}).mockResolvedValueOnce(null),
+            findById: findByIdMock,
           }),
         },
       ],
@@ -39,8 +45,8 @@ describe('GetAccountByIdService', () => {
   });
 
   it('should not find any account', async() => {
-    // first call to return null from mock.
-    await service.execute('id');
+    // first call to ignore empty object from mock (first return).
+    findByIdMock();
 
     // this line is here because a fulfilled promise won't fail the test.
     expect.assertions(2);

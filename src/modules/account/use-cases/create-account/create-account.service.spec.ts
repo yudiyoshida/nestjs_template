@@ -18,14 +18,20 @@ describe('CreateAccountService', () => {
   let repositoryMock: IAccountRepository;
   let hashingMock: IHashingService;
 
+  let findByEmailMock: jest.Mock;
+
   beforeEach(async() => {
+    findByEmailMock = jest.fn()
+      .mockResolvedValueOnce(null)
+      .mockResolvedValue(data);
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CreateAccountService,
         {
           provide: TOKENS.IAccountRepository,
           useFactory: () => ({
-            findByEmail: jest.fn().mockResolvedValueOnce(null).mockResolvedValueOnce(data),
+            findByEmail: findByEmailMock,
             save: jest.fn().mockResolvedValue(data),
           }),
         },
@@ -44,8 +50,8 @@ describe('CreateAccountService', () => {
   });
 
   it('should throw an error when the email provided already exists', async() => {
-    // first mocked value (findByEmail).
-    await service.execute({ ...data });
+    // call to ignore first mocked value (return null).
+    findByEmailMock();
 
     // this line is here because a fulfilled promise won't fail the test.
     expect.assertions(2);
