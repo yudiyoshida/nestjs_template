@@ -6,7 +6,7 @@ import { IAccountRepository } from '../../repositories/account-repository.interf
 @Injectable()
 export class GetAccountByEmailService {
   constructor(
-    @Inject(TOKENS.IAccountRepository) private accountRepository: IAccountRepository,
+    @Inject(TOKENS.IAccountRepository) private accountRepository: IAccountRepository
   ) {}
 
   public async execute(email: string) {
