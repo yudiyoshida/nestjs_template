@@ -1,7 +1,7 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
-import { IAccountRepository } from 'src/modules/account/repositories/account-repository.interface';
+import { GetAccountByEmailService } from 'src/modules/account/use-cases/get-account-by-email/get-account-by-email.service';
 import { TOKENS } from 'src/shared/di/tokens';
 import { IHashingService } from 'src/shared/helpers/hashing/hashing.interface';
 import { PayloadDto } from '../../types/payload.type';
@@ -10,18 +10,18 @@ import { LoginDto } from './dtos/login.dto';
 @Injectable()
 export class LoginService {
   constructor(
-    @Inject(TOKENS.IAccountRepository) private accountRepository: IAccountRepository,
-    @Inject(TOKENS.IHashingService) private hashingHelper: IHashingService,
+    @Inject(TOKENS.IHashingService) private hashingService: IHashingService,
+    private getAccountByEmailService: GetAccountByEmailService,
     private jwtService: JwtService
   ) {}
 
   public async execute(credentials: LoginDto) {
-    const account = await this.accountRepository.findByEmail(credentials.email);
+    const account = await this.getAccountByEmailService.execute(credentials.email);
     if (!account) {
       throw new BadRequestException('Credenciais incorretas.');
     }
 
-    const isPasswordCorrect = this.hashingHelper.compare(credentials.password, account.password);
+    const isPasswordCorrect = this.hashingService.compare(credentials.password, account.password);
     if (!isPasswordCorrect) {
       throw new BadRequestException('Credenciais incorretas.');
     }

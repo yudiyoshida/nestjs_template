@@ -4,14 +4,14 @@ import { LoginDto } from './dtos/login.dto';
 import { LoginController } from './login.controller';
 import { LoginService } from './login.service';
 
+const data: LoginDto = {
+  email: 'jhondoe@emai.com',
+  password: '123456798',
+};
+
 describe('LoginController', () => {
   let controller: LoginController;
   let serviceMock: LoginService;
-
-  const data: LoginDto = {
-    email: 'jhondoe@emai.com',
-    password: '123456798',
-  };
 
   beforeEach(async() => {
     const module: TestingModule = await Test.createTestingModule({
@@ -22,7 +22,7 @@ describe('LoginController', () => {
         {
           provide: LoginService,
           useFactory: () => ({
-            execute: jest.fn(() => {}),
+            execute: jest.fn(),
           }),
         },
       ],

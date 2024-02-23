@@ -44,9 +44,12 @@ describe('CreateAccountService', () => {
   });
 
   it('should throw an error when the email provided already exists', async() => {
-    await service.execute({ ...data }); // first mocked value (findByEmail).
+    // first mocked value (findByEmail).
+    await service.execute({ ...data });
 
+    // this line is here because a fulfilled promise won't fail the test.
     expect.assertions(2);
+
     return service.execute({ ...data }).catch(err => {
       expect(err).toBeInstanceOf(ConflictException);
       expect(err.response.message).toBe('Email já está sendo utilizado.');

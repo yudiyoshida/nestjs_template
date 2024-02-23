@@ -3,24 +3,24 @@ import { JwtModule } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { isJWT } from 'class-validator';
-
-import { AccountInMemoryRepository } from 'src/modules/account/repositories/adapters/account-in-memory.repository';
+import { Account } from 'src/modules/account/entities/account.entity';
+import { GetAccountByEmailService } from 'src/modules/account/use-cases/get-account-by-email/get-account-by-email.service';
 import { TOKENS } from 'src/shared/di/tokens';
-import { BcryptAdapterService } from 'src/shared/helpers/hashing/adapters/bcrypt.service';
-import { CreateAccountService } from '../../../account/use-cases/create-account/create-account.service';
-import { CreateAccountDto } from '../../../account/use-cases/create-account/dtos/create-account.dto';
-import { LoginDto } from './dtos/login.dto';
+import { IHashingService } from 'src/shared/helpers/hashing/hashing.interface';
 import { LoginService } from './login.service';
+
+const account: Account = {
+  id: 'random-id',
+  name: 'Jhon Doe',
+  email: 'jhondoe@email.com',
+  password: 'jhondoe',
+  permissions: [],
+};
 
 describe('LoginService', () => {
   let service: LoginService;
-  let createAccountService: CreateAccountService;
-
-  const data: CreateAccountDto = {
-    name: 'Jhon Doe',
-    email: 'jhondoe@email.com',
-    password: 'abc12345',
-  };
+  let getAccountByEmailServiceMock: GetAccountByEmailService;
+  let hashingServiceMock: IHashingService;
 
   beforeEach(async() => {
     const module: TestingModule = await Test.createTestingModule({
@@ -29,78 +29,71 @@ describe('LoginService', () => {
       ],
       providers: [
         LoginService,
-        CreateAccountService,
         {
-          provide: TOKENS.IAccountRepository,
-          useClass: AccountInMemoryRepository,
+          provide: GetAccountByEmailService,
+          useFactory: () => ({
+            execute: jest.fn((email: string) => {
+              return (email === 'valid') ? account : null;
+            }),
+          }),
         },
         {
           provide: TOKENS.IHashingService,
-          useClass: BcryptAdapterService,
+          useFactory: () => ({
+            compare: jest.fn((password: string) => {
+              return password === 'valid';
+            }),
+          }),
         },
       ],
     }).compile();
 
     service = module.get<LoginService>(LoginService);
-    createAccountService = module.get<CreateAccountService>(CreateAccountService);
-
-    // register an account.
-    await createAccountService.execute({
-      name: data.name,
-      email: data.email,
-      password: data.password,
-    });
+    getAccountByEmailServiceMock = module.get<GetAccountByEmailService>(GetAccountByEmailService);
+    hashingServiceMock = module.get<IHashingService>(TOKENS.IHashingService);
   });
 
-  it('should return 400 when providing incorrect email', async() => {
+  it('should throw an error when cannot find an account with provided email', async() => {
     // this line is here because a fulfilled promise won't fail the test.
     expect.assertions(2);
 
-    const credentials: LoginDto = {
-      email: `${data.email}.br`,
-      password: data.password,
-    };
-
-    return service.execute(credentials).catch(err => {
+    return service.execute({ email: 'invalid', password: 'valid' }).catch(err => {
       expect(err).toBeInstanceOf(BadRequestException);
       expect(err.response.message).toBe('Credenciais incorretas.');
     });
   });
 
-  it('should return 400 when providing incorrect password', async() => {
+  it('should throw an error when provided password is incorrect', async() => {
     // this line is here because a fulfilled promise won't fail the test.
     expect.assertions(2);
 
-    const credentials: LoginDto = {
-      email: data.email,
-      password: `${data.password}!!`,
-    };
-
-    return service.execute(credentials).catch(err => {
+    return service.execute({ email: 'valid', password: 'invalid' }).catch(err => {
       expect(err).toBeInstanceOf(BadRequestException);
       expect(err.response.message).toBe('Credenciais incorretas.');
     });
   });
 
-  it('should return the access token when providing correct credentials', async() => {
-    const credentials: LoginDto = {
-      email: data.email,
-      password: data.password,
-    };
-
-    const result = await service.execute(credentials);
+  it('should return an access token when provided credentials are correct', async() => {
+    const result = await service.execute({ email: 'valid', password: 'valid' });
 
     expect(result).toHaveProperty('accessToken');
   });
 
   it('should return a valid JWT as access token', async() => {
-    const credentials: LoginDto = {
-      email: data.email,
-      password: data.password,
-    };
+    const result = await service.execute({ email: 'valid', password: 'valid' });
 
-    const result = await service.execute(credentials);
+    expect(isJWT(result.accessToken)).toBeTrue();
+  });
 
-    expect(isJWT(result.accessToken)).toBeTruthy();
+  it('should call the getAccountByEmailService with correct arguments', async() => {
+    await service.execute({ email: 'valid', password: 'valid' });
+
+    expect(getAccountByEmailServiceMock.execute).toHaveBeenCalledExactlyOnceWith('valid');
+  });
+
+  it('should call the hashingService with correct arguments', async() => {
+    await service.execute({ email: 'valid', password: 'valid' });
+
+    expect(hashingServiceMock.compare).toHaveBeenCalledExactlyOnceWith('valid', account.password);
   });
 });
