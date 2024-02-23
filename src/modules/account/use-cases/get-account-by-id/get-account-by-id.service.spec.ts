@@ -2,61 +2,50 @@ import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { TOKENS } from 'src/shared/di/tokens';
-import { BcryptAdapterService } from 'src/shared/helpers/hashing/adapters/bcrypt.service';
-import { AccountInMemoryRepository } from '../../repositories/adapters/account-in-memory.repository';
-import { CreateAccountService } from '../create-account/create-account.service';
+import { IAccountRepository } from '../../repositories/account-repository.interface';
 import { GetAccountByIdService } from './get-account-by-id.service';
 
 describe('GetAccountByIdService', () => {
   let service: GetAccountByIdService;
-  let createAccountService: CreateAccountService;
+  let repositoryMock: IAccountRepository;
 
   beforeEach(async() => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         GetAccountByIdService,
-        CreateAccountService,
         {
           provide: TOKENS.IAccountRepository,
-          useClass: AccountInMemoryRepository,
-        },
-        {
-          provide: TOKENS.IHashingService,
-          useClass: BcryptAdapterService,
+          useFactory: () => ({
+            findById: jest.fn().mockResolvedValueOnce({}).mockResolvedValueOnce(null),
+          }),
         },
       ],
     }).compile();
 
     service = module.get<GetAccountByIdService>(GetAccountByIdService);
-    createAccountService = module.get<CreateAccountService>(CreateAccountService);
+    repositoryMock = module.get<IAccountRepository>(TOKENS.IAccountRepository);
   });
 
-  it('should find a specific account by its id', async() => {
-    const account = await createAccountService.execute({
-      name: 'Jhon Doe',
-      email: 'jhondoe@email.com',
-      password: '123456789',
-    });
+  it('should call the repository with correct arguments', async() => {
+    await service.execute('id');
 
-    const result = await service.execute(account.id);
+    expect(repositoryMock.findById).toHaveBeenCalledExactlyOnceWith('id');
+  });
 
-    expect(result).toHaveProperty('id', account.id);
-    expect(result).toHaveProperty('name', account.name);
-    expect(result).toHaveProperty('email', account.email);
-    expect(result).not.toHaveProperty('password');
+  it('should find a specific account', async() => {
+    const result = await service.execute('id');
+
+    expect(result).toBeEmptyObject();
   });
 
   it('should not find any account', async() => {
-    const account = await createAccountService.execute({
-      name: 'Jhon Doe',
-      email: 'jhondoe@email.com',
-      password: '123456789',
-    });
+    // first call to return null from mock.
+    await service.execute('id');
 
     // this line is here because a fulfilled promise won't fail the test.
     expect.assertions(2);
 
-    return service.execute(`${account.id}-RANDOM`).catch(err => {
+    return service.execute('id').catch(err => {
       expect(err).toBeInstanceOf(NotFoundException);
       expect(err.response.message).toEqual('Conta não encontrada na base de dados.');
     });

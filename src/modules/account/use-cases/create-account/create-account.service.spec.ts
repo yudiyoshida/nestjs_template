@@ -2,20 +2,21 @@ import { ConflictException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { TOKENS } from 'src/shared/di/tokens';
-import { BcryptAdapterService } from 'src/shared/helpers/hashing/adapters/bcrypt.service';
-import { AccountInMemoryRepository } from '../../repositories/adapters/account-in-memory.repository';
-
+import { IHashingService } from 'src/shared/helpers/hashing/hashing.interface';
+import { IAccountRepository } from '../../repositories/account-repository.interface';
 import { CreateAccountService } from './create-account.service';
 import { CreateAccountDto } from './dtos/create-account.dto';
 
+const data: CreateAccountDto = {
+  name: 'Jhon Doe',
+  email: 'jhondoe@email.com',
+  password: '123456789',
+};
+
 describe('CreateAccountService', () => {
   let service: CreateAccountService;
-
-  const data: CreateAccountDto = {
-    name: 'Jhon Doe',
-    email: 'jhondoe@mail.com',
-    password: '123456789',
-  };
+  let repositoryMock: IAccountRepository;
+  let hashingMock: IHashingService;
 
   beforeEach(async() => {
     const module: TestingModule = await Test.createTestingModule({
@@ -23,39 +24,50 @@ describe('CreateAccountService', () => {
         CreateAccountService,
         {
           provide: TOKENS.IAccountRepository,
-          useClass: AccountInMemoryRepository,
+          useFactory: () => ({
+            findByEmail: jest.fn().mockResolvedValueOnce(null).mockResolvedValueOnce(data),
+            save: jest.fn().mockResolvedValue(data),
+          }),
         },
         {
           provide: TOKENS.IHashingService,
-          useClass: BcryptAdapterService,
+          useFactory: () => ({
+            hash: jest.fn().mockReturnValue('hashed-password'),
+          }),
         },
       ],
     }).compile();
 
     service = module.get<CreateAccountService>(CreateAccountService);
+    repositoryMock = module.get<IAccountRepository>(TOKENS.IAccountRepository);
+    hashingMock = module.get<IHashingService>(TOKENS.IHashingService);
   });
 
-  it('create a new account', async() => {
-    const result = await service.execute(data);
+  it('should throw an error when the email provided already exists', async() => {
+    await service.execute({ ...data }); // first mocked value (findByEmail).
 
-    expect(result).toHaveProperty('id');
-    expect(result).toHaveProperty('name', data.name);
-    expect(result).toHaveProperty('email', data.email);
-    expect(result).not.toHaveProperty('password');
-    expect(result).not.toHaveProperty('permissions');
-  });
-
-  it('return an error when providing an email that is being used', async() => {
-    // this line is here because a fulfilled promise won't fail the test.
     expect.assertions(2);
-
-    // first register.
-    await service.execute(data);
-
-    // second register.
-    return service.execute(data).catch(err => {
+    return service.execute({ ...data }).catch(err => {
       expect(err).toBeInstanceOf(ConflictException);
-      expect(err.response.message).toEqual('Email já está sendo utilizado.');
+      expect(err.response.message).toBe('Email já está sendo utilizado.');
     });
+  });
+
+  it('should create a new account when the email provided is unique', async() => {
+    const result = await service.execute({ ...data });
+
+    expect(result).toEqual(data);
+  });
+
+  it('should call the findByEmail with correct argument', async() => {
+    await service.execute({ ...data });
+
+    expect(repositoryMock.findByEmail).toHaveBeenCalledExactlyOnceWith(data.email);
+  });
+
+  it('should call the hashing service with correct argument', async() => {
+    await service.execute({ ...data });
+
+    expect(hashingMock.hash).toHaveBeenCalledExactlyOnceWith(data.password);
   });
 });

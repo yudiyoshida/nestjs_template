@@ -11,7 +11,7 @@ import { CreateAccountDto } from './dtos/create-account.dto';
 export class CreateAccountService {
   constructor(
     @Inject(TOKENS.IAccountRepository) private accountRepository: IAccountRepository,
-    @Inject(TOKENS.IHashingService) private hashingHelper: IHashingService
+    @Inject(TOKENS.IHashingService) private hashingService: IHashingService
   ) {}
 
   public async execute(data: CreateAccountDto) {
@@ -21,15 +21,16 @@ export class CreateAccountService {
     }
 
     // hash password.
-    data.password = this.hashingHelper.hash(data.password);
+    data.password = this.hashingService.hash(data.password);
 
     // define permissions.
-    const permissions = this.setPermissions();
+    const permissions = this.setUserPermissions();
 
+    // create new account and return.
     return this.accountRepository.save(data, permissions);
   }
 
-  private setPermissions() {
+  private setUserPermissions() {
     const permissions: AccountPermission[] = [];
 
     permissions.push({ action: AccountPermissionsEnum.PERMISSION_TEST });

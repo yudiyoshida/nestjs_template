@@ -2,7 +2,7 @@ import { Module, Provider } from '@nestjs/common';
 
 import { TOKENS } from 'src/shared/di/tokens';
 import { BcryptAdapterService } from 'src/shared/helpers/hashing/adapters/bcrypt.service';
-import { AccountPrismaRepository } from './repositories/adapters/account-prisma.repository';
+import { AccountPrismaAdapterRepository } from './repositories/adapters/account-prisma.repository';
 
 import { CreateAccountController } from './use-cases/create-account/create-account.controller';
 import { CreateAccountService } from './use-cases/create-account/create-account.service';
@@ -14,7 +14,7 @@ const providers: Provider[] = [
   GetAccountByIdService,
   {
     provide: TOKENS.IAccountRepository,
-    useClass: AccountPrismaRepository,
+    useClass: AccountPrismaAdapterRepository,
   },
   {
     provide: TOKENS.IHashingService,

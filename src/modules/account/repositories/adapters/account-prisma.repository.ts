@@ -1,12 +1,17 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 
 import { PrismaService } from 'src/database/prisma/prisma.service';
-import { AccountPermission } from '../../entities/account-permission.entity';
-import { CreateAccountDto } from '../../use-cases/create-account/dtos/create-account.dto';
 import { IAccountRepository } from '../account-repository.interface';
 
+const AccountSelect = {
+  id: true,
+  name: true,
+  email: true,
+} satisfies Prisma.AccountSelect;
+
 @Injectable()
-export class AccountPrismaRepository implements IAccountRepository {
+export class AccountPrismaAdapterRepository implements IAccountRepository {
   constructor(private prisma: PrismaService) {}
 
   public findByEmail(email: string) {
@@ -20,15 +25,16 @@ export class AccountPrismaRepository implements IAccountRepository {
     return this.prisma.account.findUnique({
       where: { id },
       select: {
-        id: true,
-        name: true,
-        email: true,
+        ...AccountSelect,
         permissions: true,
       },
     });
   }
 
-  public save(data: CreateAccountDto, permissions: AccountPermission[]) {
+  public save(
+    data: Prisma.AccountCreateWithoutPermissionsInput,
+    permissions: Prisma.AccountPermissionCreateInput[]
+  ) {
     return this.prisma.account.create({
       data: {
         ...data,
@@ -36,11 +42,7 @@ export class AccountPrismaRepository implements IAccountRepository {
           createMany: { data: permissions },
         },
       },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-      },
+      select: AccountSelect,
     });
   }
 }

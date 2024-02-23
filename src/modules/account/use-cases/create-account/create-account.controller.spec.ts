@@ -4,15 +4,15 @@ import { CreateAccountController } from './create-account.controller';
 import { CreateAccountService } from './create-account.service';
 import { CreateAccountDto } from './dtos/create-account.dto';
 
+const data: CreateAccountDto = {
+  name: 'Jhon Doe',
+  email: 'jhondoe@email.com',
+  password: '123456789',
+};
+
 describe('CreateAccountController', () => {
   let controller: CreateAccountController;
   let serviceMock: CreateAccountService;
-
-  const data: CreateAccountDto = {
-    name: 'Jhon Doe',
-    email: 'jhondoe@mail.com',
-    password: '123456789',
-  };
 
   beforeEach(async() => {
     const module: TestingModule = await Test.createTestingModule({
@@ -23,7 +23,7 @@ describe('CreateAccountController', () => {
         {
           provide: CreateAccountService,
           useFactory: () => ({
-            execute: jest.fn(() => {}),
+            execute: jest.fn(),
           }),
         },
       ],

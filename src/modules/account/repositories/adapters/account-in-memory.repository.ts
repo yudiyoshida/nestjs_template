@@ -1,15 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import * as crypto from 'crypto';
 
+import { AccountPermission } from '../../entities/account-permission.entity';
+import { Account } from '../../entities/account.entity';
+import { CreateAccountDto } from '../../use-cases/create-account/dtos/create-account.dto';
 import { IAccountRepository } from '../account-repository.interface';
 
-import { IAccountPermissionDto } from '../../entities/account-permission.entity';
-import { IAccountDto } from '../../entities/account.entity';
-import { CreateAccountDto } from '../../use-cases/create-account/dtos/create-account.dto';
-
 @Injectable()
-export class AccountInMemoryRepository implements IAccountRepository {
-  private readonly _accounts: IAccountDto[] = [];
+export class AccountInMemoryAdapterRepository implements IAccountRepository {
+  private readonly _accounts: Account[] = [];
 
   public async findById(id: string) {
     const account = this._accounts.find(account => account.id === id);
@@ -24,7 +23,7 @@ export class AccountInMemoryRepository implements IAccountRepository {
     return this._accounts.find(account => account.email === email);
   }
 
-  public async save(data: CreateAccountDto, permissions: IAccountPermissionDto[]) {
+  public async save(data: CreateAccountDto, permissions: AccountPermission[]) {
     const newAccount = { id: crypto.randomUUID(), ...data };
 
     this._accounts.push({ ...newAccount, permissions });
