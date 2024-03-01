@@ -12,15 +12,20 @@ export class AccountInMemoryAdapterRepository implements IAccountRepository {
 
   public async findById(id: string) {
     const account = this._accounts.find(account => account.id === id);
-
-    if (account) {
-      delete account.password;
+    if (!account) {
+      return null;
     }
-    return account;
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...data } = account;
+
+    return data;
   }
 
   public async findByEmail(email: string) {
-    return this._accounts.find(account => account.email === email);
+    const account = this._accounts.find(account => account.email === email);
+
+    return account ?? null;
   }
 
   public async save(data: CreateAccountDto, permissions: AccountPermission[]) {

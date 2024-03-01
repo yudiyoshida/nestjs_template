@@ -18,6 +18,6 @@ model Account {
 model AccountPermission {
   id        String  @id @default(uuid())
   action    String
-  account   Account @relation(fields: [accountId], references: [id])
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
   accountId String
 }
