@@ -21,6 +21,6 @@ async function bootstrap() {
     transform: true,
     whitelist: true,
   }));
-  await app.listen(process.env.PORT);
+  await app.listen(process.env.PORT as string);
 }
 bootstrap();
