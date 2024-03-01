@@ -1,5 +1,4 @@
-import { ValidationError } from '@nestjs/common';
-import { validateSync } from 'class-validator';
+import { ValidationError, validateSync } from 'class-validator';
 
 export function validateDto(dto: any): ValidationError[] {
   return validateSync(dto);

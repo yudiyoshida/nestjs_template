@@ -19,17 +19,17 @@ describe('Params', () => {
       const result = validateDto(dto);
       const errors = getFieldErrors<Params>(result, 'id');
 
-      expect(errors.constraints).toHaveProperty('isNotEmpty', 'id é um campo obrigatório.');
+      expect(errors?.constraints).toHaveProperty('isNotEmpty', 'id é um campo obrigatório.');
     });
 
     it('should throw an error about required field when providing null to id', () => {
       const dto = new Params();
-      dto.id = null;
+      dto.id = (null as unknown as string);
 
       const result = validateDto(dto);
       const errors = getFieldErrors<Params>(result, 'id');
 
-      expect(errors.constraints).toHaveProperty('isNotEmpty', 'id é um campo obrigatório.');
+      expect(errors?.constraints).toHaveProperty('isNotEmpty', 'id é um campo obrigatório.');
     });
 
     it('should throw an error about invalid type when providing a number to id', () => {
@@ -39,7 +39,7 @@ describe('Params', () => {
       const result = validateDto(dto);
       const errors = getFieldErrors<Params>(result, 'id');
 
-      expect(errors.constraints).toHaveProperty('isString', 'id deve ser do tipo string.');
+      expect(errors?.constraints).toHaveProperty('isString', 'id deve ser do tipo string.');
     });
 
     it('should throw an error about invalid type when providing a boolean to id', () => {
@@ -49,7 +49,7 @@ describe('Params', () => {
       const result = validateDto(dto);
       const errors = getFieldErrors<Params>(result, 'id');
 
-      expect(errors.constraints).toHaveProperty('isString', 'id deve ser do tipo string.');
+      expect(errors?.constraints).toHaveProperty('isString', 'id deve ser do tipo string.');
     });
 
     it('should throw an error about invalid type when providing an object to id', () => {
@@ -59,7 +59,7 @@ describe('Params', () => {
       const result = validateDto(dto);
       const errors = getFieldErrors<Params>(result, 'id');
 
-      expect(errors.constraints).toHaveProperty('isString', 'id deve ser do tipo string.');
+      expect(errors?.constraints).toHaveProperty('isString', 'id deve ser do tipo string.');
     });
 
     it('should throw an error about invalid type when providing an array to id', () => {
@@ -69,7 +69,7 @@ describe('Params', () => {
       const result = validateDto(dto);
       const errors = getFieldErrors<Params>(result, 'id');
 
-      expect(errors.constraints).toHaveProperty('isString', 'id deve ser do tipo string.');
+      expect(errors?.constraints).toHaveProperty('isString', 'id deve ser do tipo string.');
     });
   });
 });

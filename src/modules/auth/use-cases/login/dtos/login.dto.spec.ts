@@ -9,17 +9,17 @@ describe('LoginDto', () => {
       const result = validateDto(dto);
       const errors = getFieldErrors<LoginDto>(result, 'email');
 
-      expect(errors.constraints).toHaveProperty('isNotEmpty', 'Email é um campo obrigatório.');
+      expect(errors?.constraints).toHaveProperty('isNotEmpty', 'Email é um campo obrigatório.');
     });
 
     it('should throw an error when providing null to email', () => {
       const dto = new LoginDto();
-      dto.email = null;
+      dto.email = (null as unknown as string);
 
       const result = validateDto(dto);
       const errors = getFieldErrors<LoginDto>(result, 'email');
 
-      expect(errors.constraints).toHaveProperty('isNotEmpty', 'Email é um campo obrigatório.');
+      expect(errors?.constraints).toHaveProperty('isNotEmpty', 'Email é um campo obrigatório.');
     });
 
     it('should throw an error about invalid type when providing a number to email', () => {
@@ -29,7 +29,7 @@ describe('LoginDto', () => {
       const result = validateDto(dto);
       const errors = getFieldErrors<LoginDto>(result, 'email');
 
-      expect(errors.constraints).toHaveProperty('isString', 'Email deve ser do tipo string.');
+      expect(errors?.constraints).toHaveProperty('isString', 'Email deve ser do tipo string.');
     });
 
     it('should throw an error about invalid type when providing a boolean to email', () => {
@@ -39,7 +39,7 @@ describe('LoginDto', () => {
       const result = validateDto(dto);
       const errors = getFieldErrors<LoginDto>(result, 'email');
 
-      expect(errors.constraints).toHaveProperty('isString', 'Email deve ser do tipo string.');
+      expect(errors?.constraints).toHaveProperty('isString', 'Email deve ser do tipo string.');
     });
 
     it('should throw an error about invalid type when providing an object to email', () => {
@@ -49,7 +49,7 @@ describe('LoginDto', () => {
       const result = validateDto(dto);
       const errors = getFieldErrors<LoginDto>(result, 'email');
 
-      expect(errors.constraints).toHaveProperty('isString', 'Email deve ser do tipo string.');
+      expect(errors?.constraints).toHaveProperty('isString', 'Email deve ser do tipo string.');
     });
 
     it('should throw an error about invalid type when providing an array to email', () => {
@@ -59,7 +59,7 @@ describe('LoginDto', () => {
       const result = validateDto(dto);
       const errors = getFieldErrors<LoginDto>(result, 'email');
 
-      expect(errors.constraints).toHaveProperty('isString', 'Email deve ser do tipo string.');
+      expect(errors?.constraints).toHaveProperty('isString', 'Email deve ser do tipo string.');
     });
 
     it('should not throw an error when providing a string to email', () => {
@@ -80,17 +80,17 @@ describe('LoginDto', () => {
       const result = validateDto(dto);
       const errors = getFieldErrors<LoginDto>(result, 'password');
 
-      expect(errors.constraints).toHaveProperty('isNotEmpty', 'Senha é um campo obrigatório.');
+      expect(errors?.constraints).toHaveProperty('isNotEmpty', 'Senha é um campo obrigatório.');
     });
 
     it('should throw an error when providing null to password', () => {
       const dto = new LoginDto();
-      dto.password = null;
+      dto.password = (null as unknown as string);
 
       const result = validateDto(dto);
       const errors = getFieldErrors<LoginDto>(result, 'password');
 
-      expect(errors.constraints).toHaveProperty('isNotEmpty', 'Senha é um campo obrigatório.');
+      expect(errors?.constraints).toHaveProperty('isNotEmpty', 'Senha é um campo obrigatório.');
     });
 
     it('should throw an error about invalid type when providing a number to password', () => {
@@ -100,7 +100,7 @@ describe('LoginDto', () => {
       const result = validateDto(dto);
       const errors = getFieldErrors<LoginDto>(result, 'password');
 
-      expect(errors.constraints).toHaveProperty('isString', 'Senha deve ser do tipo string.');
+      expect(errors?.constraints).toHaveProperty('isString', 'Senha deve ser do tipo string.');
     });
 
     it('should throw an error about invalid type when providing a boolean to password', () => {
@@ -110,7 +110,7 @@ describe('LoginDto', () => {
       const result = validateDto(dto);
       const errors = getFieldErrors<LoginDto>(result, 'password');
 
-      expect(errors.constraints).toHaveProperty('isString', 'Senha deve ser do tipo string.');
+      expect(errors?.constraints).toHaveProperty('isString', 'Senha deve ser do tipo string.');
     });
 
     it('should throw an error about invalid type when providing an object to password', () => {
@@ -120,7 +120,7 @@ describe('LoginDto', () => {
       const result = validateDto(dto);
       const errors = getFieldErrors<LoginDto>(result, 'password');
 
-      expect(errors.constraints).toHaveProperty('isString', 'Senha deve ser do tipo string.');
+      expect(errors?.constraints).toHaveProperty('isString', 'Senha deve ser do tipo string.');
     });
 
     it('should throw an error about invalid type when providing an array to password', () => {
@@ -130,7 +130,7 @@ describe('LoginDto', () => {
       const result = validateDto(dto);
       const errors = getFieldErrors<LoginDto>(result, 'password');
 
-      expect(errors.constraints).toHaveProperty('isString', 'Senha deve ser do tipo string.');
+      expect(errors?.constraints).toHaveProperty('isString', 'Senha deve ser do tipo string.');
     });
 
     it('should not throw an error when providing a string to password', () => {

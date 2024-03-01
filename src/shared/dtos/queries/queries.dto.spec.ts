@@ -14,7 +14,7 @@ describe('Queries', () => {
 
     it('should not throw an error when providing null to page', () => {
       const dto = new Queries();
-      dto.page = null;
+      dto.page = (null as unknown as number);
 
       const result = validateDto(dto);
       const errors = getFieldErrors<Queries>(result, 'page');
@@ -39,7 +39,7 @@ describe('Queries', () => {
       const result = validateDto(dto);
       const errors = getFieldErrors<Queries>(result, 'page');
 
-      expect(errors.constraints).toHaveProperty('isInt', 'page deve ser um número inteiro.');
+      expect(errors?.constraints).toHaveProperty('isInt', 'page deve ser um número inteiro.');
     });
 
     it('should throw an error about integer value when providing a boolean to page', () => {
@@ -49,7 +49,7 @@ describe('Queries', () => {
       const result = validateDto(dto);
       const errors = getFieldErrors<Queries>(result, 'page');
 
-      expect(errors.constraints).toHaveProperty('isInt', 'page deve ser um número inteiro.');
+      expect(errors?.constraints).toHaveProperty('isInt', 'page deve ser um número inteiro.');
     });
 
     it('should throw an error about integer value when providing an object to page', () => {
@@ -59,7 +59,7 @@ describe('Queries', () => {
       const result = validateDto(dto);
       const errors = getFieldErrors<Queries>(result, 'page');
 
-      expect(errors.constraints).toHaveProperty('isInt', 'page deve ser um número inteiro.');
+      expect(errors?.constraints).toHaveProperty('isInt', 'page deve ser um número inteiro.');
     });
 
     it('should throw an error about integer value when providing an array to page', () => {
@@ -69,7 +69,7 @@ describe('Queries', () => {
       const result = validateDto(dto);
       const errors = getFieldErrors<Queries>(result, 'page');
 
-      expect(errors.constraints).toHaveProperty('isInt', 'page deve ser um número inteiro.');
+      expect(errors?.constraints).toHaveProperty('isInt', 'page deve ser um número inteiro.');
     });
 
     it('should throw an error about integer value when providing a decimal number to page', () => {
@@ -79,7 +79,7 @@ describe('Queries', () => {
       const result = validateDto(dto);
       const errors = getFieldErrors<Queries>(result, 'page');
 
-      expect(errors.constraints).toHaveProperty('isInt', 'page deve ser um número inteiro.');
+      expect(errors?.constraints).toHaveProperty('isInt', 'page deve ser um número inteiro.');
     });
 
     it('should throw an error about positive value when providing zero to page', () => {
@@ -89,7 +89,7 @@ describe('Queries', () => {
       const result = validateDto(dto);
       const errors = getFieldErrors<Queries>(result, 'page');
 
-      expect(errors.constraints).toHaveProperty('isPositive', 'page deve ser um número positivo.');
+      expect(errors?.constraints).toHaveProperty('isPositive', 'page deve ser um número positivo.');
     });
 
     it('should throw an error about positive value when providing negative number to page', () => {
@@ -99,7 +99,7 @@ describe('Queries', () => {
       const result = validateDto(dto);
       const errors = getFieldErrors<Queries>(result, 'page');
 
-      expect(errors.constraints).toHaveProperty('isPositive', 'page deve ser um número positivo.');
+      expect(errors?.constraints).toHaveProperty('isPositive', 'page deve ser um número positivo.');
     });
   });
 
@@ -115,7 +115,7 @@ describe('Queries', () => {
 
     it('should not throw an error when providing null to size', () => {
       const dto = new Queries();
-      dto.size = null;
+      dto.size = (null as unknown as number);
 
       const result = validateDto(dto);
       const errors = getFieldErrors<Queries>(result, 'size');
@@ -140,7 +140,7 @@ describe('Queries', () => {
       const result = validateDto(dto);
       const errors = getFieldErrors<Queries>(result, 'size');
 
-      expect(errors.constraints).toHaveProperty('isInt', 'size deve ser um número inteiro.');
+      expect(errors?.constraints).toHaveProperty('isInt', 'size deve ser um número inteiro.');
     });
 
     it('should throw an error about integer value when providing a boolean to size', () => {
@@ -150,7 +150,7 @@ describe('Queries', () => {
       const result = validateDto(dto);
       const errors = getFieldErrors<Queries>(result, 'size');
 
-      expect(errors.constraints).toHaveProperty('isInt', 'size deve ser um número inteiro.');
+      expect(errors?.constraints).toHaveProperty('isInt', 'size deve ser um número inteiro.');
     });
 
     it('should throw an error about integer value when providing an object to size', () => {
@@ -160,7 +160,7 @@ describe('Queries', () => {
       const result = validateDto(dto);
       const errors = getFieldErrors<Queries>(result, 'size');
 
-      expect(errors.constraints).toHaveProperty('isInt', 'size deve ser um número inteiro.');
+      expect(errors?.constraints).toHaveProperty('isInt', 'size deve ser um número inteiro.');
     });
 
     it('should throw an error about integer value when providing an array to size', () => {
@@ -170,7 +170,7 @@ describe('Queries', () => {
       const result = validateDto(dto);
       const errors = getFieldErrors<Queries>(result, 'size');
 
-      expect(errors.constraints).toHaveProperty('isInt', 'size deve ser um número inteiro.');
+      expect(errors?.constraints).toHaveProperty('isInt', 'size deve ser um número inteiro.');
     });
 
     it('should throw an error about integer value when providing a decimal number to size', () => {
@@ -180,7 +180,7 @@ describe('Queries', () => {
       const result = validateDto(dto);
       const errors = getFieldErrors<Queries>(result, 'size');
 
-      expect(errors.constraints).toHaveProperty('isInt', 'size deve ser um número inteiro.');
+      expect(errors?.constraints).toHaveProperty('isInt', 'size deve ser um número inteiro.');
     });
 
     it('should throw an error about positive value when providing zero to size', () => {
@@ -190,7 +190,7 @@ describe('Queries', () => {
       const result = validateDto(dto);
       const errors = getFieldErrors<Queries>(result, 'size');
 
-      expect(errors.constraints).toHaveProperty('isPositive', 'size deve ser um número positivo.');
+      expect(errors?.constraints).toHaveProperty('isPositive', 'size deve ser um número positivo.');
     });
 
     it('should throw an error about positive value when providing negative number to size', () => {
@@ -200,7 +200,7 @@ describe('Queries', () => {
       const result = validateDto(dto);
       const errors = getFieldErrors<Queries>(result, 'size');
 
-      expect(errors.constraints).toHaveProperty('isPositive', 'size deve ser um número positivo.');
+      expect(errors?.constraints).toHaveProperty('isPositive', 'size deve ser um número positivo.');
     });
   });
 });
