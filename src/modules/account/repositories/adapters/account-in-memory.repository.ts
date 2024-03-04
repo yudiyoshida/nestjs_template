@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import * as crypto from 'crypto';
 
 import { AccountPermission } from '../../entities/account-permission.entity';
 import { Account } from '../../entities/account.entity';
@@ -29,7 +28,8 @@ export class AccountInMemoryAdapterRepository implements IAccountRepository {
   }
 
   public async save(data: CreateAccountDto, permissions: AccountPermission[]) {
-    const newAccount = { id: crypto.randomUUID(), ...data };
+    const now = new Date().getTime();
+    const newAccount = { id: now.toString(), ...data };
 
     this._accounts.push({ ...newAccount, permissions });
 

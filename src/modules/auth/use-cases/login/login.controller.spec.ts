@@ -1,4 +1,4 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { TestBed } from '@automock/jest';
 
 import { LoginDto } from './dtos/login.dto';
 import { LoginController } from './login.controller';
@@ -11,25 +11,13 @@ const data: LoginDto = {
 
 describe('LoginController', () => {
   let controller: LoginController;
-  let serviceMock: LoginService;
+  let mockService: jest.Mocked<LoginService>;
 
-  beforeEach(async() => {
-    const module: TestingModule = await Test.createTestingModule({
-      controllers: [
-        LoginController,
-      ],
-      providers: [
-        {
-          provide: LoginService,
-          useFactory: () => ({
-            execute: jest.fn(),
-          }),
-        },
-      ],
-    }).compile();
+  beforeEach(() => {
+    const { unit, unitRef } = TestBed.create(LoginController).compile();
 
-    controller = module.get<LoginController>(LoginController);
-    serviceMock = module.get<LoginService>(LoginService);
+    controller = unit;
+    mockService = unitRef.get(LoginService);
   });
 
   it('should be defined', () => {
@@ -37,14 +25,14 @@ describe('LoginController', () => {
   });
 
   it('should call the service only once', async() => {
-    await controller.handle(data);
+    await controller.handle({ ...data });
 
-    expect(serviceMock.execute).toHaveBeenCalledTimes(1);
+    expect(mockService.execute).toHaveBeenCalledTimes(1);
   });
 
   it('should call the service with correct arguments', async() => {
-    await controller.handle(data);
+    await controller.handle({ ...data });
 
-    expect(serviceMock.execute).toHaveBeenCalledWith(data);
+    expect(mockService.execute).toHaveBeenCalledWith(data);
   });
 });

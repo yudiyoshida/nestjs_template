@@ -1,24 +1,15 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsInt, IsOptional, IsPositive } from 'class-validator';
+import { IsOptional, Validate } from 'class-validator';
+import { IsPositiveIntegerNumber } from 'src/shared/validators/constraints/int-positive-number';
 
 export class Queries {
   @ApiPropertyOptional()
   @IsOptional()
-  @IsPositive({
-    message: 'page deve ser um número positivo.',
-  })
-  @IsInt({
-    message: 'page deve ser um número inteiro.',
-  })
+  @Validate(IsPositiveIntegerNumber)
   page: number;
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsPositive({
-    message: 'size deve ser um número positivo.',
-  })
-  @IsInt({
-    message: 'size deve ser um número inteiro.',
-  })
+  @Validate(IsPositiveIntegerNumber)
   size: number;
 }

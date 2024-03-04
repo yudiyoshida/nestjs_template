@@ -1,52 +1,48 @@
+import { TestBed } from '@automock/jest';
 import { NotFoundException } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
 
 import { TOKENS } from 'src/shared/di/tokens';
-import { IAccountRepository } from '../../repositories/account-repository.interface';
+import { Account } from '../../entities/account.entity';
+import { AccountInMemoryAdapterRepository } from '../../repositories/adapters/account-in-memory.repository';
 import { GetAccountByIdService } from './get-account-by-id.service';
+
+const account: Account = {
+  id: 'acc-id',
+  name: 'Jhon Doe',
+  email: 'jhondoe@email.com',
+  password: '123456',
+  permissions: [],
+};
 
 describe('GetAccountByIdService', () => {
   let service: GetAccountByIdService;
-  let repositoryMock: IAccountRepository;
+  let mockRepository: jest.Mocked<AccountInMemoryAdapterRepository>;
 
-  let findByIdMock: jest.Mock;
+  beforeEach(() => {
+    const { unit, unitRef } = TestBed.create(GetAccountByIdService).compile();
 
-  beforeEach(async() => {
-    findByIdMock = jest.fn()
-      .mockResolvedValueOnce({})
-      .mockResolvedValueOnce(null);
-
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        GetAccountByIdService,
-        {
-          provide: TOKENS.IAccountRepository,
-          useFactory: () => ({
-            findById: findByIdMock,
-          }),
-        },
-      ],
-    }).compile();
-
-    service = module.get<GetAccountByIdService>(GetAccountByIdService);
-    repositoryMock = module.get<IAccountRepository>(TOKENS.IAccountRepository);
+    service = unit;
+    mockRepository = unitRef.get(TOKENS.IAccountRepository);
   });
 
   it('should call the repository with correct arguments', async() => {
+    mockRepository.findById.mockResolvedValue(account);
+
     await service.execute('id');
 
-    expect(repositoryMock.findById).toHaveBeenCalledExactlyOnceWith('id');
+    expect(mockRepository.findById).toHaveBeenCalledExactlyOnceWith('id');
   });
 
   it('should find a specific account', async() => {
+    mockRepository.findById.mockResolvedValue(account);
+
     const result = await service.execute('id');
 
-    expect(result).toBeEmptyObject();
+    expect(result).toEqual(account);
   });
 
   it('should not find any account', async() => {
-    // first call to ignore empty object from mock (first return).
-    findByIdMock();
+    mockRepository.findById.mockResolvedValue(null);
 
     // this line is here because a fulfilled promise won't fail the test.
     expect.assertions(2);

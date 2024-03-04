@@ -1,9 +1,10 @@
+import { TestBed } from '@automock/jest';
 import { ConflictException } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
 
 import { TOKENS } from 'src/shared/di/tokens';
-import { IHashingService } from 'src/shared/helpers/hashing/hashing.interface';
-import { IAccountRepository } from '../../repositories/account-repository.interface';
+import { BcryptAdapterService } from 'src/shared/helpers/hashing/adapters/bcrypt.service';
+import { Account } from '../../entities/account.entity';
+import { AccountInMemoryAdapterRepository } from '../../repositories/adapters/account-in-memory.repository';
 import { CreateAccountService } from './create-account.service';
 import { CreateAccountDto } from './dtos/create-account.dto';
 
@@ -13,70 +14,51 @@ const data: CreateAccountDto = {
   password: '123456789',
 };
 
+const account: Account = {
+  id: 'acc-id',
+  name: 'Jhon Doe',
+  email: 'jhondoe@email.com',
+  password: '123456789',
+  permissions: [],
+};
+
 describe('CreateAccountService', () => {
   let service: CreateAccountService;
-  let repositoryMock: IAccountRepository;
-  let hashingMock: IHashingService;
+  let mockHashing: jest.Mocked<BcryptAdapterService>;
+  let mockRepository: jest.Mocked<AccountInMemoryAdapterRepository>;
 
-  let findByEmailMock: jest.Mock;
+  beforeEach(() => {
+    const { unit, unitRef } = TestBed.create(CreateAccountService).compile();
 
-  beforeEach(async() => {
-    findByEmailMock = jest.fn()
-      .mockResolvedValueOnce(null)
-      .mockResolvedValue(data);
-
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        CreateAccountService,
-        {
-          provide: TOKENS.IAccountRepository,
-          useFactory: () => ({
-            findByEmail: findByEmailMock,
-            save: jest.fn().mockResolvedValue(data),
-          }),
-        },
-        {
-          provide: TOKENS.IHashingService,
-          useFactory: () => ({
-            hash: jest.fn().mockReturnValue('hashed-password'),
-          }),
-        },
-      ],
-    }).compile();
-
-    service = module.get<CreateAccountService>(CreateAccountService);
-    repositoryMock = module.get<IAccountRepository>(TOKENS.IAccountRepository);
-    hashingMock = module.get<IHashingService>(TOKENS.IHashingService);
+    service = unit;
+    mockHashing = unitRef.get(TOKENS.IHashingService);
+    mockRepository = unitRef.get(TOKENS.IAccountRepository);
   });
 
   it('should throw an error when the email provided already exists', async() => {
-    // call to ignore first mocked value (return null).
-    findByEmailMock();
+    mockRepository.findByEmail.mockResolvedValue(account);
 
     // this line is here because a fulfilled promise won't fail the test.
-    expect.assertions(2);
+    expect.assertions(4);
 
     return service.execute({ ...data }).catch(err => {
       expect(err).toBeInstanceOf(ConflictException);
       expect(err.response.message).toBe('Email já está sendo utilizado.');
+
+      expect(mockHashing.hash).not.toHaveBeenCalled();
+      expect(mockRepository.save).not.toHaveBeenCalled();
     });
   });
 
   it('should create a new account when the email provided is unique', async() => {
+    mockRepository.findByEmail.mockResolvedValue(null);
+    mockRepository.save.mockResolvedValue(account);
+    mockHashing.hash.mockReturnValue('hashed-password');
+
     const result = await service.execute({ ...data });
 
-    expect(result).toEqual(data);
-  });
-
-  it('should call the findByEmail with correct argument', async() => {
-    await service.execute({ ...data });
-
-    expect(repositoryMock.findByEmail).toHaveBeenCalledExactlyOnceWith(data.email);
-  });
-
-  it('should call the hashing service with correct argument', async() => {
-    await service.execute({ ...data });
-
-    expect(hashingMock.hash).toHaveBeenCalledExactlyOnceWith(data.password);
+    expect(result).toEqual(account);
+    expect(mockHashing.hash).toHaveBeenCalledExactlyOnceWith(data.password);
+    expect(mockRepository.save).toHaveBeenCalled();
   });
 });

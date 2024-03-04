@@ -1,75 +1,88 @@
-import { getFieldErrors, validateDto } from 'src/shared/validators/validate-dto';
+import { ArgumentMetadata, BadRequestException, ValidationPipe } from '@nestjs/common';
+import { pipeOptions } from 'src/config/validation-pipe';
 import { Params } from './params.dto';
 
+const metadata: ArgumentMetadata = {
+  type: 'body',
+  data: '',
+  metatype: Params,
+};
+
 describe('Params', () => {
+  let target!: ValidationPipe;
+
+  beforeAll(() => {
+    target = new ValidationPipe(pipeOptions);
+  });
+
   describe('id field', () => {
-    it('should not throw an error when providing a string to id', () => {
-      const dto = new Params();
-      dto.id = 'id-teste';
+    it('should throw an error about required field when not providing any id', async() => {
+      const data = { };
 
-      const result = validateDto(dto);
-      const errors = getFieldErrors<Params>(result, 'id');
-
-      expect(errors?.constraints).toBeUndefined();
+      expect.assertions(2);
+      return target.transform(data, metadata).catch(err => {
+        expect(err).toBeInstanceOf(BadRequestException);
+        expect(err.getResponse().message).toContain('id é um campo obrigatório.');
+      });
     });
 
-    it('should throw an error about required field when not providing a value to id', () => {
-      const dto = new Params();
+    it('should throw an error about required field when providing null to id', async() => {
+      const data = { id: null };
 
-      const result = validateDto(dto);
-      const errors = getFieldErrors<Params>(result, 'id');
-
-      expect(errors?.constraints).toHaveProperty('isNotEmpty', 'id é um campo obrigatório.');
+      expect.assertions(2);
+      return target.transform(data, metadata).catch(err => {
+        expect(err).toBeInstanceOf(BadRequestException);
+        expect(err.getResponse().message).toContain('id é um campo obrigatório.');
+      });
     });
 
-    it('should throw an error about required field when providing null to id', () => {
-      const dto = new Params();
-      dto.id = (null as unknown as string);
+    it('should throw an error about invalid type when providing a number to id', async() => {
+      const data = { id: 10 };
 
-      const result = validateDto(dto);
-      const errors = getFieldErrors<Params>(result, 'id');
-
-      expect(errors?.constraints).toHaveProperty('isNotEmpty', 'id é um campo obrigatório.');
+      expect.assertions(2);
+      return target.transform(data, metadata).catch(err => {
+        expect(err).toBeInstanceOf(BadRequestException);
+        expect(err.getResponse().message).toContain('id deve ser do tipo string.');
+      });
     });
 
-    it('should throw an error about invalid type when providing a number to id', () => {
-      const dto = new Params();
-      dto.id = (123 as unknown as string);
+    it('should throw an error about invalid type when providing a boolean to id', async() => {
+      const data = { id: true };
 
-      const result = validateDto(dto);
-      const errors = getFieldErrors<Params>(result, 'id');
-
-      expect(errors?.constraints).toHaveProperty('isString', 'id deve ser do tipo string.');
+      expect.assertions(2);
+      return target.transform(data, metadata).catch(err => {
+        expect(err).toBeInstanceOf(BadRequestException);
+        expect(err.getResponse().message).toContain('id deve ser do tipo string.');
+      });
     });
 
-    it('should throw an error about invalid type when providing a boolean to id', () => {
-      const dto = new Params();
-      dto.id = (false as unknown as string);
+    it('should throw an error about invalid type when providing an object to id', async() => {
+      const data = { id: {} };
 
-      const result = validateDto(dto);
-      const errors = getFieldErrors<Params>(result, 'id');
-
-      expect(errors?.constraints).toHaveProperty('isString', 'id deve ser do tipo string.');
+      expect.assertions(2);
+      return target.transform(data, metadata).catch(err => {
+        expect(err).toBeInstanceOf(BadRequestException);
+        expect(err.getResponse().message).toContain('id deve ser do tipo string.');
+      });
     });
 
-    it('should throw an error about invalid type when providing an object to id', () => {
-      const dto = new Params();
-      dto.id = ({} as unknown as string);
+    it('should throw an error about invalid type when providing an array to id', async() => {
+      const data = { id: [] };
 
-      const result = validateDto(dto);
-      const errors = getFieldErrors<Params>(result, 'id');
-
-      expect(errors?.constraints).toHaveProperty('isString', 'id deve ser do tipo string.');
+      expect.assertions(2);
+      return target.transform(data, metadata).catch(err => {
+        expect(err).toBeInstanceOf(BadRequestException);
+        expect(err.getResponse().message).toContain('id deve ser do tipo string.');
+      });
     });
 
-    it('should throw an error about invalid type when providing an array to id', () => {
-      const dto = new Params();
-      dto.id = ([] as unknown as string);
+    it('should not throw an error when providing a string to id', async() => {
+      const data: Params = { id: 'string-id' };
 
-      const result = validateDto(dto);
-      const errors = getFieldErrors<Params>(result, 'id');
+      const result = await target.transform(data, metadata);
 
-      expect(errors?.constraints).toHaveProperty('isString', 'id deve ser do tipo string.');
+      expect(result).toBeInstanceOf(Params);
+      expect(result.id).toBe(data.id);
     });
   });
 });

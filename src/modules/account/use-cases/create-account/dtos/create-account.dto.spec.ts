@@ -1,250 +1,270 @@
-import { getFieldErrors, validateDto } from 'src/shared/validators/validate-dto';
+import { ArgumentMetadata, BadRequestException, ValidationPipe } from '@nestjs/common';
+import { pipeOptions } from 'src/config/validation-pipe';
 import { CreateAccountDto } from './create-account.dto';
 
+const metadata: ArgumentMetadata = {
+  type: 'body',
+  data: '',
+  metatype: CreateAccountDto,
+};
+
 describe('CreateAccountDto', () => {
+  let target!: ValidationPipe;
+
+  beforeAll(() => {
+    target = new ValidationPipe(pipeOptions);
+  });
+
   describe('name field', () => {
-    it('should throw an error when not providing any name', () => {
-      const dto = new CreateAccountDto();
+    it('should throw an error when not providing any name', async() => {
+      const data = { };
 
-      const result = validateDto(dto);
-      const errors = getFieldErrors<CreateAccountDto>(result, 'name');
-
-      expect(errors?.constraints).toHaveProperty('isNotEmpty', 'Nome é um campo obrigatório.');
+      expect.assertions(2);
+      return target.transform(data, metadata).catch(err => {
+        expect(err).toBeInstanceOf(BadRequestException);
+        expect(err.getResponse().message).toContain('Campo nome é um campo obrigatório.');
+      });
     });
 
-    it('should throw an error when providing null to name', () => {
-      const dto = new CreateAccountDto();
-      dto.name = (null as unknown as string);
+    it('should throw an error when providing null to name', async() => {
+      const data = { name: null };
 
-      const result = validateDto(dto);
-      const errors = getFieldErrors<CreateAccountDto>(result, 'name');
-
-      expect(errors?.constraints).toHaveProperty('isNotEmpty', 'Nome é um campo obrigatório.');
+      expect.assertions(2);
+      return target.transform(data, metadata).catch(err => {
+        expect(err).toBeInstanceOf(BadRequestException);
+        expect(err.getResponse().message).toContain('Campo nome é um campo obrigatório.');
+      });
     });
 
-    it('should throw an error about invalid type when providing a number to name', () => {
-      const dto = new CreateAccountDto();
-      dto.name = (123 as unknown as string);
+    it('should throw an error about invalid type when providing a number to name', async() => {
+      const data = { name: 123 };
 
-      const result = validateDto(dto);
-      const errors = getFieldErrors<CreateAccountDto>(result, 'name');
-
-      expect(errors?.constraints).toHaveProperty('isString', 'Nome deve ser do tipo string.');
+      expect.assertions(2);
+      return target.transform(data, metadata).catch(err => {
+        expect(err).toBeInstanceOf(BadRequestException);
+        expect(err.getResponse().message).toContain('Campo nome deve ser do tipo string.');
+      });
     });
 
-    it('should throw an error about invalid type when providing a boolean to name', () => {
-      const dto = new CreateAccountDto();
-      dto.name = (true as unknown as string);
+    it('should throw an error about invalid type when providing a boolean to name', async() => {
+      const data = { name: true };
 
-      const result = validateDto(dto);
-      const errors = getFieldErrors<CreateAccountDto>(result, 'name');
-
-      expect(errors?.constraints).toHaveProperty('isString', 'Nome deve ser do tipo string.');
+      expect.assertions(2);
+      return target.transform(data, metadata).catch(err => {
+        expect(err).toBeInstanceOf(BadRequestException);
+        expect(err.getResponse().message).toContain('Campo nome deve ser do tipo string.');
+      });
     });
 
-    it('should throw an error about invalid type when providing an object to name', () => {
-      const dto = new CreateAccountDto();
-      dto.name = ({} as unknown as string);
+    it('should throw an error about invalid type when providing an object to name', async() => {
+      const data = { name: {} };
 
-      const result = validateDto(dto);
-      const errors = getFieldErrors<CreateAccountDto>(result, 'name');
-
-      expect(errors?.constraints).toHaveProperty('isString', 'Nome deve ser do tipo string.');
+      expect.assertions(2);
+      return target.transform(data, metadata).catch(err => {
+        expect(err).toBeInstanceOf(BadRequestException);
+        expect(err.getResponse().message).toContain('Campo nome deve ser do tipo string.');
+      });
     });
 
-    it('should throw an error about invalid type when providing an array to name', () => {
-      const dto = new CreateAccountDto();
-      dto.name = ([] as unknown as string);
+    it('should throw an error about invalid type when providing an array to name', async() => {
+      const data = { name: [] };
 
-      const result = validateDto(dto);
-      const errors = getFieldErrors<CreateAccountDto>(result, 'name');
-
-      expect(errors?.constraints).toHaveProperty('isString', 'Nome deve ser do tipo string.');
+      expect.assertions(2);
+      return target.transform(data, metadata).catch(err => {
+        expect(err).toBeInstanceOf(BadRequestException);
+        expect(err.getResponse().message).toContain('Campo nome deve ser do tipo string.');
+      });
     });
 
-    it('should not throw an error when providing a string to name', () => {
-      const dto = new CreateAccountDto();
-      dto.name = 'valid name';
+    it('should not throw an error when providing a string to name', async() => {
+      const data = { name: 'jhon doe' };
 
-      const result = validateDto(dto);
-      const errors = getFieldErrors<CreateAccountDto>(result, 'name');
-
-      expect(errors?.constraints).toBeUndefined();
+      expect.assertions(2);
+      return target.transform(data, metadata).catch(err => {
+        expect(err).toBeInstanceOf(BadRequestException);
+        expect(err.getResponse().message).not.toEqual(expect.arrayContaining([expect.stringMatching(/Campo nome/)]));
+      });
     });
   });
 
   describe('email field', () => {
-    it('should throw an error when not providing any email', () => {
-      const dto = new CreateAccountDto();
+    it('should throw an error when not providing any email', async() => {
+      const data = { };
 
-      const result = validateDto(dto);
-      const errors = getFieldErrors<CreateAccountDto>(result, 'email');
-
-      expect(errors?.constraints).toHaveProperty('isNotEmpty', 'Email é um campo obrigatório.');
+      expect.assertions(2);
+      return target.transform(data, metadata).catch(err => {
+        expect(err).toBeInstanceOf(BadRequestException);
+        expect(err.getResponse().message).toContain('Campo email é um campo obrigatório.');
+      });
     });
 
-    it('should throw an error when providing null to email', () => {
-      const dto = new CreateAccountDto();
-      dto.email = (null as unknown as string);
+    it('should throw an error when providing null to email', async() => {
+      const data = { email: null };
 
-      const result = validateDto(dto);
-      const errors = getFieldErrors<CreateAccountDto>(result, 'email');
-
-      expect(errors?.constraints).toHaveProperty('isNotEmpty', 'Email é um campo obrigatório.');
+      expect.assertions(2);
+      return target.transform(data, metadata).catch(err => {
+        expect(err).toBeInstanceOf(BadRequestException);
+        expect(err.getResponse().message).toContain('Campo email é um campo obrigatório.');
+      });
     });
 
-    it('should throw an error about invalid type when providing a number to email', () => {
-      const dto = new CreateAccountDto();
-      dto.email = (123 as unknown as string);
+    it('should throw an error about invalid type when providing a number to email', async() => {
+      const data = { email: 123 };
 
-      const result = validateDto(dto);
-      const errors = getFieldErrors<CreateAccountDto>(result, 'email');
-
-      expect(errors?.constraints).toHaveProperty('isEmail', 'Email inválido.');
+      expect.assertions(2);
+      return target.transform(data, metadata).catch(err => {
+        expect(err).toBeInstanceOf(BadRequestException);
+        expect(err.getResponse().message).toContain('Campo email inválido.');
+      });
     });
 
-    it('should throw an error about invalid type when providing a boolean to email', () => {
-      const dto = new CreateAccountDto();
-      dto.email = (true as unknown as string);
+    it('should throw an error about invalid type when providing a boolean to email', async() => {
+      const data = { email: true };
 
-      const result = validateDto(dto);
-      const errors = getFieldErrors<CreateAccountDto>(result, 'email');
-
-      expect(errors?.constraints).toHaveProperty('isEmail', 'Email inválido.');
+      expect.assertions(2);
+      return target.transform(data, metadata).catch(err => {
+        expect(err).toBeInstanceOf(BadRequestException);
+        expect(err.getResponse().message).toContain('Campo email inválido.');
+      });
     });
 
-    it('should throw an error about invalid type when providing an object to email', () => {
-      const dto = new CreateAccountDto();
-      dto.email = ({} as unknown as string);
+    it('should throw an error about invalid type when providing an object to email', async() => {
+      const data = { email: {} };
 
-      const result = validateDto(dto);
-      const errors = getFieldErrors<CreateAccountDto>(result, 'email');
-
-      expect(errors?.constraints).toHaveProperty('isEmail', 'Email inválido.');
+      expect.assertions(2);
+      return target.transform(data, metadata).catch(err => {
+        expect(err).toBeInstanceOf(BadRequestException);
+        expect(err.getResponse().message).toContain('Campo email inválido.');
+      });
     });
 
-    it('should throw an error about invalid type when providing an array to email', () => {
-      const dto = new CreateAccountDto();
-      dto.email = ([] as unknown as string);
+    it('should throw an error about invalid type when providing an array to email', async() => {
+      const data = { email: [] };
 
-      const result = validateDto(dto);
-      const errors = getFieldErrors<CreateAccountDto>(result, 'email');
-
-      expect(errors?.constraints).toHaveProperty('isEmail', 'Email inválido.');
+      expect.assertions(2);
+      return target.transform(data, metadata).catch(err => {
+        expect(err).toBeInstanceOf(BadRequestException);
+        expect(err.getResponse().message).toContain('Campo email inválido.');
+      });
     });
 
-    it('should throw an error when providing an invalid email', () => {
-      const dto = new CreateAccountDto();
-      dto.email = 'invalid@@email.com';
+    it('should not throw an error when providing an invalid email', async() => {
+      const data = { email: 'invalid@@email.com' };
 
-      const result = validateDto(dto);
-      const errors = getFieldErrors<CreateAccountDto>(result, 'email');
-
-      expect(errors?.constraints).toHaveProperty('isEmail', 'Email inválido.');
+      expect.assertions(2);
+      return target.transform(data, metadata).catch(err => {
+        expect(err).toBeInstanceOf(BadRequestException);
+        expect(err.getResponse().message).toContain('Campo email inválido.');
+      });
     });
 
-    it('should not throw an error when providing a valid email', () => {
-      const dto = new CreateAccountDto();
-      dto.email = 'valid@email.com';
+    it('should not throw an error when providing an valid email', async() => {
+      const data = { email: 'valid@email.com' };
 
-      const result = validateDto(dto);
-      const errors = getFieldErrors<CreateAccountDto>(result, 'email');
-
-      expect(errors?.constraints).toBeUndefined();
+      expect.assertions(2);
+      return target.transform(data, metadata).catch(err => {
+        expect(err).toBeInstanceOf(BadRequestException);
+        expect(err.getResponse().message).not.toEqual(expect.arrayContaining([expect.stringMatching(/Campo email/)]));
+      });
     });
   });
 
   describe('password field', () => {
-    it('should throw an error when not providing any password', () => {
-      const dto = new CreateAccountDto();
+    it('should throw an error when not providing any password', async() => {
+      const data = { };
 
-      const result = validateDto(dto);
-      const errors = getFieldErrors<CreateAccountDto>(result, 'password');
-
-      expect(errors?.constraints).toHaveProperty('isNotEmpty', 'Senha é um campo obrigatório.');
+      expect.assertions(2);
+      return target.transform(data, metadata).catch(err => {
+        expect(err).toBeInstanceOf(BadRequestException);
+        expect(err.getResponse().message).toContain('Campo senha é um campo obrigatório.');
+      });
     });
 
-    it('should throw an error when providing null to password', () => {
-      const dto = new CreateAccountDto();
-      dto.password = (null as unknown as string);
+    it('should throw an error when providing null to password', async() => {
+      const data = { password: null };
 
-      const result = validateDto(dto);
-      const errors = getFieldErrors<CreateAccountDto>(result, 'password');
-
-      expect(errors?.constraints).toHaveProperty('isNotEmpty', 'Senha é um campo obrigatório.');
+      expect.assertions(2);
+      return target.transform(data, metadata).catch(err => {
+        expect(err).toBeInstanceOf(BadRequestException);
+        expect(err.getResponse().message).toContain('Campo senha é um campo obrigatório.');
+      });
     });
 
-    it('should throw an error about invalid type when providing a number to password', () => {
-      const dto = new CreateAccountDto();
-      dto.password = (123 as unknown as string);
+    it('should throw an error about invalid type when providing a number to password', async() => {
+      const data = { password: 123 };
 
-      const result = validateDto(dto);
-      const errors = getFieldErrors<CreateAccountDto>(result, 'password');
-
-      expect(errors?.constraints).toHaveProperty('isString', 'Senha deve ser do tipo string.');
+      expect.assertions(2);
+      return target.transform(data, metadata).catch(err => {
+        expect(err).toBeInstanceOf(BadRequestException);
+        expect(err.getResponse().message).toContain('Campo senha deve ser do tipo string.');
+      });
     });
 
-    it('should throw an error about invalid type when providing a boolean to password', () => {
-      const dto = new CreateAccountDto();
-      dto.password = (true as unknown as string);
+    it('should throw an error about invalid type when providing a boolean to password', async() => {
+      const data = { password: true };
 
-      const result = validateDto(dto);
-      const errors = getFieldErrors<CreateAccountDto>(result, 'password');
-
-      expect(errors?.constraints).toHaveProperty('isString', 'Senha deve ser do tipo string.');
+      expect.assertions(2);
+      return target.transform(data, metadata).catch(err => {
+        expect(err).toBeInstanceOf(BadRequestException);
+        expect(err.getResponse().message).toContain('Campo senha deve ser do tipo string.');
+      });
     });
 
-    it('should throw an error about invalid type when providing an object to password', () => {
-      const dto = new CreateAccountDto();
-      dto.password = ({} as unknown as string);
+    it('should throw an error about invalid type when providing an object to password', async() => {
+      const data = { password: {} };
 
-      const result = validateDto(dto);
-      const errors = getFieldErrors<CreateAccountDto>(result, 'password');
-
-      expect(errors?.constraints).toHaveProperty('isString', 'Senha deve ser do tipo string.');
+      expect.assertions(2);
+      return target.transform(data, metadata).catch(err => {
+        expect(err).toBeInstanceOf(BadRequestException);
+        expect(err.getResponse().message).toContain('Campo senha deve ser do tipo string.');
+      });
     });
 
-    it('should throw an error about invalid type when providing an array to password', () => {
-      const dto = new CreateAccountDto();
-      dto.password = ([] as unknown as string);
+    it('should throw an error about invalid type when providing an array to password', async() => {
+      const data = { password: [] };
 
-      const result = validateDto(dto);
-      const errors = getFieldErrors<CreateAccountDto>(result, 'password');
-
-      expect(errors?.constraints).toHaveProperty('isString', 'Senha deve ser do tipo string.');
+      expect.assertions(2);
+      return target.transform(data, metadata).catch(err => {
+        expect(err).toBeInstanceOf(BadRequestException);
+        expect(err.getResponse().message).toContain('Campo senha deve ser do tipo string.');
+      });
     });
 
-    it('should throw an error when providing a password with 7 characters', () => {
-      const dto = new CreateAccountDto();
-      dto.password = '1234567';
+    it('should not throw an error when providing an invalid password', async() => {
+      const data = { password: '1234567' };
 
-      const result = validateDto(dto);
-      const errors = getFieldErrors<CreateAccountDto>(result, 'password');
-
-      expect(errors?.constraints).toHaveProperty('minLength', 'Senha deve conter, no mínimo, 8 caracteres.');
+      expect.assertions(2);
+      return target.transform(data, metadata).catch(err => {
+        expect(err).toBeInstanceOf(BadRequestException);
+        expect(err.getResponse().message).toContain('Campo senha deve conter, no mínimo, 8 caracteres.');
+      });
     });
 
-    it('should not throw an error when providing a password with 8 characters', () => {
-      const dto = new CreateAccountDto();
-      dto.password = '12345678';
+    it('should not throw an error when providing an valid password', async() => {
+      const data = { password: '12345678' };
 
-      const result = validateDto(dto);
-      const errors = getFieldErrors<CreateAccountDto>(result, 'password');
-
-      expect(errors?.constraints).toBeUndefined();
+      expect.assertions(2);
+      return target.transform(data, metadata).catch(err => {
+        expect(err).toBeInstanceOf(BadRequestException);
+        expect(err.getResponse().message).not.toEqual(expect.arrayContaining([expect.stringMatching(/Campo senha/)]));
+      });
     });
   });
 
   describe('all fields together', () => {
-    it('should return no errors', () => {
-      const dto = new CreateAccountDto();
-      dto.name = 'valid name';
-      dto.email = 'valid@emai.com';
-      dto.password = '123456789';
+    it('should pass all tests', async() => {
+      const data: CreateAccountDto = {
+        name: ' Jhon Doe ',
+        email: 'jhondoe@email.com  ',
+        password: '  123456789',
+      };
 
-      const result = validateDto(dto);
+      const result = await target.transform(data, metadata);
 
-      expect(result).toBeArrayOfSize(0);
+      expect(result).toBeInstanceOf(CreateAccountDto);
+      expect(result.name).toEqualIgnoringWhitespace(data.name);
+      expect(result.email).toEqualIgnoringWhitespace(data.email);
+      expect(result.password).toEqualIgnoringWhitespace(data.password);
     });
   });
 });

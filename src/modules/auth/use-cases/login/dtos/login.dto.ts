@@ -3,19 +3,19 @@ import { Trim } from 'src/shared/validators/decorators/trim';
 
 export class LoginDto {
   @IsString({
-    message: 'Email deve ser do tipo string.',
+    message: 'Campo email deve ser do tipo string.',
   })
   @IsNotEmpty({
-    message: 'Email é um campo obrigatório.',
+    message: 'Campo email é um campo obrigatório.',
   })
   @Trim()
   email: string;
 
   @IsString({
-    message: 'Senha deve ser do tipo string.',
+    message: 'Campo senha deve ser do tipo string.',
   })
   @IsNotEmpty({
-    message: 'Senha é um campo obrigatório.',
+    message: 'Campo senha é um campo obrigatório.',
   })
   @Trim()
   password: string;

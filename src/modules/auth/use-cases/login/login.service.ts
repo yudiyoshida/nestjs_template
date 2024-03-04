@@ -22,13 +22,12 @@ export class LoginService {
     }
 
     const isPasswordCorrect = this.hashingService.compare(credentials.password, account.password);
-    if (!isPasswordCorrect) {
-      throw new BadRequestException('Credenciais incorretas.');
+    if (isPasswordCorrect) {
+      const payload: PayloadDto = { sub: account.id };
+      const accessToken = this.jwtService.sign(payload, { secret: process.env.JWT_SECRET });
+
+      return { accessToken };
     }
-
-    const payload: PayloadDto = { sub: account.id };
-    const accessToken = this.jwtService.sign(payload, { secret: process.env.JWT_SECRET });
-
-    return { accessToken };
+    throw new BadRequestException('Credenciais incorretas.');
   }
 }
