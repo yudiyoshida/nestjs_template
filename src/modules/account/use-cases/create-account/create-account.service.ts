@@ -26,7 +26,7 @@ export class CreateAccountService {
     const accountPermissions = this.setUserPermissions();
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, permissions, ...newAccount } = await this.accountRepository.save(data, accountPermissions);
+    const { password, permissions, ...newAccount } = await this.accountRepository.save(data, 'ativo', accountPermissions);
 
     return newAccount;
   }

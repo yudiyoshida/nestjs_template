@@ -18,6 +18,7 @@ const account: Account = {
   name: 'Jhon Doe',
   email: 'jhondoe@email.com',
   password: '123456789',
+  status: 'ativo',
   permissions: [],
 };
 

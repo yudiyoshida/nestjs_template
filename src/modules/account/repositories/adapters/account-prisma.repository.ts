@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, PrismaAccountStatus } from '@prisma/client';
 import { PrismaService } from 'src/database/prisma/prisma.service';
 import { IAccountRepository } from '../account-repository.interface';
 
@@ -23,11 +23,13 @@ export class AccountPrismaAdapterRepository implements IAccountRepository {
 
   public save(
     data: Prisma.AccountCreateWithoutPermissionsInput,
+    status: PrismaAccountStatus,
     permissions: Prisma.AccountPermissionCreateInput[]
   ) {
     return this.prisma.account.create({
       data: {
         ...data,
+        status,
         permissions: {
           createMany: { data: permissions },
         },

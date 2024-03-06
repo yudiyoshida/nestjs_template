@@ -10,6 +10,7 @@ const account: Account = {
   name: 'Jhon Doe',
   email: 'jhondoe@email.com',
   password: '123abc456',
+  status: 'pendente',
   permissions: [],
 };
 

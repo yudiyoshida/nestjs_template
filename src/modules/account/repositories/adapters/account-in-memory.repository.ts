@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { AccountPermission } from '../../entities/account-permission.entity';
 import { Account } from '../../entities/account.entity';
+import { AccountStatus } from '../../types/account-status.type';
 import { CreateAccountDto } from '../../use-cases/create-account/dtos/create-account.dto';
 import { IAccountRepository } from '../account-repository.interface';
 
@@ -20,9 +21,9 @@ export class AccountInMemoryAdapterRepository implements IAccountRepository {
     return account ?? null;
   }
 
-  public async save(data: CreateAccountDto, permissions: AccountPermission[]) {
+  public async save(data: CreateAccountDto, status: AccountStatus, permissions: AccountPermission[]) {
     const now = new Date().getTime();
-    const newAccount = { id: now.toString(), ...data, permissions };
+    const newAccount = { id: now.toString(), ...data, status, permissions };
 
     this._accounts.push(newAccount);
 

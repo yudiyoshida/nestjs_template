@@ -12,6 +12,7 @@ model Account {
   name        String              @db.VarChar(512)
   email       String              @unique @db.VarChar(512)
   password    String              @db.Text
+  status      PrismaAccountStatus
   permissions AccountPermission[]
 }
 
@@ -20,4 +21,10 @@ model AccountPermission {
   action    String
   account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
   accountId String
+}
+
+enum PrismaAccountStatus {
+  ativo
+  inativo
+  pendente
 }
