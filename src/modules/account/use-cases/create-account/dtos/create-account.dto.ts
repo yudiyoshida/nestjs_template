@@ -1,13 +1,15 @@
-import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
 import { Trim } from 'src/shared/validators/decorators/trim';
 
-// TODO: adicionar decorator para tamanho maximo de nome e email (255 caracteres).
 export class CreateAccountDto {
   @IsString({
     message: 'Campo nome deve ser do tipo string.',
   })
   @IsNotEmpty({
     message: 'Campo nome é um campo obrigatório.',
+  })
+  @MaxLength(512, {
+    message: 'Campo nome deve ter, no máximo, 512 caracteres.',
   })
   @Trim()
   name: string;
@@ -17,6 +19,9 @@ export class CreateAccountDto {
   })
   @IsNotEmpty({
     message: 'Campo email é um campo obrigatório.',
+  })
+  @MaxLength(512, {
+    message: 'Campo email deve ter, no máximo, 512 caracteres.',
   })
   @Trim()
   email: string;

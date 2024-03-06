@@ -76,6 +76,16 @@ describe('CreateAccountDto', () => {
       });
     });
 
+    it('should throw an error about length when providing a string bigger than 512 characters to name', async() => {
+      const data = { name: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. In in turpis vel mi finibus elementum pretium at nulla. Vestibulum dignissim vehicula dolor, et finibus velit tempus ac. Sed in urna tristique, consequat dui non, faucibus ipsum. Mauris mauris arcu, efficitur et felis eu, molestie viverra orci. Quisque elementum viverra leo. Sed venenatis lacus justo. Aliquam risus elit, consequat tristique eleifend vel, cursus nec arcu. Aenean quis mi lorem. Lorem ipsum dolor sit amet, consectetur adipiscing viverra..' };
+
+      expect.assertions(2);
+      return target.transform(data, metadata).catch(err => {
+        expect(err).toBeInstanceOf(BadRequestException);
+        expect(err.getResponse().message).toContain('Campo nome deve ter, no máximo, 512 caracteres.');
+      });
+    });
+
     it('should not throw an error when providing a string to name', async() => {
       const data = { name: 'jhon doe' };
 
@@ -145,6 +155,16 @@ describe('CreateAccountDto', () => {
       return target.transform(data, metadata).catch(err => {
         expect(err).toBeInstanceOf(BadRequestException);
         expect(err.getResponse().message).toContain('Campo email inválido.');
+      });
+    });
+
+    it('should throw an error about length when providing a string bigger than 512 characters to email', async() => {
+      const data = { email: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. In in turpis vel mi finibus elementum pretium at nulla. Vestibulum dignissim vehicula dolor, et finibus velit tempus ac. Sed in urna tristique, consequat dui non, faucibus ipsum. Mauris mauris arcu, efficitur et felis eu, molestie viverra orci. Quisque elementum viverra leo. Sed venenatis lacus justo. Aliquam risus elit, consequat tristique eleifend vel, cursus nec arcu. Aenean quis mi lorem. Lorem ipsum dolor sit amet, consectetur adipiscing viverra..' };
+
+      expect.assertions(2);
+      return target.transform(data, metadata).catch(err => {
+        expect(err).toBeInstanceOf(BadRequestException);
+        expect(err.getResponse().message).toContain('Campo email deve ter, no máximo, 512 caracteres.');
       });
     });
 
