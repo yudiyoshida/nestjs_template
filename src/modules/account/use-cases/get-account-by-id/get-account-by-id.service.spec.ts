@@ -63,7 +63,7 @@ describe('GetAccountByIdService', () => {
 
     return service.execute('id').catch(err => {
       expect(err).toBeInstanceOf(NotFoundException);
-      expect(err.response.message).toEqual('Conta não encontrada na base de dados.');
+      expect(err.response.message).toBe('Conta não encontrada na base de dados.');
     });
   });
 });

@@ -1,6 +1,7 @@
 import { ConflictException, Inject, Injectable } from '@nestjs/common';
 import { AccountPermissionEnum } from 'src/modules/auth/enums/permissions.enum';
 import { TOKENS } from 'src/shared/di/tokens';
+import { Errors } from 'src/shared/errors/error-message';
 import { IHashingService } from 'src/shared/helpers/hashing/hashing.interface';
 import { AccountPermission } from '../../entities/account-permission.entity';
 import { IAccountRepository } from '../../repositories/account-repository.interface';
@@ -16,7 +17,7 @@ export class CreateAccountService {
   public async execute(data: CreateAccountDto) {
     const emailIsNotUnique = await this.accountRepository.findByEmail(data.email);
     if (emailIsNotUnique) {
-      throw new ConflictException('Email já está sendo utilizado.');
+      throw new ConflictException(Errors.EMAIL_IS_NOT_UNIQUE);
     }
 
     // hash password.

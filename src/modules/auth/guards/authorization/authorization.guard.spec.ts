@@ -39,7 +39,7 @@ describe('AuthorizationGuard', () => {
 
     return guard.canActivate(ctx).catch(err => {
       expect(err).toBeInstanceOf(ForbiddenException);
-      expect(err.response.message).toBe('Você não possui permissão para acessar este recurso.');
+      expect(err.response.message).toBe('Acesso negado.');
       expect(mockReflector.getAllAndOverride).toHaveBeenCalledOnce();
     });
   });
@@ -94,7 +94,7 @@ describe('AuthorizationGuard', () => {
 
     return guard.canActivate(ctx).catch(err => {
       expect(err).toBeInstanceOf(ForbiddenException);
-      expect(err.response.message).toBe('Você não possui permissão para acessar este recurso.');
+      expect(err.response.message).toBe('Acesso negado.');
       expect(mockReflector.getAllAndOverride).toHaveBeenCalledOnce();
     });
   });

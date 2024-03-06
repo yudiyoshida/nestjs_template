@@ -2,6 +2,7 @@ import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { GetAccountByEmailService } from 'src/modules/account/use-cases/get-account-by-email/get-account-by-email.service';
 import { TOKENS } from 'src/shared/di/tokens';
+import { Errors } from 'src/shared/errors/error-message';
 import { IHashingService } from 'src/shared/helpers/hashing/hashing.interface';
 import { PayloadDto } from '../../types/payload.type';
 import { LoginDto } from './dtos/login.dto';
@@ -17,7 +18,7 @@ export class LoginService {
   public async execute(credentials: LoginDto) {
     const account = await this.getAccountByEmailService.execute(credentials.email);
     if (!account) {
-      throw new BadRequestException('Credenciais incorretas.');
+      throw new BadRequestException(Errors.INCORRECT_CREDENTIALS);
     }
 
     const isPasswordCorrect = this.hashingService.compare(credentials.password, account.password);
@@ -27,6 +28,6 @@ export class LoginService {
 
       return { accessToken };
     }
-    throw new BadRequestException('Credenciais incorretas.');
+    throw new BadRequestException(Errors.INCORRECT_CREDENTIALS);
   }
 }

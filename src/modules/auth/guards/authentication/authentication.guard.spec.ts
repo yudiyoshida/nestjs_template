@@ -41,7 +41,7 @@ describe('AuthenticationGuard', () => {
 
     return guard.canActivate(ctx).catch(err => {
       expect(err).toBeInstanceOf(UnauthorizedException);
-      expect(err.response.message).toBe('É necessário estar autenticado.');
+      expect(err.response.message).toBe('É necessário estar autenticado para prosseguir.');
 
       expect(mockJwtService.verify).not.toHaveBeenCalled();
       expect(mockGetAccountByIdService.execute).not.toHaveBeenCalled();
@@ -56,7 +56,7 @@ describe('AuthenticationGuard', () => {
 
     return guard.canActivate(ctx).catch(err => {
       expect(err).toBeInstanceOf(UnauthorizedException);
-      expect(err.response.message).toBe('É necessário estar autenticado.');
+      expect(err.response.message).toBe('É necessário estar autenticado para prosseguir.');
 
       expect(mockJwtService.verify).not.toHaveBeenCalled();
       expect(mockGetAccountByIdService.execute).not.toHaveBeenCalled();
@@ -72,7 +72,7 @@ describe('AuthenticationGuard', () => {
 
     return guard.canActivate(ctx).catch(err => {
       expect(err).toBeInstanceOf(UnauthorizedException);
-      expect(err.response.message).toBe('É necessário estar autenticado.');
+      expect(err.response.message).toBe('É necessário estar autenticado para prosseguir.');
 
       expect(mockJwtService.verify).toHaveBeenCalledOnce();
       expect(mockGetAccountByIdService.execute).not.toHaveBeenCalled();

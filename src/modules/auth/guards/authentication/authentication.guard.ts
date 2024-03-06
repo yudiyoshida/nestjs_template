@@ -2,6 +2,7 @@ import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { GetAccountByIdService } from 'src/modules/account/use-cases/get-account-by-id/get-account-by-id.service';
+import { Errors } from 'src/shared/errors/error-message';
 import { PayloadDto } from '../../types/payload.type';
 
 @Injectable()
@@ -27,7 +28,7 @@ export class AuthenticationGuard implements CanActivate {
       return true;
 
     } catch {
-      throw new UnauthorizedException('É necessário estar autenticado.');
+      throw new UnauthorizedException(Errors.UNAUTHORIZED);
 
     }
   }
