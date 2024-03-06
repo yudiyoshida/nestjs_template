@@ -12,6 +12,10 @@ describe('PaginationService', () => {
     service = unit;
   });
 
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
+
   it('should return all items in the first page', () => {
     const result = service.execute([data, data.length], 1, 10);
 

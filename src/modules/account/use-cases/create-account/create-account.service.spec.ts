@@ -35,16 +35,21 @@ describe('CreateAccountService', () => {
     mockRepository = unitRef.get(TOKENS.IAccountRepository);
   });
 
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
+
   it('should throw an error when the email provided already exists', async() => {
     mockRepository.findByEmail.mockResolvedValue(account);
 
     // this line is here because a fulfilled promise won't fail the test.
-    expect.assertions(4);
+    expect.assertions(5);
 
     return service.execute({ ...data }).catch(err => {
       expect(err).toBeInstanceOf(ConflictException);
       expect(err.response.message).toBe('Email já está sendo utilizado.');
 
+      expect(mockRepository.findByEmail).toHaveBeenCalledExactlyOnceWith(data.email);
       expect(mockHashing.hash).not.toHaveBeenCalled();
       expect(mockRepository.save).not.toHaveBeenCalled();
     });
@@ -52,13 +57,30 @@ describe('CreateAccountService', () => {
 
   it('should create a new account when the email provided is unique', async() => {
     mockRepository.findByEmail.mockResolvedValue(null);
+    mockRepository.save.mockResolvedValue({} as Account);
+    mockHashing.hash.mockReturnValue('hashed-password');
+
+    const result = await service.execute({ ...data });
+
+    expect(result).toEqual({});
+    expect(mockRepository.findByEmail).toHaveBeenCalledOnce();
+    expect(mockHashing.hash).toHaveBeenCalledExactlyOnceWith(data.password);
+    expect(mockRepository.save).toHaveBeenCalledOnce();
+  });
+
+  it('should not return the password and permissions when creating an account', async() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, permissions, ...expectedResult } = account;
+
+    mockRepository.findByEmail.mockResolvedValue(null);
     mockRepository.save.mockResolvedValue(account);
     mockHashing.hash.mockReturnValue('hashed-password');
 
     const result = await service.execute({ ...data });
 
-    expect(result).toEqual(account);
+    expect(result).toEqual(expectedResult);
+    expect(mockRepository.findByEmail).toHaveBeenCalledOnce();
     expect(mockHashing.hash).toHaveBeenCalledExactlyOnceWith(data.password);
-    expect(mockRepository.save).toHaveBeenCalled();
+    expect(mockRepository.save).toHaveBeenCalledOnce();
   });
 });

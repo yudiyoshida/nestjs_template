@@ -4,7 +4,7 @@ import { Request } from 'express';
 
 import { GetAccountByIdService } from 'src/modules/account/use-cases/get-account-by-id/get-account-by-id.service';
 import { PERMISSION_KEY } from '../../decorators/set-permission.decorator';
-import { AccountPermissionsEnum } from '../../enums/permissions.enum';
+import { AccountPermissionEnum } from '../../enums/permissions.enum';
 
 @Injectable()
 export class AuthorizationGuard implements CanActivate {
@@ -15,7 +15,7 @@ export class AuthorizationGuard implements CanActivate {
 
   public async canActivate(ctx: ExecutionContext): Promise<boolean> {
     // handler first, then class. This way, the value in the controller will be overwritten by the method (more specific).
-    const permission = this.reflector.getAllAndOverride<AccountPermissionsEnum>(PERMISSION_KEY, [
+    const permission = this.reflector.getAllAndOverride<AccountPermissionEnum>(PERMISSION_KEY, [
       ctx.getHandler(),
       ctx.getClass(),
     ]);

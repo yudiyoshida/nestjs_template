@@ -1,3 +1,3 @@
-export enum AccountPermissionsEnum {
+export enum AccountPermissionEnum {
   PERMISSION_TEST = 'PERMISSION_TEST',
 };

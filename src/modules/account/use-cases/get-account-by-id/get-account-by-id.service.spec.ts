@@ -7,10 +7,10 @@ import { AccountInMemoryAdapterRepository } from '../../repositories/adapters/ac
 import { GetAccountByIdService } from './get-account-by-id.service';
 
 const account: Account = {
-  id: 'acc-id',
+  id: 'random-id',
   name: 'Jhon Doe',
   email: 'jhondoe@email.com',
-  password: '123456',
+  password: '123abc456',
   permissions: [],
 };
 
@@ -25,8 +25,12 @@ describe('GetAccountByIdService', () => {
     mockRepository = unitRef.get(TOKENS.IAccountRepository);
   });
 
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
+
   it('should call the repository with correct arguments', async() => {
-    mockRepository.findById.mockResolvedValue(account);
+    mockRepository.findById.mockResolvedValue({} as Account);
 
     await service.execute('id');
 
@@ -34,11 +38,21 @@ describe('GetAccountByIdService', () => {
   });
 
   it('should find a specific account', async() => {
+    mockRepository.findById.mockResolvedValue({} as Account);
+
+    const result = await service.execute('id');
+
+    expect(result).toEqual({});
+  });
+
+  it('should not return the account password', async() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...expectedResult } = account;
     mockRepository.findById.mockResolvedValue(account);
 
     const result = await service.execute('id');
 
-    expect(result).toEqual(account);
+    expect(result).toEqual(expectedResult);
   });
 
   it('should not find any account', async() => {

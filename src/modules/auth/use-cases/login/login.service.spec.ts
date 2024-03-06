@@ -1,4 +1,5 @@
 import { TestBed } from '@automock/jest';
+import { createMock } from '@golevelup/ts-jest';
 import { BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
@@ -8,14 +9,6 @@ import { TOKENS } from 'src/shared/di/tokens';
 import { BcryptAdapterService } from 'src/shared/helpers/hashing/adapters/bcrypt.service';
 import { LoginDto } from './dtos/login.dto';
 import { LoginService } from './login.service';
-
-const account: Account = {
-  id: 'random-id',
-  name: 'Jhon Doe',
-  email: 'jhondoe@email.com',
-  password: 'jhondoe',
-  permissions: [],
-};
 
 const credential: LoginDto = {
   email: 'jhondoe@email.com',
@@ -37,6 +30,10 @@ describe('LoginService', () => {
     mockJwtService = unitRef.get(JwtService);
   });
 
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
+
   it('should throw an error when cannot find an account with provided email', async() => {
     mockGetAccountByEmailService.execute.mockResolvedValue(null);
 
@@ -54,6 +51,8 @@ describe('LoginService', () => {
   });
 
   it('should throw an error when the provided password is incorrect', async() => {
+    const account = createMock<Account>({ password: 'hashed-password' });
+
     mockGetAccountByEmailService.execute.mockResolvedValue(account);
     mockHashingService.compare.mockReturnValue(false);
 
@@ -65,13 +64,13 @@ describe('LoginService', () => {
       expect(err.response.message).toBe('Credenciais incorretas.');
 
       expect(mockGetAccountByEmailService.execute).toHaveBeenCalledOnce();
-      expect(mockHashingService.compare).toHaveBeenCalledOnce();
+      expect(mockHashingService.compare).toHaveBeenCalledExactlyOnceWith(credential.password, account.password);
       expect(mockJwtService.sign).not.toHaveBeenCalled();
     });
   });
 
   it('should return an access token when provided credentials are correct', async() => {
-    mockGetAccountByEmailService.execute.mockResolvedValue(account);
+    mockGetAccountByEmailService.execute.mockResolvedValue({} as Account);
     mockHashingService.compare.mockReturnValue(true);
 
     const result = await service.execute({ ...credential });

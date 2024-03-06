@@ -17,19 +17,20 @@ function ctxMockFactory() {
   });
 };
 
-const accountWithNoPermission: Account = {
+const account = {
   id: 'acc-id',
   name: 'Jhon Doe',
   email: 'jhondoe@email.com',
   password: '123456',
+};
+
+const accountWithNoPermission: Account = {
+  ...account,
   permissions: [{ action: 'READ' }],
 };
 
 const accountWithPermission: Account = {
-  id: 'acc-id',
-  name: 'Jhon Doe',
-  email: 'jhondoe@email.com',
-  password: '123456',
+  ...account,
   permissions: [{ action: 'READ' }, { action: 'CREATE' }],
 };
 
@@ -46,16 +47,21 @@ describe('AuthorizationGuard', () => {
     mockGetAccountByIdService = unitRef.get(GetAccountByIdService);
   });
 
+  it('should be defined', () => {
+    expect(guard).toBeDefined();
+  });
+
   it('should throw an error when the route (that required authentication) does not define a permission', async() => {
     const ctx = ctxMockFactory();
     mockReflector.getAllAndOverride.mockReturnValue(null);
 
     // this line is here because a fulfilled promise won't fail the test.
-    expect.assertions(3);
+    expect.assertions(4);
 
     return guard.canActivate(ctx).catch(err => {
       expect(err).toBeInstanceOf(ForbiddenException);
       expect(err.response.message).toBe('Você não possui permissão para acessar este recurso.');
+      expect(mockReflector.getAllAndOverride).toHaveBeenCalled();
       expect(mockGetAccountByIdService.execute).not.toHaveBeenCalled();
     });
   });
@@ -66,11 +72,13 @@ describe('AuthorizationGuard', () => {
     mockGetAccountByIdService.execute.mockResolvedValue(accountWithNoPermission);
 
     // this line is here because a fulfilled promise won't fail the test.
-    expect.assertions(2);
+    expect.assertions(4);
 
     return guard.canActivate(ctx).catch(err => {
       expect(err).toBeInstanceOf(ForbiddenException);
       expect(err.response.message).toBe('Você não possui permissão para acessar este recurso.');
+      expect(mockReflector.getAllAndOverride).toHaveBeenCalled();
+      expect(mockGetAccountByIdService.execute).toHaveBeenCalled();
     });
   });
 
@@ -82,5 +90,7 @@ describe('AuthorizationGuard', () => {
     const result = await guard.canActivate(ctx);
 
     expect(result).toBeTrue();
+    expect(mockReflector.getAllAndOverride).toHaveBeenCalled();
+    expect(mockGetAccountByIdService.execute).toHaveBeenCalled();
   });
 });

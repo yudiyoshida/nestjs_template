@@ -1,6 +1,6 @@
 import { ConflictException, Inject, Injectable } from '@nestjs/common';
 
-import { AccountPermissionsEnum } from 'src/modules/auth/enums/permissions.enum';
+import { AccountPermissionEnum } from 'src/modules/auth/enums/permissions.enum';
 import { TOKENS } from 'src/shared/di/tokens';
 import { IHashingService } from 'src/shared/helpers/hashing/hashing.interface';
 import { AccountPermission } from '../../entities/account-permission.entity';
@@ -24,16 +24,18 @@ export class CreateAccountService {
     data.password = this.hashingService.hash(data.password);
 
     // define permissions.
-    const permissions = this.setUserPermissions();
+    const accountPermissions = this.setUserPermissions();
 
-    // create new account and return.
-    return this.accountRepository.save(data, permissions);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, permissions, ...newAccount } = await this.accountRepository.save(data, accountPermissions);
+
+    return newAccount;
   }
 
   private setUserPermissions() {
     const permissions: AccountPermission[] = [];
 
-    permissions.push({ action: AccountPermissionsEnum.PERMISSION_TEST });
+    permissions.push({ action: AccountPermissionEnum.PERMISSION_TEST });
 
     return permissions;
   }
