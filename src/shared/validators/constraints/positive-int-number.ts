@@ -1,16 +1,17 @@
 import { ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator';
 
-@ValidatorConstraint({ name: 'integer-positive-number', async: false })
+@ValidatorConstraint({ name: 'positive-integer-number', async: false })
 export class IsPositiveIntegerNumber implements ValidatorConstraintInterface {
-  public validate(text: any) {
-    if (typeof text !== 'number' && typeof text !== 'string') {
+  public validate(input: any) {
+    if (typeof input !== 'number' && typeof input !== 'string') {
       return false;
     }
 
-    const value = Number(text);
+    const value = Number(input);
     if (isNaN(value) || value <= 0 || !Number.isInteger(value)) {
       return false;
     }
+
     return true;
   }
 

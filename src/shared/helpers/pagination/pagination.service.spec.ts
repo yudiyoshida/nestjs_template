@@ -1,4 +1,4 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { TestBed } from '@automock/jest';
 import { PaginationService } from './pagination.service';
 
 const data = [1, 2, 3, 4, 5];
@@ -6,12 +6,10 @@ const data = [1, 2, 3, 4, 5];
 describe('PaginationService', () => {
   let service: PaginationService;
 
-  beforeEach(async() => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [PaginationService],
-    }).compile();
+  beforeEach(() => {
+    const { unit } = TestBed.create(PaginationService).compile();
 
-    service = module.get<PaginationService>(PaginationService);
+    service = unit;
   });
 
   it('should return all items in the first page', () => {

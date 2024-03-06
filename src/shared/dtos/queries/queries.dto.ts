@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, Validate } from 'class-validator';
-import { IsPositiveIntegerNumber } from 'src/shared/validators/constraints/int-positive-number';
+import { IsPositiveIntegerNumber } from 'src/shared/validators/constraints/positive-int-number';
 
 export class Queries {
   @ApiPropertyOptional()

@@ -1,4 +1,4 @@
-import { IsPositiveIntegerNumber } from './int-positive-number';
+import { IsPositiveIntegerNumber } from './positive-int-number';
 
 describe('IsPositiveIntegerNumber', () => {
   let target: IsPositiveIntegerNumber;

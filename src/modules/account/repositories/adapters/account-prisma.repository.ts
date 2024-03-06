@@ -4,12 +4,6 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/database/prisma/prisma.service';
 import { IAccountRepository } from '../account-repository.interface';
 
-const AccountSelect = {
-  id: true,
-  name: true,
-  email: true,
-} satisfies Prisma.AccountSelect;
-
 @Injectable()
 export class AccountPrismaAdapterRepository implements IAccountRepository {
   constructor(private prisma: PrismaService) {}
@@ -24,10 +18,7 @@ export class AccountPrismaAdapterRepository implements IAccountRepository {
   public findById(id: string) {
     return this.prisma.account.findUnique({
       where: { id },
-      select: {
-        ...AccountSelect,
-        permissions: true,
-      },
+      include: { permissions: true },
     });
   }
 
@@ -42,7 +33,7 @@ export class AccountPrismaAdapterRepository implements IAccountRepository {
           createMany: { data: permissions },
         },
       },
-      select: AccountSelect,
+      include: { permissions: true },
     });
   }
 }

@@ -11,14 +11,8 @@ export class AccountInMemoryAdapterRepository implements IAccountRepository {
 
   public async findById(id: string) {
     const account = this._accounts.find(account => account.id === id);
-    if (!account) {
-      return null;
-    }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...data } = account;
-
-    return data;
+    return account ?? null;
   }
 
   public async findByEmail(email: string) {
@@ -29,13 +23,10 @@ export class AccountInMemoryAdapterRepository implements IAccountRepository {
 
   public async save(data: CreateAccountDto, permissions: AccountPermission[]) {
     const now = new Date().getTime();
-    const newAccount = { id: now.toString(), ...data };
+    const newAccount = { id: now.toString(), ...data, permissions };
 
-    this._accounts.push({ ...newAccount, permissions });
+    this._accounts.push(newAccount);
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...body } = newAccount;
-
-    return body;
+    return newAccount;
   }
 }
