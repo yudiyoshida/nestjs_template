@@ -1,6 +1,5 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { OmitType } from '@nestjs/swagger';
-
 import { Swagger } from 'src/shared/decorators/swagger';
 import { Account } from '../../entities/account.entity';
 import { CreateAccountService } from './create-account.service';

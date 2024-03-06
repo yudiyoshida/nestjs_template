@@ -1,15 +1,18 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, Validate } from 'class-validator';
-import { IsPositiveIntegerNumber } from 'src/shared/validators/constraints/positive-int-number';
+import { IsPositiveIntegerNumber } from 'src/shared/validators/custom-validators/positive-int-number';
+import { StringToNumber } from 'src/shared/validators/decorators/string-to-number';
 
 export class Queries {
   @ApiPropertyOptional()
   @IsOptional()
   @Validate(IsPositiveIntegerNumber)
-  page: number;
+  @StringToNumber()
+  page?: number;
 
   @ApiPropertyOptional()
   @IsOptional()
   @Validate(IsPositiveIntegerNumber)
-  size: number;
+  @StringToNumber()
+  size?: number;
 }

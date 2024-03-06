@@ -1,5 +1,4 @@
 import { ArgumentMetadata, BadRequestException, ValidationPipe } from '@nestjs/common';
-
 import { pipeOptions } from 'src/config/validation-pipe';
 import { Queries } from './queries.dto';
 
@@ -242,13 +241,13 @@ describe('Queries', () => {
 
   describe('all fields together', () => {
     it('should pass all tests', async() => {
-      const data: Queries = { page: 4002, size: 8922 };
+      const data = { page: '4002', size: '8922' };
 
       const result = await target.transform(data, metadata);
 
       expect(result).toBeInstanceOf(Queries);
-      expect(result.page).toBe(data.page);
-      expect(result.size).toBe(data.size);
+      expect(result.page).toBe(+data.page);
+      expect(result.size).toBe(+data.size);
     });
   });
 });

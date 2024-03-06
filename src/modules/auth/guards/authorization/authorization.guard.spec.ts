@@ -2,7 +2,6 @@ import { TestBed } from '@automock/jest';
 import { createMock } from '@golevelup/ts-jest';
 import { ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-
 import { Account } from 'src/modules/account/entities/account.entity';
 import { GetAccountByIdService } from 'src/modules/account/use-cases/get-account-by-id/get-account-by-id.service';
 import { AuthorizationGuard } from './authorization.guard';

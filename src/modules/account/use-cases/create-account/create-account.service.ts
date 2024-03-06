@@ -1,5 +1,4 @@
 import { ConflictException, Inject, Injectable } from '@nestjs/common';
-
 import { AccountPermissionEnum } from 'src/modules/auth/enums/permissions.enum';
 import { TOKENS } from 'src/shared/di/tokens';
 import { IHashingService } from 'src/shared/helpers/hashing/hashing.interface';

@@ -1,6 +1,5 @@
 import { TestBed } from '@automock/jest';
 import { ConflictException } from '@nestjs/common';
-
 import { TOKENS } from 'src/shared/di/tokens';
 import { BcryptAdapterService } from 'src/shared/helpers/hashing/adapters/bcrypt.service';
 import { Account } from '../../entities/account.entity';

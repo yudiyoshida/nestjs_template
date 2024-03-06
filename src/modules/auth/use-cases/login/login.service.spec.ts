@@ -2,7 +2,6 @@ import { TestBed } from '@automock/jest';
 import { createMock } from '@golevelup/ts-jest';
 import { BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-
 import { Account } from 'src/modules/account/entities/account.entity';
 import { GetAccountByEmailService } from 'src/modules/account/use-cases/get-account-by-email/get-account-by-email.service';
 import { TOKENS } from 'src/shared/di/tokens';

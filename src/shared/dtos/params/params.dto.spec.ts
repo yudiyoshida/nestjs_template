@@ -1,5 +1,4 @@
 import { ArgumentMetadata, BadRequestException, ValidationPipe } from '@nestjs/common';
-
 import { pipeOptions } from 'src/config/validation-pipe';
 import { Params } from './params.dto';
 
@@ -78,12 +77,12 @@ describe('Params', () => {
     });
 
     it('should not throw an error when providing a string to id', async() => {
-      const data: Params = { id: 'string-id' };
+      const data: Params = { id: '   string-id   ' };
 
       const result = await target.transform(data, metadata);
 
       expect(result).toBeInstanceOf(Params);
-      expect(result.id).toBe(data.id);
+      expect(result.id).toBe(data.id.trim());
     });
   });
 });

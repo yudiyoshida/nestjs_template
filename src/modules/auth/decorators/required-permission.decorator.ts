@@ -1,6 +1,5 @@
 import { UseGuards, applyDecorators } from '@nestjs/common';
 import { ApiBearerAuth, ApiForbiddenResponse, ApiUnauthorizedResponse } from '@nestjs/swagger';
-
 import { ServerError } from 'src/shared/errors/error.entity';
 import { AccountPermissionEnum } from '../enums/permissions.enum';
 import { AuthenticationGuard } from '../guards/authentication/authentication.guard';

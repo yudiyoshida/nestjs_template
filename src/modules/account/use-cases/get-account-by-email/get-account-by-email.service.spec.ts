@@ -1,5 +1,4 @@
 import { TestBed } from '@automock/jest';
-
 import { TOKENS } from 'src/shared/di/tokens';
 import { Account } from '../../entities/account.entity';
 import { AccountInMemoryAdapterRepository } from '../../repositories/adapters/account-in-memory.repository';

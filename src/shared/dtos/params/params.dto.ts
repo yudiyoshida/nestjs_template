@@ -1,4 +1,5 @@
 import { IsNotEmpty, IsString } from 'class-validator';
+import { Trim } from 'src/shared/validators/decorators/trim';
 
 export class Params {
   @IsString({
@@ -7,5 +8,6 @@ export class Params {
   @IsNotEmpty({
     message: 'id é um campo obrigatório.',
   })
+  @Trim()
   id: string;
 }

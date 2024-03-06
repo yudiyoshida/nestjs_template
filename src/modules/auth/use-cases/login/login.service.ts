@@ -1,6 +1,5 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-
 import { GetAccountByEmailService } from 'src/modules/account/use-cases/get-account-by-email/get-account-by-email.service';
 import { TOKENS } from 'src/shared/di/tokens';
 import { IHashingService } from 'src/shared/helpers/hashing/hashing.interface';

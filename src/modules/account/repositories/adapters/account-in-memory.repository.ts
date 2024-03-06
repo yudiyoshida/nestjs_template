@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-
 import { AccountPermission } from '../../entities/account-permission.entity';
 import { Account } from '../../entities/account.entity';
 import { CreateAccountDto } from '../../use-cases/create-account/dtos/create-account.dto';

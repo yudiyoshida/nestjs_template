@@ -1,5 +1,4 @@
 import { TestBed } from '@automock/jest';
-
 import { LoginDto } from './dtos/login.dto';
 import { LoginController } from './login.controller';
 import { LoginService } from './login.service';

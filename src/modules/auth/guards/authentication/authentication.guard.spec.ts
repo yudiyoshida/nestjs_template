@@ -2,7 +2,6 @@ import { TestBed } from '@automock/jest';
 import { createMock } from '@golevelup/ts-jest';
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-
 import { AuthenticationGuard } from './authentication.guard';
 
 function ctxMockFactory(token: string) {
