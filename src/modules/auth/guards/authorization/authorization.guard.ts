@@ -1,16 +1,12 @@
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
-import { GetAccountByIdService } from 'src/modules/account/use-cases/get-account-by-id/get-account-by-id.service';
 import { PERMISSION_KEY } from '../../decorators/set-permission.decorator';
 import { AccountPermissionEnum } from '../../enums/permissions.enum';
 
 @Injectable()
 export class AuthorizationGuard implements CanActivate {
-  constructor(
-    private reflector: Reflector,
-    private getAccountByIdService: GetAccountByIdService
-  ) {}
+  constructor(private reflector: Reflector) {}
 
   public async canActivate(ctx: ExecutionContext): Promise<boolean> {
     // handler first, then class. This way, the value in the controller will be overwritten by the method (more specific).
@@ -24,8 +20,7 @@ export class AuthorizationGuard implements CanActivate {
         throw new Error();
       }
 
-      const request = ctx.switchToHttp().getRequest<Request>();
-      const account = await this.getAccountByIdService.execute(request.auth.sub);
+      const account = ctx.switchToHttp().getRequest<Request>().auth;
 
       const hasPermission = account.permissions.some(item => item.action === permission);
       if (!hasPermission) {

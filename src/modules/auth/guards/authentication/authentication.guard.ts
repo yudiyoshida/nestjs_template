@@ -1,11 +1,15 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
+import { GetAccountByIdService } from 'src/modules/account/use-cases/get-account-by-id/get-account-by-id.service';
 import { PayloadDto } from '../../types/payload.type';
 
 @Injectable()
 export class AuthenticationGuard implements CanActivate {
-  constructor(private jwtService: JwtService) {}
+  constructor(
+    private jwtService: JwtService,
+    private getAccountByIdService: GetAccountByIdService,
+  ) {}
 
   public async canActivate(ctx: ExecutionContext): Promise<boolean> {
     const request = ctx.switchToHttp().getRequest<Request>();
@@ -17,13 +21,15 @@ export class AuthenticationGuard implements CanActivate {
       }
 
       const payload = this.extractPayloadFromToken(token);
-      request.auth = payload;
+      const account = await this.getAccountByIdService.execute(payload.sub);
+
+      request.auth = account;
+      return true;
 
     } catch {
       throw new UnauthorizedException('É necessário estar autenticado.');
 
     }
-    return true;
   }
 
   private extractTokenFromHeader(request: Request): string | undefined {
