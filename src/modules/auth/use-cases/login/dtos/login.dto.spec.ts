@@ -4,7 +4,6 @@ import { LoginDto } from './login.dto';
 
 const metadata: ArgumentMetadata = {
   type: 'body',
-  data: '',
   metatype: LoginDto,
 };
 

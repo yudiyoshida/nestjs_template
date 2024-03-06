@@ -3,8 +3,7 @@ import { pipeOptions } from 'src/config/validation-pipe';
 import { Queries } from './queries.dto';
 
 const metadata: ArgumentMetadata = {
-  type: 'body',
-  data: '',
+  type: 'query',
   metatype: Queries,
 };
 

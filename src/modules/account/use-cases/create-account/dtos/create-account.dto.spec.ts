@@ -4,7 +4,6 @@ import { CreateAccountDto } from './create-account.dto';
 
 const metadata: ArgumentMetadata = {
   type: 'body',
-  data: '',
   metatype: CreateAccountDto,
 };
 

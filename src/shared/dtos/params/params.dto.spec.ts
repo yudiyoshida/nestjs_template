@@ -3,8 +3,7 @@ import { pipeOptions } from 'src/config/validation-pipe';
 import { Params } from './params.dto';
 
 const metadata: ArgumentMetadata = {
-  type: 'body',
-  data: '',
+  type: 'param',
   metatype: Params,
 };
 
