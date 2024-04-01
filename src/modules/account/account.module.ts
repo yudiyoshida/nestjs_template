@@ -2,7 +2,8 @@ import { Module } from '@nestjs/common';
 
 import { TOKENS } from 'src/shared/di/tokens';
 import { BcryptAdapterService } from 'src/shared/helpers/hashing/adapters/bcrypt.service';
-import { AccountPrismaAdapterRepository } from './repositories/adapters/account-prisma.repository';
+// import { AccountPrismaAdapterRepository } from './repositories/adapters/account-prisma.repository';
+import { AccountInMemoryAdapterRepository } from './repositories/adapters/account-in-memory.repository';
 
 import { CreateAccountController } from './use-cases/create-account/create-account.controller';
 import { CreateAccountService } from './use-cases/create-account/create-account.service';
@@ -20,7 +21,7 @@ import { GetAccountByIdService } from './use-cases/get-account-by-id/get-account
     GetAccountByIdService,
     {
       provide: TOKENS.IAccountRepository,
-      useClass: AccountPrismaAdapterRepository,
+      useClass: AccountInMemoryAdapterRepository,
     },
     {
       provide: TOKENS.IHashingService,
