@@ -1,9 +1,9 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { IHashingService } from 'src/infra/hashing/hashing.interface';
 import { GetAccountByEmailService } from 'src/modules/account/use-cases/get-account-by-email/get-account-by-email.service';
-import { TOKENS } from 'src/shared/di/tokens';
 import { Errors } from 'src/shared/errors/error-message';
-import { IHashingService } from 'src/shared/helpers/hashing/hashing.interface';
+import { TOKENS } from 'src/shared/ioc/tokens';
 import { PayloadDto } from '../../types/payload.type';
 import { LoginDto } from './dtos/login.dto';
 

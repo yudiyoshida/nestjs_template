@@ -1,5 +1,5 @@
-export class PaginationDto {
-  data: any[];
+export class PaginationDto<T> {
+  data: T[];
   currentPage: number;
   itemsPerPage: number;
   totalItems: number;

@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppRouterModule } from './app-router.module';
 
-import { PrismaModule } from './database/prisma/prisma.module';
+import { PrismaModule } from './infra/database/prisma/prisma.module';
 import { AccountModule } from './modules/account/account.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { JwtAuthModule } from './modules/auth/jwt.module';
@@ -18,7 +18,5 @@ import { JwtAuthModule } from './modules/auth/jwt.module';
     AuthModule,
     JwtAuthModule,
   ],
-  controllers: [],
-  providers: [],
 })
 export class AppModule {}

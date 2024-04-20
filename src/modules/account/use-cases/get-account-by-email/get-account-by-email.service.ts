@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { TOKENS } from 'src/shared/di/tokens';
+import { TOKENS } from 'src/shared/ioc/tokens';
 import { IAccountRepository } from '../../repositories/account-repository.interface';
 
 @Injectable()

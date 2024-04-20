@@ -2,10 +2,10 @@ import { TestBed } from '@automock/jest';
 import { createMock } from '@golevelup/ts-jest';
 import { BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { BcryptAdapterService } from 'src/infra/hashing/adapters/bcrypt.service';
 import { Account } from 'src/modules/account/entities/account.entity';
 import { GetAccountByEmailService } from 'src/modules/account/use-cases/get-account-by-email/get-account-by-email.service';
-import { TOKENS } from 'src/shared/di/tokens';
-import { BcryptAdapterService } from 'src/shared/helpers/hashing/adapters/bcrypt.service';
+import { TOKENS } from 'src/shared/ioc/tokens';
 import { LoginDto } from './dtos/login.dto';
 import { LoginService } from './login.service';
 

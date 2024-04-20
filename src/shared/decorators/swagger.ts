@@ -10,10 +10,10 @@ import {
   ApiOperation,
   ApiTags,
   ApiUnsupportedMediaTypeResponse,
+  getSchemaPath,
 } from '@nestjs/swagger';
 
 import { ClientError, ServerError } from '../errors/error.entity';
-import { PaginationDto } from '../helpers/pagination/pagination.dto';
 
 type swaggerProps = {
   tags: string[];
@@ -34,7 +34,7 @@ export function Swagger(props: swaggerProps) {
     ApiOperation({ summary: props.summary, description: props.description }),
 
     applyOkResponse(props.okResponse),
-    applyOkPaginatedResponse(props.applyOkPaginatedResponse),
+    applyOkPaginatedResponse(props.applyOkPaginatedResponse ? props.okResponse : null),
     applyCreatedResponse(props.createdResponse),
     applyBadRequestResponse(props.applyBadRequest),
     applyNotFoundResponse(props.applyNotFound),
@@ -49,8 +49,23 @@ function applyOkResponse(type?: any) {
   return type ? ApiOkResponse({ type, description: 'OK' }) : () => {};
 }
 
-function applyOkPaginatedResponse(apply?: boolean) {
-  return apply ? ApiAcceptedResponse({ type: PaginationDto, description: 'Paginação. O objeto dentro de \'data\' é o mesmo objeto de cima ↑↑' }) : () => {};
+function applyOkPaginatedResponse(type?: any) {
+  return type ?
+    ApiAcceptedResponse({
+      description: 'A paginação NÃO retorna http status 202, mas sim 200. Apenas documentei dessa forma para não dar conflito com a response de cima.',
+      schema: {
+        properties: {
+          data: {
+            type: 'array',
+            items: { $ref: getSchemaPath(type) },
+          },
+          currentPage: { type: 'number' },
+          itemsPerPage: { type: 'number' },
+          totalItems: { type: 'number' },
+          totalPages: { type: 'number' },
+        },
+      },
+    }) : () => {};
 };
 
 function applyCreatedResponse(type?: any) {

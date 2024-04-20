@@ -1,250 +1,316 @@
-import { ArgumentMetadata, BadRequestException, ValidationPipe } from '@nestjs/common';
-import { pipeOptions } from 'src/config/validation-pipe';
-import { Queries } from './queries.dto';
+import { BadRequestException } from '@nestjs/common';
+import { dtoValidator } from 'src/shared/validators/dto-validator';
+import { QueriesDto } from './queries.dto';
 
-const metadata: ArgumentMetadata = {
-  type: 'query',
-  metatype: Queries,
-};
-
-describe('Queries', () => {
-  let target!: ValidationPipe;
-
-  beforeAll(() => {
-    target = new ValidationPipe(pipeOptions);
-  });
-
+describe('QueriesDto', () => {
   describe('page field', () => {
     it('should throw an error when providing a string to page', async() => {
+      // Arrange
       const data = { page: 'abc' };
 
-      expect.assertions(2);
-      return target.transform(data, metadata).catch(err => {
+      // Act & Assert
+      expect.assertions(3);
+      return dtoValidator(QueriesDto, data).catch(err => {
         expect(err).toBeInstanceOf(BadRequestException);
-        expect(err.getResponse().message).toContain('page deve ser um número inteiro positivo.');
+        expect(err.getResponse().message).toContain('page deve ser um número inteiro.');
+        expect(err.getResponse().message).toContain('page deve ser um número positivo.');
       });
     });
 
     it('should throw an error when providing a boolean to page', async() => {
+      // Arrange
       const data = { page: true };
 
-      expect.assertions(2);
-      return target.transform(data, metadata).catch(err => {
+      // Act & Assert
+      expect.assertions(3);
+      return dtoValidator(QueriesDto, data).catch(err => {
         expect(err).toBeInstanceOf(BadRequestException);
-        expect(err.getResponse().message).toContain('page deve ser um número inteiro positivo.');
+        expect(err.getResponse().message).toContain('page deve ser um número inteiro.');
+        expect(err.getResponse().message).toContain('page deve ser um número positivo.');
       });
     });
 
     it('should throw an error when providing an object to page', async() => {
+      // Arrange
       const data = { page: {} };
 
-      expect.assertions(2);
-      return target.transform(data, metadata).catch(err => {
+      // Act & Assert
+      expect.assertions(3);
+      return dtoValidator(QueriesDto, data).catch(err => {
         expect(err).toBeInstanceOf(BadRequestException);
-        expect(err.getResponse().message).toContain('page deve ser um número inteiro positivo.');
+        expect(err.getResponse().message).toContain('page deve ser um número inteiro.');
+        expect(err.getResponse().message).toContain('page deve ser um número positivo.');
       });
     });
 
     it('should throw an error when providing an array to page', async() => {
+      // Arrange
       const data = { page: [] };
 
-      expect.assertions(2);
-      return target.transform(data, metadata).catch(err => {
+      // Act & Assert
+      expect.assertions(3);
+      return dtoValidator(QueriesDto, data).catch(err => {
         expect(err).toBeInstanceOf(BadRequestException);
-        expect(err.getResponse().message).toContain('page deve ser um número inteiro positivo.');
+        expect(err.getResponse().message).toContain('page deve ser um número inteiro.');
+        expect(err.getResponse().message).toContain('page deve ser um número positivo.');
       });
     });
 
-    it('should throw an error when providing a decimal number to page', async() => {
+    it('should throw an error when providing a positive decimal number to page', async() => {
+      // Arrange
       const data = { page: 1.4 };
 
+      // Act & Assert
       expect.assertions(2);
-      return target.transform(data, metadata).catch(err => {
+      return dtoValidator(QueriesDto, data).catch(err => {
         expect(err).toBeInstanceOf(BadRequestException);
-        expect(err.getResponse().message).toContain('page deve ser um número inteiro positivo.');
+        expect(err.getResponse().message).toContain('page deve ser um número inteiro.');
+      });
+    });
+
+    it('should throw an error when providing a negative decimal number to page', async() => {
+      // Arrange
+      const data = { page: -8.6 };
+
+      // Act & Assert
+      expect.assertions(3);
+      return dtoValidator(QueriesDto, data).catch(err => {
+        expect(err).toBeInstanceOf(BadRequestException);
+        expect(err.getResponse().message).toContain('page deve ser um número inteiro.');
+        expect(err.getResponse().message).toContain('page deve ser um número positivo.');
       });
     });
 
     it('should throw an error when providing zero to page', async() => {
+      // Arrange
       const data = { page: 0 };
 
+      // Act & Assert
       expect.assertions(2);
-      return target.transform(data, metadata).catch(err => {
+      return dtoValidator(QueriesDto, data).catch(err => {
         expect(err).toBeInstanceOf(BadRequestException);
-        expect(err.getResponse().message).toContain('page deve ser um número inteiro positivo.');
+        expect(err.getResponse().message).toContain('page deve ser um número positivo.');
       });
     });
 
-    it('should throw an error when providing negative number to page', async() => {
+    it('should throw an error when providing a negative integer number to page', async() => {
+      // Arrange
       const data = { page: -1 };
 
+      // Act & Assert
       expect.assertions(2);
-      return target.transform(data, metadata).catch(err => {
+      return dtoValidator(QueriesDto, data).catch(err => {
         expect(err).toBeInstanceOf(BadRequestException);
-        expect(err.getResponse().message).toContain('page deve ser um número inteiro positivo.');
+        expect(err.getResponse().message).toContain('page deve ser um número positivo.');
       });
     });
 
-    it('should not throw an error when providing a int number to page (string)', async() => {
-      const data = { size: 'abc', page: '3' };
+    it('should not throw an error when providing a positive integer number to page (string)', async() => {
+      // Arrange
+      const data = { page: '3' };
 
-      expect.assertions(2);
-      return target.transform(data, metadata).catch(err => {
-        expect(err).toBeInstanceOf(BadRequestException);
-        expect(err.getResponse().message).not.toEqual(expect.arrayContaining([expect.stringMatching(/page/)]));
-      });
+      // Act
+      const result = await dtoValidator(QueriesDto, data);
+
+      // Assert
+      expect(result).toBeInstanceOf(QueriesDto);
+      expect(result).toHaveProperty('page', 3);
     });
 
-    it('should not throw an error when providing a int number to page (number)', async() => {
-      const data = { size: 'abc', page: 3 };
+    it('should not throw an error when providing a positive integer number to page (number)', async() => {
+      // Arrange
+      const data = { page: 3 };
 
-      expect.assertions(2);
-      return target.transform(data, metadata).catch(err => {
-        expect(err).toBeInstanceOf(BadRequestException);
-        expect(err.getResponse().message).not.toEqual(expect.arrayContaining([expect.stringMatching(/page/)]));
-      });
+      // Act
+      const result = await dtoValidator(QueriesDto, data);
+
+      // Assert
+      expect(result).toBeInstanceOf(QueriesDto);
+      expect(result).toHaveProperty('page', 3);
     });
 
     it('should not throw an error when not providing any page', async() => {
-      const data = { size: 'abc' };
+      // Arrange
+      const data = { };
 
-      expect.assertions(2);
-      return target.transform(data, metadata).catch(err => {
-        expect(err).toBeInstanceOf(BadRequestException);
-        expect(err.getResponse().message).not.toEqual(expect.arrayContaining([expect.stringMatching(/page/)]));
-      });
+      // Act
+      const result = await dtoValidator(QueriesDto, data);
+
+      // Assert
+      expect(result).toBeInstanceOf(QueriesDto);
     });
 
     it('should not throw an error when providing null to page', async() => {
-      const data = { size: 'abc', page: null };
+      // Arrange
+      const data = { page: null };
 
-      expect.assertions(2);
-      return target.transform(data, metadata).catch(err => {
-        expect(err).toBeInstanceOf(BadRequestException);
-        expect(err.getResponse().message).not.toEqual(expect.arrayContaining([expect.stringMatching(/page/)]));
-      });
+      // Act
+      const result = await dtoValidator(QueriesDto, data);
+
+      // Assert
+      expect(result).toBeInstanceOf(QueriesDto);
     });
   });
 
   describe('size field', () => {
     it('should throw an error when providing a string to size', async() => {
+      // Arrange
       const data = { size: 'abc' };
 
-      expect.assertions(2);
-      return target.transform(data, metadata).catch(err => {
+      // Act & Assert
+      expect.assertions(3);
+      return dtoValidator(QueriesDto, data).catch(err => {
         expect(err).toBeInstanceOf(BadRequestException);
-        expect(err.getResponse().message).toContain('size deve ser um número inteiro positivo.');
+        expect(err.getResponse().message).toContain('size deve ser um número inteiro.');
+        expect(err.getResponse().message).toContain('size deve ser um número positivo.');
       });
     });
 
     it('should throw an error when providing a boolean to size', async() => {
+      // Arrange
       const data = { size: true };
 
-      expect.assertions(2);
-      return target.transform(data, metadata).catch(err => {
+      // Act & Assert
+      expect.assertions(3);
+      return dtoValidator(QueriesDto, data).catch(err => {
         expect(err).toBeInstanceOf(BadRequestException);
-        expect(err.getResponse().message).toContain('size deve ser um número inteiro positivo.');
+        expect(err.getResponse().message).toContain('size deve ser um número inteiro.');
+        expect(err.getResponse().message).toContain('size deve ser um número positivo.');
       });
     });
 
     it('should throw an error when providing an object to size', async() => {
+      // Arrange
       const data = { size: {} };
 
-      expect.assertions(2);
-      return target.transform(data, metadata).catch(err => {
+      // Act & Assert
+      expect.assertions(3);
+      return dtoValidator(QueriesDto, data).catch(err => {
         expect(err).toBeInstanceOf(BadRequestException);
-        expect(err.getResponse().message).toContain('size deve ser um número inteiro positivo.');
+        expect(err.getResponse().message).toContain('size deve ser um número inteiro.');
+        expect(err.getResponse().message).toContain('size deve ser um número positivo.');
       });
     });
 
     it('should throw an error when providing an array to size', async() => {
+      // Arrange
       const data = { size: [] };
 
-      expect.assertions(2);
-      return target.transform(data, metadata).catch(err => {
+      // Act & Assert
+      expect.assertions(3);
+      return dtoValidator(QueriesDto, data).catch(err => {
         expect(err).toBeInstanceOf(BadRequestException);
-        expect(err.getResponse().message).toContain('size deve ser um número inteiro positivo.');
+        expect(err.getResponse().message).toContain('size deve ser um número inteiro.');
+        expect(err.getResponse().message).toContain('size deve ser um número positivo.');
       });
     });
 
-    it('should throw an error when providing a decimal number to size', async() => {
-      const data = { size: 10.89 };
+    it('should throw an error when providing a positive decimal number to size', async() => {
+      // Arrange
+      const data = { size: 1.4 };
 
+      // Act & Assert
       expect.assertions(2);
-      return target.transform(data, metadata).catch(err => {
+      return dtoValidator(QueriesDto, data).catch(err => {
         expect(err).toBeInstanceOf(BadRequestException);
-        expect(err.getResponse().message).toContain('size deve ser um número inteiro positivo.');
+        expect(err.getResponse().message).toContain('size deve ser um número inteiro.');
+      });
+    });
+
+    it('should throw an error when providing a negative decimal number to size', async() => {
+      // Arrange
+      const data = { size: -8.6 };
+
+      // Act & Assert
+      expect.assertions(3);
+      return dtoValidator(QueriesDto, data).catch(err => {
+        expect(err).toBeInstanceOf(BadRequestException);
+        expect(err.getResponse().message).toContain('size deve ser um número inteiro.');
+        expect(err.getResponse().message).toContain('size deve ser um número positivo.');
       });
     });
 
     it('should throw an error when providing zero to size', async() => {
+      // Arrange
       const data = { size: 0 };
 
+      // Act & Assert
       expect.assertions(2);
-      return target.transform(data, metadata).catch(err => {
+      return dtoValidator(QueriesDto, data).catch(err => {
         expect(err).toBeInstanceOf(BadRequestException);
-        expect(err.getResponse().message).toContain('size deve ser um número inteiro positivo.');
+        expect(err.getResponse().message).toContain('size deve ser um número positivo.');
       });
     });
 
-    it('should throw an error when providing negative number to size', async() => {
+    it('should throw an error when providing a negative integer number to size', async() => {
+      // Arrange
       const data = { size: -1 };
 
+      // Act & Assert
       expect.assertions(2);
-      return target.transform(data, metadata).catch(err => {
+      return dtoValidator(QueriesDto, data).catch(err => {
         expect(err).toBeInstanceOf(BadRequestException);
-        expect(err.getResponse().message).toContain('size deve ser um número inteiro positivo.');
+        expect(err.getResponse().message).toContain('size deve ser um número positivo.');
       });
     });
 
-    it('should not throw an error when providing a int number to size (string)', async() => {
-      const data = { page: 'abc', size: '3' };
+    it('should not throw an error when providing a positive integer number to size (string)', async() => {
+      // Arrange
+      const data = { size: '3' };
 
-      expect.assertions(2);
-      return target.transform(data, metadata).catch(err => {
-        expect(err).toBeInstanceOf(BadRequestException);
-        expect(err.getResponse().message).not.toEqual(expect.arrayContaining([expect.stringMatching(/size/)]));
-      });
+      // Act
+      const result = await dtoValidator(QueriesDto, data);
+
+      // Assert
+      expect(result).toBeInstanceOf(QueriesDto);
+      expect(result).toHaveProperty('size', 3);
     });
 
-    it('should not throw an error when providing a int number to size (number)', async() => {
-      const data = { page: 'abc', size: 3 };
+    it('should not throw an error when providing a positive integer number to size (number)', async() => {
+      // Arrange
+      const data = { size: 3 };
 
-      expect.assertions(2);
-      return target.transform(data, metadata).catch(err => {
-        expect(err).toBeInstanceOf(BadRequestException);
-        expect(err.getResponse().message).not.toEqual(expect.arrayContaining([expect.stringMatching(/size/)]));
-      });
+      // Act
+      const result = await dtoValidator(QueriesDto, data);
+
+      // Assert
+      expect(result).toBeInstanceOf(QueriesDto);
+      expect(result).toHaveProperty('size', 3);
     });
 
     it('should not throw an error when not providing any size', async() => {
-      const data = { page: 'abc' };
+      // Arrange
+      const data = { };
 
-      expect.assertions(2);
-      return target.transform(data, metadata).catch(err => {
-        expect(err).toBeInstanceOf(BadRequestException);
-        expect(err.getResponse().message).not.toEqual(expect.arrayContaining([expect.stringMatching(/size/)]));
-      });
+      // Act
+      const result = await dtoValidator(QueriesDto, data);
+
+      // Assert
+      expect(result).toBeInstanceOf(QueriesDto);
     });
 
     it('should not throw an error when providing null to size', async() => {
-      const data = { page: 'abc', size: null };
+      // Arrange
+      const data = { size: null };
 
-      expect.assertions(2);
-      return target.transform(data, metadata).catch(err => {
-        expect(err).toBeInstanceOf(BadRequestException);
-        expect(err.getResponse().message).not.toEqual(expect.arrayContaining([expect.stringMatching(/size/)]));
-      });
+      // Act
+      const result = await dtoValidator(QueriesDto, data);
+
+      // Assert
+      expect(result).toBeInstanceOf(QueriesDto);
     });
   });
 
   describe('all fields together', () => {
     it('should pass all tests', async() => {
+      // Arrange
       const data = { page: '4002', size: '8922' };
 
-      const result = await target.transform(data, metadata);
+      // Act
+      const result = await dtoValidator(QueriesDto, data);
 
-      expect(result).toBeInstanceOf(Queries);
+      // Assert
+      expect(result).toBeInstanceOf(QueriesDto);
       expect(result.page).toBe(+data.page);
       expect(result.size).toBe(+data.size);
     });

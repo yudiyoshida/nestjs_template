@@ -1,6 +1,6 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { TOKENS } from 'src/shared/di/tokens';
 import { Errors } from 'src/shared/errors/error-message';
+import { TOKENS } from 'src/shared/ioc/tokens';
 import { IAccountRepository } from '../../repositories/account-repository.interface';
 
 @Injectable()

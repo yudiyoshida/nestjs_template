@@ -1,8 +1,8 @@
 import { ConflictException, Inject, Injectable } from '@nestjs/common';
+import { IHashingService } from 'src/infra/hashing/hashing.interface';
 import { AccountPermissionEnum } from 'src/modules/auth/enums/permissions.enum';
-import { TOKENS } from 'src/shared/di/tokens';
 import { Errors } from 'src/shared/errors/error-message';
-import { IHashingService } from 'src/shared/helpers/hashing/hashing.interface';
+import { TOKENS } from 'src/shared/ioc/tokens';
 import { AccountPermission } from '../../entities/account-permission.entity';
 import { IAccountRepository } from '../../repositories/account-repository.interface';
 import { CreateAccountDto } from './dtos/create-account.dto';

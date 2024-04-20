@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 
-import { TOKENS } from 'src/shared/di/tokens';
-import { BcryptAdapterService } from 'src/shared/helpers/hashing/adapters/bcrypt.service';
+import { BcryptAdapterService } from 'src/infra/hashing/adapters/bcrypt.service';
+import { TOKENS } from 'src/shared/ioc/tokens';
 // import { AccountPrismaAdapterRepository } from './repositories/adapters/account-prisma.repository';
 import { AccountInMemoryAdapterRepository } from './repositories/adapters/account-in-memory.repository';
 

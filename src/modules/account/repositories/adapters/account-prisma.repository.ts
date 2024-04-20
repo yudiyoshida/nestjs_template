@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, PrismaAccountStatus } from '@prisma/client';
-import { PrismaService } from 'src/database/prisma/prisma.service';
+import { PrismaService } from 'src/infra/database/prisma/prisma.service';
 import { IAccountRepository } from '../account-repository.interface';
 
 @Injectable()

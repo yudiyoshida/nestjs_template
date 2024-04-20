@@ -1,7 +1,7 @@
 import { TestBed } from '@automock/jest';
 import { ConflictException } from '@nestjs/common';
-import { TOKENS } from 'src/shared/di/tokens';
-import { BcryptAdapterService } from 'src/shared/helpers/hashing/adapters/bcrypt.service';
+import { BcryptAdapterService } from 'src/infra/hashing/adapters/bcrypt.service';
+import { TOKENS } from 'src/shared/ioc/tokens';
 import { Account } from '../../entities/account.entity';
 import { AccountInMemoryAdapterRepository } from '../../repositories/adapters/account-in-memory.repository';
 import { CreateAccountService } from './create-account.service';

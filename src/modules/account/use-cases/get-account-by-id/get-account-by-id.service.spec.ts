@@ -1,6 +1,6 @@
 import { TestBed } from '@automock/jest';
 import { NotFoundException } from '@nestjs/common';
-import { TOKENS } from 'src/shared/di/tokens';
+import { TOKENS } from 'src/shared/ioc/tokens';
 import { Account } from '../../entities/account.entity';
 import { AccountInMemoryAdapterRepository } from '../../repositories/adapters/account-in-memory.repository';
 import { GetAccountByIdService } from './get-account-by-id.service';
