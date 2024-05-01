@@ -5,7 +5,7 @@ import { convertToPascalCase } from './utils/convert-pascalcase';
 // Execução.
 const args = process.argv.slice(2, 4);
 if (args.length !== 2) {
-  console.error('Erro. Uso correto: npx tsx scripts/generate-module.ts <nome-do-modulo> <use-case>');
+  console.error('Erro. Uso correto: npx ts-node scripts/generate-use-case.ts <nome-do-modulo> <nome-do-use-case>');
   process.exit(1);
 }
 
@@ -40,30 +40,24 @@ async function main(moduleName: string, useCaseName: string) {
   // Cria a pasta dtos em use-case.
   await fs.mkdir(useCasesDtoPath);
 
-  // Cria o arquivo input dto e teste.
+  // Cria o arquivo dto e teste.
   await fs.writeFile(
-    path.join(useCasesDtoPath, `${useCaseName}-input.dto.ts`),
-    generateDtoContent(useCaseName, moduleName, 'Input'),
+    path.join(useCasesDtoPath, `${useCaseName}.dto.ts`),
+    generateDtoContent(useCaseName, moduleName),
   );
   await fs.writeFile(
-    path.join(useCasesDtoPath, `${useCaseName}-input.dto.spec.ts`),
-    generateDtoSpecContent(useCaseName, 'input'),
-  );
-
-  // Cria o arquivo output dto e teste.
-  await fs.writeFile(
-    path.join(useCasesDtoPath, `${useCaseName}-output.dto.ts`),
-    generateDtoContent(useCaseName, moduleName, 'Output'),
-  );
-  await fs.writeFile(
-    path.join(useCasesDtoPath, `${useCaseName}-output.dto.spec.ts`),
-    generateDtoSpecContent(useCaseName, 'output'),
+    path.join(useCasesDtoPath, `${useCaseName}.dto.spec.ts`),
+    generateDtoSpecContent(useCaseName),
   );
 
-  // Cria o arquivo controller.
+  // Cria o arquivo controller e teste.
   await fs.writeFile(
     path.join(useCasesPath, `${useCaseName}.controller.ts`),
     generateControllerContent(useCaseName),
+  );
+  await fs.writeFile(
+    path.join(useCasesPath, `${useCaseName}.controller.spec.ts`),
+    generateControllerSpecContent(useCaseName),
   );
 
   // Cria o arquivo service e teste.
@@ -79,39 +73,102 @@ async function main(moduleName: string, useCaseName: string) {
   console.log(`Use case "${useCaseName}" criado com sucesso.`);
 }
 
-function generateDtoContent(useCase: string, moduleName: string, type: 'Input' | 'Output') {
-  return `import { ${convertToPascalCase(moduleName)} } from 'modules/${moduleName}/entities/${moduleName}.entity';
+function generateDtoContent(useCase: string, moduleName: string) {
+  return `import { ${convertToPascalCase(moduleName)} } from '../../../entities/${moduleName}.entity';
 
-export class ${convertToPascalCase(useCase)}${type}Dto implements ${convertToPascalCase(moduleName)} {}
+export class ${convertToPascalCase(useCase)}InputDto implements ${convertToPascalCase(moduleName)} {}
+
+export class ${convertToPascalCase(useCase)}OutputDto implements ${convertToPascalCase(moduleName)} {}
 `;
 }
 
-function generateDtoSpecContent(useCase: string, type: 'input' | 'output') {
-  return `import { AppException } from 'errors/app-exception';
-import { validateAndTransformDto } from 'shared/validators/validate-transform-dto';
-import { ${convertToPascalCase(useCase)}${convertToPascalCase(type)}Dto } from './${useCase}-${type}.dto';
+function generateDtoSpecContent(useCase: string) {
+  return `import { dtoValidator } from 'src/shared/validators/dto-validator';
+import { ${convertToPascalCase(useCase)}InputDto } from './${useCase}.dto';
 
-describe('${convertToPascalCase(useCase)}${type}Dto', () => {
-  describe('X field', () => {
-    it('should validate X field', async() => {
-      const data = {};
+describe('${convertToPascalCase(useCase)}InputDto', () => {
+  it('should test every field in dto', async() => {
+    // Arrange
+    const data = {};
 
-      expect.assertions(3);
-      return validateAndTransformDto(${convertToPascalCase(useCase)}${convertToPascalCase(type)}Dto, data).catch((err: AppException) => {
-        expect(err).toBeInstanceOf(AppException);
-        expect(err.status).toBe(400);
-        expect(err.error).toContain('X é um campo obrigatório.');
-      });
-    });
+    // Act
+    const result = await dtoValidator(${convertToPascalCase(useCase)}InputDto, data);
+
+    // Assert
+    expect(result).toBeInstanceOf(${convertToPascalCase(useCase)}InputDto);
   });
 });
 `;
 }
 
+function generateControllerContent(useCase: string) {
+  const pascalUseCase = convertToPascalCase(useCase);
+
+  return `import { Controller, Get } from '@nestjs/common';
+import { ${pascalUseCase}Service } from './${useCase}.service';
+import { ${pascalUseCase}OutputDto } from './dtos/${useCase}.dto';
+
+@Controller()
+export class ${pascalUseCase}Controller {
+  constructor(private service: ${pascalUseCase}Service) {}
+
+  @Get()
+  public async handle(): Promise<${pascalUseCase}OutputDto> {
+    return this.service.execute();
+  }
+}
+`;
+}
+
+function generateControllerSpecContent(useCase: string) {
+  const pascalUseCase = convertToPascalCase(useCase);
+
+  return `import { TestBed } from '@automock/jest';
+import { ${pascalUseCase}Controller } from './${useCase}.controller';
+import { ${pascalUseCase}Service } from './${useCase}.service';
+
+describe('${pascalUseCase}Controller', () => {
+  let sut: ${pascalUseCase}Controller;
+  let mockService: jest.Mocked<${pascalUseCase}Service>;
+
+  beforeEach(() => {
+    const { unit, unitRef } = TestBed.create(${pascalUseCase}Controller).compile();
+
+    sut = unit;
+    mockService = unitRef.get(${pascalUseCase}Service);
+  });
+
+  it('should be defined', () => {
+    expect(sut).toBeDefined();
+    expect(mockService).toBeDefined();
+  });
+});
+`;
+}
+
+function generateServiceContent(module: string, useCase: string) {
+  const pascalUseCase = convertToPascalCase(useCase);
+  const pascalModule = convertToPascalCase(module);
+
+  return `import { Inject, Injectable } from '@nestjs/common';
+import { TOKENS } from 'src/shared/ioc/tokens';
+import { I${pascalModule}Repository } from '../../repositories/${module}-repository.interface';
+
+@Injectable()
+export class ${pascalUseCase}Service {
+  constructor(
+    @Inject(TOKENS.I${pascalModule}Repository) private repository: I${pascalModule}Repository
+  ) {}
+
+  public async execute() {}
+}
+`;
+}
+
 function generateServiceSpecContent(module: string, useCase: string) {
   return `import { TestBed } from '@automock/jest';
-import { ${convertToPascalCase(module)}InMemoryAdapterRepository } from 'modules/${module}/repositories/adapters/${module}-in-memory.repository';
-import { TOKENS } from 'shared/ioc/token';
+import { TOKENS } from 'src/shared/ioc/tokens';
+import { ${convertToPascalCase(module)}InMemoryAdapterRepository } from '../../repositories/adapters/${module}-in-memory.repository';
 import { ${convertToPascalCase(useCase)}Service } from './${useCase}.service';
 
 describe('${convertToPascalCase(useCase)}Service', () => {
@@ -131,43 +188,4 @@ describe('${convertToPascalCase(useCase)}Service', () => {
   });
 });
 `;
-}
-
-function generateControllerContent(useCase: string) {
-  const pascalUseCase = convertToPascalCase(useCase);
-
-  return `import { Request, Response } from 'express';
-import { container } from 'shared/ioc/inversify.config';
-import { ${pascalUseCase}Service } from './${useCase}.service';
-
-export class ${pascalUseCase}Controller {
-  // local para decorators de autenticação.
-  // local para decorators de validação.
-  public async handle(req: Request, res: Response): Promise<void> {
-    const service = container.resolve(${pascalUseCase}Service);
-
-    const result = await service.execute();
-    res.status(20X).json(result);
-  }
-}`;
-}
-
-function generateServiceContent(module: string, useCase: string) {
-  const pascalUseCase = convertToPascalCase(useCase);
-  const pascalModule = convertToPascalCase(module);
-
-  return `import { inject, injectable } from 'inversify';
-import { TOKENS } from 'shared/ioc/token';
-import { I${pascalModule}Repository } from '../../repositories/${module}-repository.interface';
-import { ${pascalUseCase}InputDto } from './dtos/${useCase}-input.dto';
-import { ${pascalUseCase}OutputDto } from './dtos/${useCase}-output.dto';
-
-@injectable()
-export class ${pascalUseCase}Service {
-  constructor(
-    @inject(TOKENS.I${pascalModule}Repository) private repository: I${pascalModule}Repository,
-  ) {}
-
-  public async execute(data: ${pascalUseCase}InputDto): Promise<${pascalUseCase}OutputDto> {}
-}`;
 }

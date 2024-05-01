@@ -5,7 +5,7 @@ import { convertToPascalCase } from './utils/convert-pascalcase';
 // Execução.
 const args = process.argv.slice(2);
 if (args.length !== 1) {
-  console.error('Erro. Uso correto: npx tsx scripts/generate-module.ts <nome-do-modulo>');
+  console.error('Erro. Uso correto: npx ts-node scripts/generate-module.ts <nome-do-modulo>');
   process.exit(1);
 }
 
@@ -53,36 +53,45 @@ async function main(moduleName: string) {
   await fs.mkdir(repositoriesAdaptersPath);
   await fs.writeFile(path.join(repositoriesAdaptersPath, '.gitkeep'), '');
 
-  // Cria a pasta "use-cases".
+  // Cria a pasta use-cases.
   await fs.mkdir(useCasesPath);
   await fs.writeFile(path.join(useCasesPath, '.gitkeep'), '');
 
-  // Cria o arquivo routes.
+  // Cria o arquivo module.
   await fs.writeFile(
-    path.join(modulePath, `${moduleName}.routes.ts`),
-    generateRouteContent(),
+    path.join(modulePath, `${moduleName}.module.ts`),
+    generateModuleContent(moduleName),
   );
 
   console.log(`Módulo "${moduleName}" criado com sucesso.`);
 }
 
 function generateEntityContent(module: string) {
-  return `export class ${convertToPascalCase(module)} {}`;
+  return `export interface ${convertToPascalCase(module)} {}
+
+export class ${convertToPascalCase(module)}Entity {
+  private _props: ${convertToPascalCase(module)};
+
+  constructor(props: Partial<${convertToPascalCase(module)}>) {
+    this._props = props as ${convertToPascalCase(module)};
+  }
+}
+`;
 }
 
 function generateRepositoryInterfaceContent(module: string) {
   return `export interface I${convertToPascalCase(module)}Repository {}`;
 }
 
-function generateRouteContent() {
-  return `import { Router } from 'express';
+function generateModuleContent(module: string) {
+  return `import { Module } from '@nestjs/common';
 
-const router = Router();
-
-const controller = new Controller();
-
-router.post('/:id/approve', controller.handle);
-
-export default router;  
+@Module({
+  imports: [],
+  controllers: [],
+  providers: [],
+  exports: [],
+})
+export class ${convertToPascalCase(module)}Module {}
 `;
 }
