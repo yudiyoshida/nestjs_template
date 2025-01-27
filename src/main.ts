@@ -1,3 +1,5 @@
+import helmet from 'helmet';
+
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -15,6 +17,8 @@ async function bootstrap() {
   SwaggerModule.setup('swagger', app, document);
 
   app.useGlobalPipes(new ValidationPipe(pipeOptions));
+
+  app.use(helmet());
   app.enableCors();
 
   await app.listen(process.env.PORT as string);
