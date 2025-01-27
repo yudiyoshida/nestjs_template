@@ -1,0 +1,72 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id       String        @id @default(uuid())
+  role     AccountRole
+  email    String        @unique
+  password String        @db.Text
+  status   AccountStatus
+
+  admin Admin?
+}
+
+enum AccountRole {
+  ADMIN
+  USER
+}
+
+enum AccountStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model Admin {
+  accountId   String
+  name        String
+  cpf         String
+  permissions AdminPermission[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  account Account @relation(fields: [accountId], references: [id])
+
+  @@id([accountId])
+}
+
+model AdminPermission {
+  id     String     @id @default(uuid())
+  title  Permission
+  admins Admin[]
+}
+
+enum Permission {
+  DASHBOARD
+  USUÁRIOS
+  ALIMENTOS
+  BANNERS
+  FINANCEIRO
+  ACESSOS
+}
+
+model Faq {
+  id        String   @id @default(uuid())
+  question  String   @db.Text
+  answer    String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Text {
+  id        String   @id @default(uuid())
+  type      String   @unique
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
