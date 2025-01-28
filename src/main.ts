@@ -10,7 +10,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const config = new DocumentBuilder()
-    .setTitle('Eat Vida REST API')
+    .setTitle('[Project name] REST API')
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config, { autoTagControllers: false });
