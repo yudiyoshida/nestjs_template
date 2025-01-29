@@ -15,14 +15,7 @@ export class AdminSeed {
         },
       },
       permissions: {
-        create: [
-          { title: Permission.DASHBOARD },
-          { title: Permission.USUÁRIOS },
-          { title: Permission.ALIMENTOS },
-          { title: Permission.BANNERS },
-          { title: Permission.FINANCEIRO },
-          { title: Permission.ACESSOS },
-        ],
+        create: Object.values(Permission).map((permission) => ({ title: permission })),
       },
     },
   ];

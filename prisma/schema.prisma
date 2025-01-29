@@ -25,6 +25,7 @@ enum AccountRole {
 enum AccountStatus {
   ACTIVE
   INACTIVE
+  PENDING
 }
 
 model Admin {
