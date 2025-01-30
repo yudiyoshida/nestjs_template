@@ -29,7 +29,7 @@ export class ${moduleNamePascal}Controller {
   @Post()
   @Swagger({
     tags: ['TAG_AQUI'],
-    summary: 'DESCRIÇÃO_AQUI',
+    summary: 'Rota para criar NOME_AQUI',
     applyBadRequest: true,
     createdResponse: Create${moduleNamePascal}OutputDto,
   })
@@ -40,7 +40,7 @@ export class ${moduleNamePascal}Controller {
   @Get()
   @Swagger({
     tags: ['TAG_AQUI'],
-    summary: 'DESCRIÇÃO_AQUI',
+    summary: 'Rota para listar NOME_AQUI',
     applyBadRequest: true,
     okPaginatedResponse: ${moduleNamePascal}Dto,
   })
@@ -51,7 +51,7 @@ export class ${moduleNamePascal}Controller {
   @Get(':id')
   @Swagger({
     tags: ['TAG_AQUI'],
-    summary: 'DESCRIÇÃO_AQUI',
+    summary: 'Rota para buscar NOME_AQUI por ID',
     applyBadRequest: true,
     applyNotFound: true,
     okResponse: ${moduleNamePascal}Dto,
@@ -63,7 +63,7 @@ export class ${moduleNamePascal}Controller {
   @Patch(':id')
   @Swagger({
     tags: ['TAG_AQUI'],
-    summary: 'DESCRIÇÃO_AQUI',
+    summary: 'Rota para editar NOME_AQUI',
     applyBadRequest: true,
     applyNotFound: true,
     okResponse: SuccessMessage,
@@ -75,7 +75,7 @@ export class ${moduleNamePascal}Controller {
   @Delete(':id')
   @Swagger({
     tags: ['TAG_AQUI'],
-    summary: 'DESCRIÇÃO_AQUI',
+    summary: 'Rota para deletar NOME_AQUI',
     applyBadRequest: true,
     applyNotFound: true,
     okResponse: SuccessMessage,
