@@ -17,6 +17,7 @@
     "noFallthroughCasesInSwitch": true,
     "lib": ["ES2023"],
     "module": "node16",
-    "target": "ES2022"
+    "target": "ES2022",
+    "isolatedModules": true,
   }
 }

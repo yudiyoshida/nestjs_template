@@ -8,52 +8,24 @@ datasource db {
 }
 
 model Account {
-  id       String        @id @default(uuid())
-  role     AccountRole
-  email    String        @unique
-  password String        @db.Text
-  status   AccountStatus
+  id       String @id @default(uuid())
+  email    String @unique
+  password String @db.Text
+  status   String
+  role     String
 
   admin Admin?
 }
 
-enum AccountRole {
-  ADMIN
-  USER
-}
-
-enum AccountStatus {
-  ACTIVE
-  INACTIVE
-  PENDING
-}
-
 model Admin {
-  accountId   String
-  name        String
-  cpf         String
-  permissions AdminPermission[]
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-
-  account Account @relation(fields: [accountId], references: [id])
+  accountId String
+  name      String
+  cpf       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  account   Account  @relation(fields: [accountId], references: [id])
 
   @@id([accountId])
-}
-
-model AdminPermission {
-  id     String     @id @default(uuid())
-  title  Permission
-  admins Admin[]
-}
-
-enum Permission {
-  DASHBOARD
-  USUÁRIOS
-  ALIMENTOS
-  BANNERS
-  FINANCEIRO
-  ACESSOS
 }
 
 model Faq {
