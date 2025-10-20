@@ -16,9 +16,9 @@
     "test:watch": "NODE_ENV=test jest --watch --runInBand",
     "test:cov": "NODE_ENV=test jest --coverage --runInBand",
     "test:debug": "NODE_ENV=test node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "db:migration": "prisma db push",
-    "db:seed": "prisma db seed",
-    "db:reset": "prisma db push --force-reset && prisma db seed"
+    "db:migration": "dotenv -e .env.development -- prisma db push",
+    "db:seed": "dotenv -e .env.development -- prisma db seed",
+    "db:reset": "dotenv -e .env.development -- prisma db push --force-reset && prisma db seed"
   },
   "prisma": {
     "seed": "ts-node prisma/seeds/index.ts"
@@ -42,6 +42,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "compression": "^1.8.0",
+    "dotenv-cli": "^10.0.0",
     "helmet": "^8.0.0",
     "joi": "^17.13.3",
     "luxon": "^3.6.1",

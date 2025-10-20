@@ -8,22 +8,32 @@ datasource db {
 }
 
 model Account {
-  id       String @id @default(uuid())
-  email    String @unique
-  password String @db.Text
+  id       String    @id @default(uuid())
+  document String    @unique
+  email    String    @unique
+  password String    @db.Text
   status   String
-  role     String
+  roles    Profile[]
+}
+
+model Profile {
+  id        String  @id @default(uuid())
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  role      String
 
   admin Admin?
+
+  @@unique([accountId, role])
 }
 
 model Admin {
-  accountId String
+  accountId String   @unique
   name      String
-  cpf       String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  account   Account  @relation(fields: [accountId], references: [id])
+  profile   Profile  @relation(fields: [profileId], references: [id])
+  profileId String   @unique
 
   @@id([accountId])
 }
