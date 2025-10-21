@@ -1,6 +1,8 @@
 const TOKENS = {
-  AccountDao: Symbol.for('AccountDao'),
+  CacheGateway: Symbol.for('CacheGateway'),
   LoggerGateway: Symbol.for('LoggerGateway'),
+
+  AccountDao: Symbol.for('AccountDao'),
 };
 
 export { TOKENS };
