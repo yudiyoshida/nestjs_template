@@ -1,5 +1,5 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService as NestConfigService } from '@nestjs/config';
+import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from './config.service';
 import { Environment } from './environment.enum';
 
@@ -284,14 +284,6 @@ describe('ConfigService', () => {
   });
 
   describe('integration scenarios', () => {
-    it('should handle multiple environment checks', () => {
-      nestConfigService.get.mockReturnValue(Environment.Development);
-
-      expect(sut.isDevelopment).toBe(true);
-      expect(sut.isProduction).toBe(false);
-      expect(sut.isTest).toBe(false);
-    });
-
     it('should call nestConfigService.get for each property access', () => {
       nestConfigService.get
         .mockReturnValueOnce(Environment.Development)

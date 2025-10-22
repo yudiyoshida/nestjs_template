@@ -19,11 +19,11 @@ describe('Queries DTO', () => {
       'page',
       'size',
     ]
-  )('field', (field) => {
+  )('%s field', (field) => {
     it.each([
       undefined,
       null,
-    ])('should not throw an error if %s is empty (%s)', async(value: any) => {
+    ])(`should not throw an error if ${field} is empty (%s)`, async(value: any) => {
       const data = { [field]: value };
 
       const result = await target.transform(data, metadata);
@@ -45,7 +45,7 @@ describe('Queries DTO', () => {
       '0',
       '-1',
       '-10',
-    ])('should throw an error if %s is not positive (%s)', async(value: string) => {
+    ])(`should throw an error if ${field} is not positive (%s)`, async(value: string) => {
       const data = { [field]: value };
 
       expect.assertions(1);
@@ -60,7 +60,7 @@ describe('Queries DTO', () => {
       'abc',
       'true',
       'false',
-    ])('should throw an error if %s is not an integer (%s)', async(value: string) => {
+    ])(`should throw an error if ${field} is not an integer (%s)`, async(value: string) => {
       const data = { [field]: value };
 
       expect.assertions(1);

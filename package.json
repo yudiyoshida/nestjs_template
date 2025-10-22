@@ -18,10 +18,11 @@
     "test:debug": "NODE_ENV=test node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "db:migration": "dotenv -e .env.development -- prisma db push",
     "db:seed": "dotenv -e .env.development -- prisma db seed",
-    "db:reset": "dotenv -e .env.development -- prisma db push --force-reset && prisma db seed"
+    "db:reset": "dotenv -e .env.development -- prisma db push --force-reset && prisma db seed",
+    "db:studio": "dotenv -e .env.development -- prisma studio"
   },
   "prisma": {
-    "seed": "ts-node prisma/seeds/index.ts"
+    "seed": "dotenv -e .env.development -- ts-node prisma/seeds/index.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.700.0",

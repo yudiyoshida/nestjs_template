@@ -1,9 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
+import type { RedisClientType } from 'redis';
 import { TOKENS } from 'src/core/di/token';
 import { REDIS_CLIENT } from 'src/infra/cache/redis.module';
-import { ICacheGateway } from '../../cache.gateway';
-import type { RedisClientType } from 'redis';
 import { type ILoggerGateway, LogContext } from 'src/infra/logger/logger.gateway';
+import { ICacheGateway } from '../../cache.gateway';
 
 @Injectable()
 export class CacheRedisAdapterGateway implements ICacheGateway {

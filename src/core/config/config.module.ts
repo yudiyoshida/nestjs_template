@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule as NestConfigModule } from '@nestjs/config';
+import Joi from 'joi';
 import { ConfigService } from './config.service';
 import { Environment } from './environment.enum';
-import Joi from 'joi';
 
 @Module({
   imports: [

@@ -1,16 +1,16 @@
-// import { PrismaClient } from '@prisma/client';
-// import { AdminSeed } from './admin';
+import { PrismaClient } from '@prisma/client';
+import { AdminSeed } from './admin';
 
-// const prisma = new PrismaClient();
+const prisma = new PrismaClient();
 
-// async function main() {
-//   await AdminSeed.seed(prisma);
-// }
+async function main() {
+  await AdminSeed.seed(prisma);
+}
 
-// main()
-//   .catch((e) => {
-//     throw e;
-//   })
-//   .finally(async() => {
-//     await prisma.$disconnect();
-//   });
+main()
+  .catch((e) => {
+    throw e;
+  })
+  .finally(async() => {
+    await prisma.$disconnect();
+  });

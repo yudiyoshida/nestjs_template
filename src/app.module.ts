@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { AuthenticationModule } from './app/authentication/authentication.module';
 import { CoreModule } from './core/core.module';
 import { InfraModule } from './infra/infra.module';
 
@@ -6,6 +7,7 @@ import { InfraModule } from './infra/infra.module';
   imports: [
     CoreModule,
     InfraModule,
+    AuthenticationModule,
   ],
 })
 export class AppModule {}
