@@ -3,13 +3,14 @@ import { Props } from 'scripts/generate-module';
 export function generateDaoFile({ moduleName, moduleNameCamel, moduleNamePascal }: Props) {
   return `import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { PrismaService } from 'src/infra/database/prisma.service';
+import { PrismaService } from 'src/infra/database/prisma/prisma.service';
+import { I${moduleNamePascal}Dao } from '../../application/persistence/dao/${moduleName}-dao.interface';
 import { Create${moduleNamePascal}InputDto } from '../../application/usecases/create-${moduleName}/dtos/create-${moduleName}.dto';
 import { Edit${moduleNamePascal}InputDto } from '../../application/usecases/edit-${moduleName}/dtos/edit-${moduleName}.dto';
 import { FindAll${moduleNamePascal}QueryDto } from '../../application/usecases/find-all-${moduleName}/dtos/find-all-${moduleName}.dto';
 
 @Injectable()
-export class ${moduleNamePascal}Dao {
+export class ${moduleNamePascal}DaoAdapterPrisma implements I${moduleNamePascal}Dao {
   constructor(private prisma: PrismaService) {}
 
   public save(data: Create${moduleNamePascal}InputDto) {

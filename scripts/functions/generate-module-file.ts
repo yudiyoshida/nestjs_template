@@ -8,20 +8,20 @@ import { Edit${moduleNamePascal} } from './application/usecases/edit-${moduleNam
 import { FindAll${moduleNamePascal} } from './application/usecases/find-all-${moduleName}/find-all-${moduleName}.service';
 import { Find${moduleNamePascal}ById } from './application/usecases/find-${moduleName}-by-id/find-${moduleName}-by-id.service';
 import { ${moduleNamePascal}Controller } from './infra/http/${moduleName}.controller';
-import { ${moduleNamePascal}Dao } from './infra/persistence/${moduleName}.dao';
 
 @Module({
+  imports: [],
   controllers: [
     ${moduleNamePascal}Controller,
   ],
   providers: [
-    ${moduleNamePascal}Dao,
     Create${moduleNamePascal},
+    Delete${moduleNamePascal},
+    Edit${moduleNamePascal},
     FindAll${moduleNamePascal},
     Find${moduleNamePascal}ById,
-    Edit${moduleNamePascal},
-    Delete${moduleNamePascal},
   ],
+  exports: [],
 })
 export class ${moduleNamePascal}Module {}
 `;

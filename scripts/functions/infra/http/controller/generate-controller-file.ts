@@ -2,9 +2,9 @@ import { Props } from 'scripts/generate-module';
 
 export function generateControllerFile({ moduleName, moduleNamePascal }: Props) {
   return `import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import { SuccessMessage } from 'src/infra/openapi/success-message';
+import { SuccessMessage } from 'src/core/dtos/success-message.dto';
 import { Swagger } from 'src/infra/openapi/swagger';
-import { Params } from 'src/infra/validators/dtos/params.dto';
+import { Params } from 'src/infra/validators/class-*/dtos/params/params.dto';
 import { IPagination } from 'src/shared/value-objects/pagination/pagination';
 import { ${moduleNamePascal}Dto } from '../../application/dtos/${moduleName}.dto';
 import { Create${moduleNamePascal} } from '../../application/usecases/create-${moduleName}/create-${moduleName}.service';
@@ -19,11 +19,11 @@ import { Find${moduleNamePascal}ById } from '../../application/usecases/find-${m
 @Controller('${moduleName}')
 export class ${moduleNamePascal}Controller {
   constructor(
-    private create${moduleNamePascal}Service: Create${moduleNamePascal},
-    private findAll${moduleNamePascal}Service: FindAll${moduleNamePascal},
-    private find${moduleNamePascal}ByIdService: Find${moduleNamePascal}ById,
-    private edit${moduleNamePascal}Service: Edit${moduleNamePascal},
-    private delete${moduleNamePascal}Service: Delete${moduleNamePascal},
+    private readonly create${moduleNamePascal}Service: Create${moduleNamePascal},
+    private readonly findAll${moduleNamePascal}Service: FindAll${moduleNamePascal},
+    private readonly find${moduleNamePascal}ByIdService: Find${moduleNamePascal}ById,
+    private readonly edit${moduleNamePascal}Service: Edit${moduleNamePascal},
+    private readonly delete${moduleNamePascal}Service: Delete${moduleNamePascal},
   ) {}
 
   @Post()

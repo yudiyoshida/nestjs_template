@@ -1,9 +1,10 @@
 import * as fs from 'fs/promises';
+
 import * as path from 'path';
-import { generateApplicationFiles } from './functions/application/application';
-import { generateDomainFiles } from './functions/domain/domain';
+import { generateApplicationFiles } from './functions/application/generate-application';
+import { generateDomainFiles } from './functions/domain/generate-domain';
 import { generateModuleFile } from './functions/generate-module-file';
-import { generateInfraFiles } from './functions/infra/infra';
+import { generateInfraFiles } from './functions/infra/generate-infra';
 import { kebabToCamelCase } from './utils/kebab-to-camel';
 import { kebabToPascalCase } from './utils/kebab-to-pascal';
 
@@ -12,6 +13,7 @@ export type Props = {
   moduleName: string;
   moduleNamePascal: string;
   moduleNameCamel: string;
+  moduleNameUpper: string;
 }
 
 // Execução.
@@ -26,10 +28,11 @@ main(args[0]);
 
 async function main(moduleName: string) {
   const props: Props = {
-    modulePath: path.join(__dirname, '..', 'src', 'modules', moduleName),
+    modulePath: path.join(__dirname, '..', 'src', 'app', moduleName),
     moduleName,
     moduleNamePascal: kebabToPascalCase(moduleName),
     moduleNameCamel: kebabToCamelCase(moduleName),
+    moduleNameUpper: moduleName.toUpperCase(),
   };
 
   // Caso consiga acessar a pasta, significa que o módulo já existe.
