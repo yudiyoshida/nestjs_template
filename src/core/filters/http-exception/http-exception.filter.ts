@@ -6,11 +6,12 @@ import { InactiveAccountError } from 'src/app/authentication/application/errors/
 import { InvalidCredentialError } from 'src/app/authentication/application/errors/invalid-credential.error';
 import { TOKENS } from 'src/core/di/token';
 import { type ILoggerGateway, LogContext } from 'src/infra/logger/logger.gateway';
+import { AppException } from '../app.exception';
 
 @Catch(
   InvalidCredentialError,
   InactiveAccountError,
-  ForbiddenAccountError
+  ForbiddenAccountError,
 )
 export class HttpExceptionFilter extends BaseExceptionFilter implements ExceptionFilter {
   private readonly SENSITIVE_FIELDS = [
@@ -21,7 +22,7 @@ export class HttpExceptionFilter extends BaseExceptionFilter implements Exceptio
     super();
   }
 
-  public catch(exception: Error, host: ArgumentsHost) {
+  public catch(exception: AppException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const request = ctx.getRequest<Request>();
     const response = ctx.getResponse<Response>();
@@ -33,7 +34,7 @@ export class HttpExceptionFilter extends BaseExceptionFilter implements Exceptio
       body: this.sanitizeBody(request.body),
       params: request.params,
       query: request.query,
-      statusCode: HttpStatus.BAD_REQUEST,
+      statusCode: exception.code ?? HttpStatus.BAD_REQUEST,
       error: exception.message,
     });
 
