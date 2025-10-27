@@ -22,7 +22,7 @@ describe('ConfigService', () => {
       ],
     }).compile();
 
-    sut = module.get<ConfigService>(ConfigService);
+    sut = module.get(ConfigService);
     nestConfigService = module.get<jest.Mocked<NestConfigService>>(NestConfigService);
   });
 

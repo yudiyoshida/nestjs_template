@@ -20,8 +20,8 @@ describe('AccountPrismaDao', () => {
       providers: [AccountPrismaAdapterDao],
     }).compile();
 
-    sut = module.get<AccountPrismaAdapterDao>(AccountPrismaAdapterDao);
-    prisma = module.get<PrismaService>(PrismaService);
+    sut = module.get(AccountPrismaAdapterDao);
+    prisma = module.get(PrismaService);
 
     await prisma.account.deleteMany();
   });

@@ -15,7 +15,7 @@ describe('HttpExceptionFilter', () => {
       providers: [HttpExceptionFilter],
     }).compile();
 
-    sut = module.get<HttpExceptionFilter>(HttpExceptionFilter);
+    sut = module.get(HttpExceptionFilter);
   });
 
   it('should be defined', () => {

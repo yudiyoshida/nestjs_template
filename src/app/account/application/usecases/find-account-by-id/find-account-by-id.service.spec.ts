@@ -19,8 +19,8 @@ describe('FindAccountById', () => {
       ],
     }).compile();
 
-    sut = module.get<FindAccountById>(FindAccountById);
-    prisma = module.get<PrismaService>(PrismaService);
+    sut = module.get(FindAccountById);
+    prisma = module.get(PrismaService);
 
     await prisma.account.deleteMany();
   });
