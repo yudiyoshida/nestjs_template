@@ -3,10 +3,9 @@ import { InvalidCnpjError } from './cnpj.error';
 const CNPJ_LENGTH = 14;
 
 export class CNPJ {
+  private readonly multipliesFirstDigit = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+  private readonly multipliesSecondDigit = [6, ...this.multipliesFirstDigit];
   private readonly _value: string;
-
-  private multipliesFirstDigit = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
-  private multipliesSecondDigit = [6, ...this.multipliesFirstDigit];
 
   public get value(): string {
     return this._value;
