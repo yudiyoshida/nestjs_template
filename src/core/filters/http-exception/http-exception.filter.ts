@@ -39,7 +39,7 @@ export class HttpExceptionFilter extends BaseExceptionFilter implements Exceptio
     });
 
     response
-      .status(HttpStatus.BAD_REQUEST)
+      .status(exception.code ?? HttpStatus.BAD_REQUEST)
       .json({ message: exception.message });
   }
 
