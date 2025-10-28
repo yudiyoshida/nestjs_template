@@ -9,9 +9,9 @@ import { type ILoggerGateway, LogContext } from 'src/infra/logger/logger.gateway
 import { AppException } from '../app.exception';
 
 @Catch(
-  InvalidCredentialError,
-  InactiveAccountError,
   ForbiddenAccountError,
+  InactiveAccountError,
+  InvalidCredentialError,
 )
 export class HttpExceptionFilter extends BaseExceptionFilter implements ExceptionFilter {
   private readonly SENSITIVE_FIELDS = [
