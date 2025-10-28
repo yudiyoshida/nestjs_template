@@ -1,10 +1,9 @@
 import { InvalidCnpjError } from './cnpj.error';
 
-const CNPJ_LENGTH = 14;
-
 export class CNPJ {
-  private readonly multipliesFirstDigit = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
-  private readonly multipliesSecondDigit = [6, ...this.multipliesFirstDigit];
+  private readonly LENGTH = 14;
+  private readonly MULTIPLIES_FIRST_DIGIT = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+  private readonly MULTIPLIES_SECOND_DIGIT = [6, ...this.MULTIPLIES_FIRST_DIGIT];
   private readonly _value: string;
 
   public get value(): string {
@@ -26,15 +25,15 @@ export class CNPJ {
 
   private validate(cnpj: string): boolean {
     if (!cnpj) return false;
-    if (cnpj.length !== CNPJ_LENGTH) return false;
+    if (cnpj.length !== this.LENGTH) return false;
     if (this.allDigitsAreEqual(cnpj)) return false;
 
     const digits = cnpj.split('').map(Number);
 
-    const firstDigit = this.calculateDigit(cnpj, 12, this.multipliesFirstDigit);
+    const firstDigit = this.calculateDigit(cnpj, 12, this.MULTIPLIES_FIRST_DIGIT);
     if (firstDigit !== digits[12]) return false;
 
-    const secondDigit = this.calculateDigit(cnpj, 13, this.multipliesSecondDigit);
+    const secondDigit = this.calculateDigit(cnpj, 13, this.MULTIPLIES_SECOND_DIGIT);
     if (secondDigit !== digits[13]) return false;
 
     return true;
