@@ -25,8 +25,9 @@ describe('FindAccountByCredential', () => {
     await prisma.account.deleteMany();
   });
 
-  afterAll(async() => {
+  afterEach(async() => {
     await prisma.account.deleteMany();
+    await prisma.$disconnect();
   });
 
   it('should be defined', () => {
@@ -69,7 +70,7 @@ describe('FindAccountByCredential', () => {
           roles: {
             create: [
               { role: AccountRole.ADMIN },
-              { role: AccountRole.USER },
+              { role: AccountRole.SELLER },
             ],
           },
         },
@@ -84,7 +85,7 @@ describe('FindAccountByCredential', () => {
         email: account.email,
         password: account.password,
         passwordResetToken: null,
-        roles: [AccountRole.ADMIN, AccountRole.USER],
+        roles: [AccountRole.ADMIN, AccountRole.SELLER],
         status: AccountStatus.ACTIVE,
       });
     });

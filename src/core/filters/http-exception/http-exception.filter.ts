@@ -1,18 +1,11 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus, Inject } from '@nestjs/common';
 import { BaseExceptionFilter } from '@nestjs/core';
 import { Request, Response } from 'express';
-import { ForbiddenAccountError } from 'src/app/authentication/application/errors/forbidden-account.error';
-import { InactiveAccountError } from 'src/app/authentication/application/errors/inactive-account.error';
-import { InvalidCredentialError } from 'src/app/authentication/application/errors/invalid-credential.error';
 import { TOKENS } from 'src/core/di/token';
 import { type ILoggerGateway, LogContext } from 'src/infra/logger/logger.gateway';
 import { AppException } from '../app.exception';
 
-@Catch(
-  ForbiddenAccountError,
-  InactiveAccountError,
-  InvalidCredentialError,
-)
+@Catch(AppException)
 export class HttpExceptionFilter extends BaseExceptionFilter implements ExceptionFilter {
   private readonly SENSITIVE_FIELDS = [
     'password',

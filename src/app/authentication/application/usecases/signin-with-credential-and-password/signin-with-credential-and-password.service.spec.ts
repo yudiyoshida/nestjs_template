@@ -29,8 +29,9 @@ describe('SigninWithCredentialAndPassword', () => {
     await prisma.account.deleteMany();
   });
 
-  afterAll(async() => {
+  afterEach(async() => {
     await prisma.account.deleteMany();
+    await prisma.$disconnect();
   });
 
   it('should be defined', () => {
@@ -53,7 +54,7 @@ describe('SigninWithCredentialAndPassword', () => {
 
   it('should throw an error if password is invalid', async() => {
     // Arrange
-    const role = AccountRole.STORE;
+    const role = AccountRole.SELLER;
     const email = 'jhondoe@email.com';
     const password = '123456';
     const hashedPassword = new Password(password).value;
@@ -81,7 +82,7 @@ describe('SigninWithCredentialAndPassword', () => {
 
   it('should throw an error if account status is inactive', async() => {
     // Arrange
-    const role = AccountRole.STORE;
+    const role = AccountRole.SELLER;
     const email = 'jhondoe@email.com';
     const password = '123456';
     const hashedPassword = new Password(password).value;
@@ -109,7 +110,7 @@ describe('SigninWithCredentialAndPassword', () => {
 
   it('should throw an error if account status is not active', async() => {
     // Arrange
-    const role = AccountRole.STORE;
+    const role = AccountRole.SELLER;
     const email = 'jhondoe@email.com';
     const password = '123456';
     const hashedPassword = new Password(password).value;
@@ -137,7 +138,7 @@ describe('SigninWithCredentialAndPassword', () => {
 
   it('should return an access token if credentials are valid', async() => {
     // Arrange
-    const role = AccountRole.STORE;
+    const role = AccountRole.SELLER;
     const email = 'jhondoe@email.com';
     const password = '123456';
     const hashedPassword = new Password(password).value;

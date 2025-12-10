@@ -16,6 +16,7 @@ import { AuthorizationGuard } from './authorization/authorization.guard';
     AuthorizationGuard,
   ],
   exports: [
+    AccountModule,
     AuthenticationGuard,
     AuthorizationGuard,
   ],
