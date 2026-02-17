@@ -1,9 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator';
-import { Trim } from 'src/infra/validators/{{validatorsPath}}/decorators/trim/trim';
+import { PartialType } from '@nestjs/swagger';
+import { Create{{moduleNamePascal}}InputDto } from '../../create-{{moduleName}}.dto';
 
-export class Edit{{moduleNamePascal}}InputDto {
-  @IsString({ message: '$property deve ser uma string' })
-  @IsNotEmpty({ message: '$property é obrigatório' })
-  @Trim()
-  field: string;
-}
+export class Edit{{moduleNamePascal}}InputDto extends PartialType(Create{{moduleNamePascal}}InputDto) {}

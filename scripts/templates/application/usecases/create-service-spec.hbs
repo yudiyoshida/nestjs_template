@@ -8,7 +8,7 @@ describe('Create{{moduleNamePascal}}', () => {
   let sut: Create{{moduleNamePascal}};
   let prisma: PrismaService;
 
-  beforeEach(async() => {
+  beforeAll(async() => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         {{moduleNamePascal}}Module,
@@ -18,12 +18,15 @@ describe('Create{{moduleNamePascal}}', () => {
 
     sut = module.get(Create{{moduleNamePascal}});
     prisma = module.get(PrismaService);
+  });
 
+  beforeEach(async() => {
     await prisma.{{moduleNameCamel}}.deleteMany();
   });
 
-  afterEach(async() => {
+  afterAll(async() => {
     await prisma.{{moduleNameCamel}}.deleteMany();
+    await prisma.$disconnect();
   });
 
   it('should be defined', () => {

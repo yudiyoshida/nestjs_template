@@ -8,7 +8,7 @@
 //   let sut: Delete{{moduleNamePascal}};
 //   let prisma: PrismaService;
 //
-//   beforeEach(async() => {
+//   beforeAll(async() => {
 //     const module: TestingModule = await Test.createTestingModule({
 //       imports: [
 //         {{moduleNamePascal}}Module,
@@ -18,12 +18,15 @@
 //
 //     sut = module.get(Delete{{moduleNamePascal}});
 //     prisma = module.get(PrismaService);
+//   });
 //
+//   beforeEach(async() => {
 //     await prisma.{{moduleNameCamel}}.deleteMany();
 //   });
 //
-//   afterEach(async() => {
+//   afterAll(async() => {
 //     await prisma.{{moduleNameCamel}}.deleteMany();
+//     await prisma.$disconnect();
 //   });
 //
 //   it('should be defined', () => {
