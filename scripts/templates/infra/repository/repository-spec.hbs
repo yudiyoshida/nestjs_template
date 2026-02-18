@@ -2,10 +2,10 @@ import { Test } from '@nestjs/testing';
 import { {{moduleNamePascal}}PersistenceModule } from 'src/app/{{moduleName}}/application/persistence/{{moduleName}}-persistence.module';
 import { ConfigModule } from 'src/core/config/config.module';
 import { PrismaService } from 'src/infra/database/prisma/prisma.service';
-import { {{moduleNamePascal}}DaoAdapterPrisma } from './{{moduleName}}.dao';
+import { {{moduleNamePascal}}RepositoryAdapterPrisma } from './{{moduleName}}-prisma.repository';
 
-describe('{{moduleNamePascal}}DaoAdapterPrisma', () => {
-  let sut: {{moduleNamePascal}}DaoAdapterPrisma;
+describe('{{moduleNamePascal}}RepositoryAdapterPrisma', () => {
+  let sut: {{moduleNamePascal}}RepositoryAdapterPrisma;
   let prisma: PrismaService;
 
   beforeAll(async() => {
@@ -15,11 +15,11 @@ describe('{{moduleNamePascal}}DaoAdapterPrisma', () => {
         ConfigModule,
       ],
       providers: [
-        {{moduleNamePascal}}DaoAdapterPrisma,
+        {{moduleNamePascal}}RepositoryAdapterPrisma,
       ],
     }).compile();
 
-    sut = module.get({{moduleNamePascal}}DaoAdapterPrisma);
+    sut = module.get({{moduleNamePascal}}RepositoryAdapterPrisma);
     prisma = module.get(PrismaService);
   });
 

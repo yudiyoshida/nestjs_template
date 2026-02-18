@@ -5,12 +5,14 @@ import { generateModuleFiles } from './generators';
 import { kebabToCamelCase, kebabToPascalCase } from './utils/naming';
 
 const args = process.argv.slice(2);
-if (args.length !== 1) {
-  console.error('Erro. Uso correto: npx ts-node scripts/cli.ts <nome-do-modulo>');
+const moduleNameArg = args.find((a) => a !== '--ddd');
+if (!moduleNameArg || args.length < 1) {
+  console.error('Erro. Uso correto: npx ts-node scripts/cli.ts <nome-do-modulo> [--ddd]');
   process.exit(1);
 }
 
-const moduleName = args[0];
+const moduleName = moduleNameArg;
+const mode = args.includes('--ddd') ? 'ddd' : 'simple';
 const projectRoot = path.join(__dirname, '..');
 const modulePath = path.join(projectRoot, 'src', 'app', moduleName);
 
@@ -20,6 +22,7 @@ const props: Props = {
   moduleNamePascal: kebabToPascalCase(moduleName),
   moduleNameCamel: kebabToCamelCase(moduleName),
   moduleNameUpper: moduleName.toUpperCase(),
+  mode,
 };
 
 async function main() {
@@ -34,6 +37,12 @@ async function main() {
   await fs.mkdir(modulePath);
   await generateModuleFiles(props);
   console.log(`Módulo "${moduleName}" criado com sucesso.`);
+  if (mode === 'ddd') {
+    console.log('Lembre-se de adicionar os tokens em src/core/di/token.ts:');
+    console.log(`  ${props.moduleNamePascal}Dao: Symbol.for('${props.moduleNamePascal}Dao'),`);
+    console.log(`  ${props.moduleNamePascal}Repository: Symbol.for('${props.moduleNamePascal}Repository'),`);
+    console.log('E adicionar o model no Prisma schema (id, field, status, createdAt, updatedAt).');
+  }
 }
 
 main().catch((err) => {
