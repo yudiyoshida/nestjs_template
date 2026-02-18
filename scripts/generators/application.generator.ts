@@ -29,25 +29,21 @@ export async function generateApplication(props: Props): Promise<void> {
     renderTemplate(T.dto, ctx)
   );
 
-  // Persistence
-  const persistenceModuleTemplate = isDdd ? T.persistence.moduleDdd : T.persistence.module;
+  // Persistence (sempre gera Dao + Repository para suportar ambos nos use cases)
   const daoInterfaceTemplate = isDdd ? T.persistence.daoInterfaceDdd : T.persistence.daoInterface;
 
   await writeGeneratedFile(
     path.join(persistencePath, `${props.moduleName}-persistence.module.ts`),
-    renderTemplate(persistenceModuleTemplate, ctx)
+    renderTemplate(T.persistence.moduleDdd, ctx)
   );
   await writeGeneratedFile(
     path.join(persistencePath, 'dao', `${props.moduleName}-dao.interface.ts`),
     renderTemplate(daoInterfaceTemplate, ctx)
   );
-
-  if (isDdd) {
-    await writeGeneratedFile(
-      path.join(persistencePath, 'repository', `${props.moduleName}-repository.interface.ts`),
-      renderTemplate(T.persistence.repositoryInterface, ctx)
-    );
-  }
+  await writeGeneratedFile(
+    path.join(persistencePath, 'repository', `${props.moduleName}-repository.interface.ts`),
+    renderTemplate(T.persistence.repositoryInterface, ctx)
+  );
 
   // Use cases
   const create = T.usecases.create;
@@ -68,11 +64,11 @@ export async function generateApplication(props: Props): Promise<void> {
     renderTemplate(create.serviceSpec, ctx)
   );
   await writeGeneratedFile(
-    path.join(createPath, `create-${props.moduleName}.dto.ts`),
+    path.join(createPath, 'dtos', `create-${props.moduleName}.dto.ts`),
     renderTemplate(create.dtos.dto, ctx)
   );
   await writeGeneratedFile(
-    path.join(createPath, `create-${props.moduleName}-dto.spec.ts`),
+    path.join(createPath, 'dtos', `create-${props.moduleName}-dto.spec.ts`),
     renderTemplate(create.dtos.dtoSpec, ctx)
   );
 
@@ -88,11 +84,11 @@ export async function generateApplication(props: Props): Promise<void> {
     renderTemplate(edit.serviceSpec, ctx)
   );
   await writeGeneratedFile(
-    path.join(editPath, `edit-${props.moduleName}.dto.ts`),
+    path.join(editPath, 'dtos', `edit-${props.moduleName}.dto.ts`),
     renderTemplate(edit.dtos.dto, ctx)
   );
   await writeGeneratedFile(
-    path.join(editPath, `edit-${props.moduleName}-dto.spec.ts`),
+    path.join(editPath, 'dtos', `edit-${props.moduleName}-dto.spec.ts`),
     renderTemplate(edit.dtos.dtoSpec, ctx)
   );
 
@@ -120,11 +116,11 @@ export async function generateApplication(props: Props): Promise<void> {
     renderTemplate(findAll.serviceSpec, ctx)
   );
   await writeGeneratedFile(
-    path.join(findAllPath, `find-all-${props.moduleName}.dto.ts`),
+    path.join(findAllPath, 'dtos', `find-all-${props.moduleName}.dto.ts`),
     renderTemplate(findAll.dtos.dto, ctx)
   );
   await writeGeneratedFile(
-    path.join(findAllPath, `find-all-${props.moduleName}-dto.spec.ts`),
+    path.join(findAllPath, 'dtos', `find-all-${props.moduleName}-dto.spec.ts`),
     renderTemplate(findAll.dtos.dtoSpec, ctx)
   );
 

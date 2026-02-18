@@ -37,12 +37,10 @@ async function main() {
   await fs.mkdir(modulePath);
   await generateModuleFiles(props);
   console.log(`Módulo "${moduleName}" criado com sucesso.`);
-  if (mode === 'ddd') {
-    console.log('Lembre-se de adicionar os tokens em src/core/di/token.ts:');
-    console.log(`  ${props.moduleNamePascal}Dao: Symbol.for('${props.moduleNamePascal}Dao'),`);
-    console.log(`  ${props.moduleNamePascal}Repository: Symbol.for('${props.moduleNamePascal}Repository'),`);
-    console.log('E adicionar o model no Prisma schema (id, field, status, createdAt, updatedAt).');
-  }
+  console.log('Lembre-se de adicionar os tokens em src/core/di/token.ts:');
+  console.log(`  ${props.moduleNamePascal}Dao: Symbol.for('${props.moduleNamePascal}Dao'),`);
+  console.log(`  ${props.moduleNamePascal}Repository: Symbol.for('${props.moduleNamePascal}Repository'),`);
+  console.log('E adicionar o model no Prisma schema (id, field, status, createdAt, updatedAt).');
 }
 
 main().catch((err) => {

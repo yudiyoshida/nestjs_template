@@ -41,14 +41,13 @@ export async function generateInfra(props: Props): Promise<void> {
     renderTemplate(T.daoSpec, ctx)
   );
 
-  if (isDdd) {
-    await writeGeneratedFile(
-      path.join(persistencePath, `${props.moduleName}-prisma.repository.ts`),
-      renderTemplate(T.repository, ctx)
-    );
-    await writeGeneratedFile(
-      path.join(persistencePath, `${props.moduleName}-prisma.repository.spec.ts`),
-      renderTemplate(T.repositorySpec, ctx)
-    );
-  }
+  // Repository (sempre gerado para suportar ambos Dao e Repository nos use cases)
+  await writeGeneratedFile(
+    path.join(persistencePath, `${props.moduleName}-prisma.repository.ts`),
+    renderTemplate(T.repository, ctx)
+  );
+  await writeGeneratedFile(
+    path.join(persistencePath, `${props.moduleName}-prisma.repository.spec.ts`),
+    renderTemplate(T.repositorySpec, ctx)
+  );
 }

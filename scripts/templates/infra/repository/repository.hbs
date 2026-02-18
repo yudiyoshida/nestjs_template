@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { {{moduleNamePascal}} } from 'src/app/{{moduleName}}/domain/entities/{{moduleName}}.entity';
 import { {{moduleNamePascal}}Status } from 'src/app/{{moduleName}}/domain/enums/{{moduleName}}-status.enum';
 import { PrismaService } from 'src/infra/database/prisma/prisma.service';
-import { I{{moduleNamePascal}}Repository } from '../../../application/persistence/repository/{{moduleName}}-repository.interface';
+import { I{{moduleNamePascal}}Repository } from 'src/app/{{moduleName}}/application/persistence/repository/{{moduleName}}-repository.interface';
 
 @Injectable()
 export class {{moduleNamePascal}}RepositoryAdapterPrisma implements I{{moduleNamePascal}}Repository {
