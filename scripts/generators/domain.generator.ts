@@ -16,14 +16,22 @@ function getContext(props: Props) {
 
 export async function generateDomain(props: Props): Promise<void> {
   const domainPath = path.join(props.modulePath, 'domain');
+  const ctx = getContext(props);
+
+  // Errors
+  await writeGeneratedFile(
+    path.join(domainPath, 'errors', `${props.moduleName}-not-found.error.ts`),
+    renderTemplate(T.errorNotFound, ctx)
+  );
+  await writeGeneratedFile(
+    path.join(domainPath, 'errors', `${props.moduleName}-already-exists.error.ts`),
+    renderTemplate(T.errorAlreadyExists, ctx)
+  );
+
 
   if (props.mode === 'simple') {
-    const gitkeepPath = path.join(domainPath, '.gitkeep');
-    await writeGeneratedFile(gitkeepPath, '');
     return;
   }
-
-  const ctx = getContext(props);
 
   // Entities
   await writeGeneratedFile(
@@ -39,15 +47,5 @@ export async function generateDomain(props: Props): Promise<void> {
   await writeGeneratedFile(
     path.join(domainPath, 'enums', `${props.moduleName}-status.enum.ts`),
     renderTemplate(T.enumStatus, ctx)
-  );
-
-  // Errors
-  await writeGeneratedFile(
-    path.join(domainPath, 'errors', `${props.moduleName}-not-found.error.ts`),
-    renderTemplate(T.errorNotFound, ctx)
-  );
-  await writeGeneratedFile(
-    path.join(domainPath, 'errors', `${props.moduleName}-already-exists.error.ts`),
-    renderTemplate(T.errorAlreadyExists, ctx)
   );
 }

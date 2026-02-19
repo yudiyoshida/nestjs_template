@@ -29,21 +29,24 @@ export async function generateApplication(props: Props): Promise<void> {
     renderTemplate(T.dto, ctx)
   );
 
-  // Persistence (sempre gera Dao + Repository para suportar ambos nos use cases)
+  // Persistence
+  const persistenceModuleTemplate = isDdd ? T.persistence.moduleDdd : T.persistence.module;
   const daoInterfaceTemplate = isDdd ? T.persistence.daoInterfaceDdd : T.persistence.daoInterface;
 
   await writeGeneratedFile(
     path.join(persistencePath, `${props.moduleName}-persistence.module.ts`),
-    renderTemplate(T.persistence.moduleDdd, ctx)
+    renderTemplate(persistenceModuleTemplate, ctx)
   );
   await writeGeneratedFile(
     path.join(persistencePath, 'dao', `${props.moduleName}-dao.interface.ts`),
     renderTemplate(daoInterfaceTemplate, ctx)
   );
-  await writeGeneratedFile(
-    path.join(persistencePath, 'repository', `${props.moduleName}-repository.interface.ts`),
-    renderTemplate(T.persistence.repositoryInterface, ctx)
-  );
+  if (isDdd) {
+    await writeGeneratedFile(
+      path.join(persistencePath, 'repository', `${props.moduleName}-repository.interface.ts`),
+      renderTemplate(T.persistence.repositoryInterface, ctx)
+    );
+  }
 
   // Use cases
   const create = T.usecases.create;
