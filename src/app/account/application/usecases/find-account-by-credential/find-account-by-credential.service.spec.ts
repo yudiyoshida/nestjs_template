@@ -70,7 +70,7 @@ describe('FindAccountByCredential', () => {
           roles: {
             create: [
               { role: AccountRole.ADMIN },
-              { role: AccountRole.SELLER },
+              { role: AccountRole.STUDENT },
             ],
           },
         },
@@ -85,7 +85,7 @@ describe('FindAccountByCredential', () => {
         email: account.email,
         password: account.password,
         passwordResetToken: null,
-        roles: [AccountRole.ADMIN, AccountRole.SELLER],
+        roles: [AccountRole.ADMIN, AccountRole.STUDENT],
         status: AccountStatus.ACTIVE,
       });
     });
