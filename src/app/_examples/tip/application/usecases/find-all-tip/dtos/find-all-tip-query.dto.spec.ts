@@ -46,7 +46,7 @@ describe('FindAllTipQueryDto', () => {
 
       expect.assertions(1);
       return target.transform(query, metadata).catch((error) => {
-        expect(error.getResponse().message).toContain('type must be a valid enum value');
+        expect(error.getResponse().message).toContain('type deve ser um valor válido do enum');
       });
     });
 
@@ -61,7 +61,7 @@ describe('FindAllTipQueryDto', () => {
 
       expect.assertions(1);
       return target.transform(query, metadata).catch((error) => {
-        expect(error.getResponse().message).toContain('type must be a valid enum value');
+        expect(error.getResponse().message).toContain('type deve ser um valor válido do enum');
       });
     });
   });
@@ -90,7 +90,7 @@ describe('FindAllTipQueryDto', () => {
 
       expect.assertions(1);
       return target.transform(query, metadata).catch((error) => {
-        expect(error.getResponse().message).toContain('status must be a valid enum value');
+        expect(error.getResponse().message).toContain('status deve ser um valor válido do enum');
       });
     });
 
@@ -105,7 +105,7 @@ describe('FindAllTipQueryDto', () => {
 
       expect.assertions(1);
       return target.transform(query, metadata).catch((error) => {
-        expect(error.getResponse().message).toContain('status must be a valid enum value');
+        expect(error.getResponse().message).toContain('status deve ser um valor válido do enum');
       });
     });
   });

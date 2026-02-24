@@ -1,17 +1,17 @@
 import { Module, Provider } from '@nestjs/common';
 import { TOKENS } from 'src/core/di/token';
 import { DatabaseModule } from 'src/infra/database/database.module';
-import { TipPrismaAdapterDao } from '../../infra/driven/persistence/prisma/tip-prisma.dao';
-import { TipPrismaAdapterRepository } from '../../infra/driven/persistence/prisma/tip-prisma.repository';
+import { TipDaoAdapterPrisma } from '../../infra/driven/persistence/prisma/tip-prisma.dao';
+import { TipRepositoryAdapterPrisma } from '../../infra/driven/persistence/prisma/tip-prisma.repository';
 
 const adapters: Provider[] = [
   {
     provide: TOKENS.TipDao,
-    useClass: TipPrismaAdapterDao,
+    useClass: TipDaoAdapterPrisma,
   },
   {
     provide: TOKENS.TipRepository,
-    useClass: TipPrismaAdapterRepository,
+    useClass: TipRepositoryAdapterPrisma,
   },
 ];
 

@@ -1,5 +1,5 @@
 /**
- * TESTES DE INTEGRAÇÃO — TipPrismaAdapterRepository
+ * TESTES DE INTEGRAÇÃO — TipRepositoryAdapterPrisma
  *
  * Testes automatizados garantem que o código se comporta como esperado e
  * permitem detectar regressões rapidamente quando novas alterações são feitas.
@@ -7,7 +7,7 @@
  * TIPO: Teste de Integração
  * Diferentemente dos testes unitários (que isolam a unidade com mocks), os
  * testes de integração verificam como dois ou mais componentes reais funcionam
- * juntos. Aqui testamos a integração entre o repositório (`TipPrismaAdapterRepository`)
+ * juntos. Aqui testamos a integração entre o repositório (`TipRepositoryAdapterPrisma`)
  * e o banco de dados real via Prisma.
  *
  * POR QUE NÃO USAR MOCKS AQUI?
@@ -30,12 +30,12 @@ import { TipStatus } from 'src/app/_examples/tip/domain/enums/tip-status.enum';
 import { TipType } from 'src/app/_examples/tip/domain/enums/tip-type.enum';
 import { ConfigModule } from 'src/core/config/config.module';
 import { PrismaService } from 'src/infra/database/prisma/prisma.service';
-import { TipPrismaAdapterRepository } from './tip-prisma.repository';
+import { TipRepositoryAdapterPrisma } from './tip-prisma.repository';
 
-describe('TipPrismaAdapterRepository - Integration tests', () => {
+describe('TipRepositoryAdapterPrisma - Integration tests', () => {
   // "sut" significa "System Under Test" — convenção que deixa claro qual
   // classe está sendo testada dentro do bloco de testes.
-  let sut: TipPrismaAdapterRepository;
+  let sut: TipRepositoryAdapterPrisma;
   // Instância do Prisma exposta para que os testes possam preparar
   // e inspecionar o estado do banco diretamente (arrange/assert).
   let prisma: PrismaService;
@@ -52,12 +52,12 @@ describe('TipPrismaAdapterRepository - Integration tests', () => {
         ConfigModule,
       ],
       providers: [
-        TipPrismaAdapterRepository,
+        TipRepositoryAdapterPrisma,
         PrismaService,
       ],
     }).compile();
 
-    sut = module.get(TipPrismaAdapterRepository);
+    sut = module.get(TipRepositoryAdapterPrisma);
     prisma = module.get(PrismaService);
   });
 

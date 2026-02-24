@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { TOKENS } from 'src/core/di/token';
 import { SuccessMessage } from 'src/core/dtos/success-message.dto';
-import { TipNotFoundError } from '../../../domain/errors/tip.error';
+import { TipNotFoundError } from '../../../domain/errors/tip-not-found.error';
 import type { ITipRepository } from '../../persistence/repository/tip-repository.interface';
 
 @Injectable()

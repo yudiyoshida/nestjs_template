@@ -6,7 +6,7 @@ import { TipStatus } from 'src/app/_examples/tip/domain/enums/tip-status.enum';
 import { TipType } from 'src/app/_examples/tip/domain/enums/tip-type.enum';
 import { ConfigModule } from 'src/core/config/config.module';
 import { PrismaService } from 'src/infra/database/prisma/prisma.service';
-import { TipPrismaAdapterDao } from './tip-prisma.dao';
+import { TipDaoAdapterPrisma } from './tip-prisma.dao';
 
 function makeTip(overrides: Partial<Prisma.TipCreateInput> = {}): Prisma.TipUncheckedCreateInput {
   return {
@@ -20,8 +20,8 @@ function makeTip(overrides: Partial<Prisma.TipCreateInput> = {}): Prisma.TipUnch
   };
 }
 
-describe('TipPrismaAdapterDao - Integration tests', () => {
-  let sut: TipPrismaAdapterDao;
+describe('TipDaoAdapterPrisma - Integration tests', () => {
+  let sut: TipDaoAdapterPrisma;
   let prisma: PrismaService;
 
   beforeAll(async() => {
@@ -30,12 +30,12 @@ describe('TipPrismaAdapterDao - Integration tests', () => {
         ConfigModule,
       ],
       providers: [
-        TipPrismaAdapterDao,
+        TipDaoAdapterPrisma,
         PrismaService,
       ],
     }).compile();
 
-    sut = module.get(TipPrismaAdapterDao);
+    sut = module.get(TipDaoAdapterPrisma);
     prisma = module.get(PrismaService);
   });
 

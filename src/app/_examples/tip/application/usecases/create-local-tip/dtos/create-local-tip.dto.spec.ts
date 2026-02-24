@@ -34,7 +34,7 @@ describe('CreateLocalTipInputDto', () => {
 
       expect.assertions(1);
       return target.transform(data, metadata).catch((error) => {
-        expect(error.getResponse().message).toContain('title should not be empty');
+        expect(error.getResponse().message).toContain('title é obrigatório');
       });
     });
 
@@ -49,7 +49,7 @@ describe('CreateLocalTipInputDto', () => {
 
       expect.assertions(1);
       return target.transform(data, metadata).catch((error) => {
-        expect(error.getResponse().message).toContain('title must be a string');
+        expect(error.getResponse().message).toContain('title deve ser uma string');
       });
     });
 
@@ -58,7 +58,7 @@ describe('CreateLocalTipInputDto', () => {
 
       expect.assertions(1);
       return target.transform(data, metadata).catch((error) => {
-        expect(error.getResponse().message).toContain('title must be shorter than or equal to 256 characters');
+        expect(error.getResponse().message).toContain('title deve ter no máximo 256 caracteres');
       });
     });
 
@@ -81,7 +81,7 @@ describe('CreateLocalTipInputDto', () => {
 
       expect.assertions(1);
       return target.transform(data, metadata).catch((error) => {
-        expect(error.getResponse().message).toContain('content should not be empty');
+        expect(error.getResponse().message).toContain('content é obrigatório');
       });
     });
 
@@ -96,7 +96,7 @@ describe('CreateLocalTipInputDto', () => {
 
       expect.assertions(1);
       return target.transform(data, metadata).catch((error) => {
-        expect(error.getResponse().message).toContain('content must be a string');
+        expect(error.getResponse().message).toContain('content deve ser uma string');
       });
     });
 
@@ -119,7 +119,7 @@ describe('CreateLocalTipInputDto', () => {
 
       expect.assertions(1);
       return target.transform(data, metadata).catch((error) => {
-        expect(error.getResponse().message).toContain('locationId should not be empty');
+        expect(error.getResponse().message).toContain('locationId é obrigatório');
       });
     });
 
@@ -134,7 +134,7 @@ describe('CreateLocalTipInputDto', () => {
 
       expect.assertions(1);
       return target.transform(data, metadata).catch((error) => {
-        expect(error.getResponse().message).toContain('locationId must be a string');
+        expect(error.getResponse().message).toContain('locationId deve ser uma string');
       });
     });
 

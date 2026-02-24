@@ -3,7 +3,7 @@ import { UTCDate } from 'src/shared/value-objects/utc-date/utc-date.vo';
 import { UUID } from 'src/shared/value-objects/uuid/uuid.vo';
 import { TipStatus } from '../enums/tip-status.enum';
 import { TipType } from '../enums/tip-type.enum';
-import { TipCannotBeEditedError } from '../errors/tip.error';
+import { TipCannotBeEditedError } from '../errors/tip-cannot-be-edited.error';
 
 export type TipProps = TipCreateProps & {
   id: string;
@@ -23,6 +23,15 @@ export type TipCreateProps = {
 
 export class Tip {
   private readonly _props: TipProps;
+
+  private validateRequiredFields(props: TipProps): void {
+    if (typeof props.title !== 'string' || !props.title || !props.title.trim()) {
+      throw new AppException('O campo title não pode ser vazio');
+    }
+    if (typeof props.content !== 'string' || !props.content || !props.content.trim()) {
+      throw new AppException('O campo content não pode ser vazio');
+    }
+  }
 
   static createWeather(props: TipCreateProps): Tip {
     const now = UTCDate.create();
@@ -61,7 +70,8 @@ export class Tip {
     return new Tip(props);
   }
 
-  constructor(props: TipProps) {
+  private constructor(props: TipProps) {
+    this.validateRequiredFields(props);
     this._props = {
       id: props.id,
       type: props.type,

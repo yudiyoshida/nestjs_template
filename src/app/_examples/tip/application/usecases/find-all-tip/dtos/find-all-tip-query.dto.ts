@@ -7,16 +7,16 @@ import { Queries } from 'src/infra/validators/class/dtos/queries/queries.dto';
 export class FindAllTipQueryDto extends Queries {
   @ApiPropertyOptional({ enum: TipType })
   @IsOptional()
-  @IsEnum(TipType, { message: '$property must be a valid enum value' })
+  @IsEnum(TipType, { message: '$property deve ser um valor válido do enum' })
   type?: TipType;
 
   @ApiPropertyOptional({ enum: TipStatus })
   @IsOptional()
-  @IsEnum(TipStatus, { message: '$property must be a valid enum value' })
+  @IsEnum(TipStatus, { message: '$property deve ser um valor válido do enum' })
   status?: TipStatus;
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsString()
+  @IsString({ message: '$property deve ser uma string' })
   locationId?: string;
 }

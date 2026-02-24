@@ -5,9 +5,3 @@ export class TipNotFoundError extends AppException {
     super(`Dica com id ${id} não encontrada`);
   }
 }
-
-export class TipCannotBeEditedError extends AppException {
-  constructor() {
-    super('Dica não pode ser editada porque está expirada ou removida');
-  }
-}

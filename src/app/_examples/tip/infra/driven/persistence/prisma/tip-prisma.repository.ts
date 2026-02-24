@@ -6,7 +6,7 @@ import { TipType } from 'src/app/_examples/tip/domain/enums/tip-type.enum';
 import { PrismaService } from 'src/infra/database/prisma/prisma.service';
 
 @Injectable()
-export class TipPrismaAdapterRepository implements ITipRepository {
+export class TipRepositoryAdapterPrisma implements ITipRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   public async save(tip: Tip): Promise<void> {

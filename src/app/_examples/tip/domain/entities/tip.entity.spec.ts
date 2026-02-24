@@ -26,7 +26,7 @@
  */
 import { TipStatus } from '../enums/tip-status.enum';
 import { TipType } from '../enums/tip-type.enum';
-import { TipCannotBeEditedError } from '../errors/tip.error';
+import { TipCannotBeEditedError } from '../errors/tip-cannot-be-edited.error';
 import { Tip, TipCreateProps, TipProps } from './tip.entity';
 
 /**
@@ -213,6 +213,26 @@ describe('Tip Entity', () => {
         updatedAt: expect.any(Date),
       });
     });
+
+    it('should throw when title is empty', () => {
+      const props = makeTipCreateProps({ title: '' });
+      expect(() => Tip.createWeather(props)).toThrow('O campo title não pode ser vazio');
+    });
+
+    it('should throw when title is whitespace only', () => {
+      const props = makeTipCreateProps({ title: '   ' });
+      expect(() => Tip.createWeather(props)).toThrow('O campo title não pode ser vazio');
+    });
+
+    it('should throw when content is empty', () => {
+      const props = makeTipCreateProps({ content: '' });
+      expect(() => Tip.createWeather(props)).toThrow('O campo content não pode ser vazio');
+    });
+
+    it('should throw when content is whitespace only', () => {
+      const props = makeTipCreateProps({ content: '   ' });
+      expect(() => Tip.createWeather(props)).toThrow('O campo content não pode ser vazio');
+    });
   });
 
   describe('createLocal', () => {
@@ -347,6 +367,16 @@ describe('Tip Entity', () => {
         updatedAt: expect.any(Date),
       });
     });
+
+    it('should throw when title is empty', () => {
+      const props = makeTipCreateProps({ locationId: 'loc', title: '' });
+      expect(() => Tip.createLocal(props)).toThrow('O campo title não pode ser vazio');
+    });
+
+    it('should throw when content is empty', () => {
+      const props = makeTipCreateProps({ locationId: 'loc', content: '' });
+      expect(() => Tip.createLocal(props)).toThrow('O campo content não pode ser vazio');
+    });
   });
 
   describe('load', () => {
@@ -370,6 +400,16 @@ describe('Tip Entity', () => {
 
       // Assert
       expect(tip.props).toEqual(props);
+    });
+
+    it('should throw when title is empty', () => {
+      const props = makeTipLoadProps({ title: '' });
+      expect(() => Tip.load(props)).toThrow('O campo title não pode ser vazio');
+    });
+
+    it('should throw when content is empty', () => {
+      const props = makeTipLoadProps({ content: '' });
+      expect(() => Tip.load(props)).toThrow('O campo content não pode ser vazio');
     });
   });
 

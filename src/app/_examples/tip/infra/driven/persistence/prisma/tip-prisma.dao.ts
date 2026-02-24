@@ -23,7 +23,7 @@ const TipSelect = {
 type TipPayload = Prisma.TipGetPayload<{ select: typeof TipSelect }>;
 
 @Injectable()
-export class TipPrismaAdapterDao implements ITipDao {
+export class TipDaoAdapterPrisma implements ITipDao {
   constructor(private readonly prisma: PrismaService) {}
 
   private mapToDto(tip: TipPayload): TipDto {
