@@ -3,6 +3,7 @@ import { ITipRepository } from 'src/app/_examples/tip/application/persistence/re
 import { Tip } from 'src/app/_examples/tip/domain/entities/tip.entity';
 import { TipStatus } from 'src/app/_examples/tip/domain/enums/tip-status.enum';
 import { TipType } from 'src/app/_examples/tip/domain/enums/tip-type.enum';
+import { TipFactory } from 'src/app/_examples/tip/domain/factories/tip.factory';
 import { PrismaService } from 'src/infra/database/prisma/prisma.service';
 
 @Injectable()
@@ -59,7 +60,7 @@ export class TipRepositoryAdapterPrisma implements ITipRepository {
       return null;
     }
 
-    return Tip.load({
+    return TipFactory.load({
       id: tip.id,
       type: tip.type as TipType,
       status: tip.status as TipStatus,

@@ -28,6 +28,7 @@ import { Test } from '@nestjs/testing';
 import { Tip } from 'src/app/_examples/tip/domain/entities/tip.entity';
 import { TipStatus } from 'src/app/_examples/tip/domain/enums/tip-status.enum';
 import { TipType } from 'src/app/_examples/tip/domain/enums/tip-type.enum';
+import { TipFactory } from 'src/app/_examples/tip/domain/factories/tip.factory';
 import { ConfigModule } from 'src/core/config/config.module';
 import { PrismaService } from 'src/infra/database/prisma/prisma.service';
 import { TipRepositoryAdapterPrisma } from './tip-prisma.repository';
@@ -84,7 +85,7 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
     // Verifica que dicas do tipo WEATHER são persistidas corretamente no banco.
     // Após salvar, busca o registro diretamente no Prisma para confirmar a persistência.
     it('should save a new weather tip to database', async() => {
-      const tip = Tip.createWeather({
+      const tip = TipFactory.createWeather({
         title: 'Ventos fortes',
         content: 'Rajadas podem chegar a 60 km/h',
         locationId: null,
@@ -103,7 +104,7 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
     // Diferente das dicas WEATHER, as dicas LOCAIS têm associação a um local específico.
     it('should save a new local tip to database', async() => {
       const locationId = 'Aeroporto de Congonhas';
-      const tip = Tip.createLocal({
+      const tip = TipFactory.createLocal({
         title: 'Pista em manutenção',
         content: 'Setor norte indisponível',
         locationId,
@@ -125,7 +126,7 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
      * como campos renomeados, omitidos ou com tipos incorretos.
      */
     it('should save weather tip with all fields', async() => {
-      const tip = Tip.createWeather({
+      const tip = TipFactory.createWeather({
         title: 'Ventos fortes',
         content: 'Rajadas podem chegar a 60 km/h',
         locationId: null,
@@ -153,7 +154,7 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
 
     // Valida que `createdAt` e `updatedAt` são persistidos como instâncias de Date.
     it('should save tip with correct timestamps', async() => {
-      const tip = Tip.createWeather({
+      const tip = TipFactory.createWeather({
         title: 'Test',
         content: 'Content',
         locationId: null,
@@ -171,7 +172,7 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
 
     // Dicas WEATHER têm data de expiração (`expiresAt`) e status ACTIVE por padrão.
     it('should save weather tip with ACTIVE status and expiresAt', async() => {
-      const tip = Tip.createWeather({
+      const tip = TipFactory.createWeather({
         title: 'Test',
         content: 'Content',
         locationId: null,
@@ -191,7 +192,7 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
     // Dicas LOCAIS não têm data de expiração (`expiresAt` é null) e ficam ACTIVE.
     it('should save local tip with ACTIVE status and no expiresAt', async() => {
       const locationId = 'Santos Dumont Airport';
-      const tip = Tip.createLocal({
+      const tip = TipFactory.createLocal({
         title: 'Test',
         content: 'Content',
         locationId,
@@ -212,7 +213,7 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
   describe('edit', () => {
     // Verifica que título e conteúdo podem ser atualizados em conjunto.
     it('should update an existing tip', async() => {
-      const tip = Tip.createWeather({
+      const tip = TipFactory.createWeather({
         title: 'Original Title',
         content: 'Original Content',
         locationId: null,
@@ -238,7 +239,7 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
      * Garante que o repositório não sobrescreve campos não enviados (patch parcial).
      */
     it('should update only title', async() => {
-      const tip = Tip.createWeather({
+      const tip = TipFactory.createWeather({
         title: 'Original Title',
         content: 'Original Content',
         locationId: null,
@@ -259,7 +260,7 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
 
     // Testa atualização parcial: apenas o conteúdo é alterado.
     it('should update only content', async() => {
-      const tip = Tip.createWeather({
+      const tip = TipFactory.createWeather({
         title: 'Original Title',
         content: 'Original Content',
         locationId: null,
@@ -280,7 +281,7 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
 
     // Verifica que o método `expire()` da entidade persiste o status EXPIRED no banco.
     it('should update status when expired', async() => {
-      const tip = Tip.createWeather({
+      const tip = TipFactory.createWeather({
         title: 'Test',
         content: 'Content',
         locationId: null,
@@ -299,7 +300,7 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
 
     // Verifica que o método `remove()` da entidade persiste o status REMOVED no banco.
     it('should update status when removed', async() => {
-      const tip = Tip.createWeather({
+      const tip = TipFactory.createWeather({
         title: 'Test',
         content: 'Content',
         locationId: null,
@@ -322,7 +323,7 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
      * o timestamp original e o novo, tornando o teste determinístico.
      */
     it('should update updatedAt timestamp', async() => {
-      const tip = Tip.createWeather({
+      const tip = TipFactory.createWeather({
         title: 'Test',
         content: 'Content',
         locationId: null,
@@ -351,7 +352,7 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
      * completar sem erro mesmo que o DELETE não tenha sido executado.
      */
     it('should delete a tip from database', async() => {
-      const tip = Tip.createWeather({
+      const tip = TipFactory.createWeather({
         title: 'Test',
         content: 'Content',
         locationId: null,
@@ -369,7 +370,7 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
 
     // Confirma que a exclusão é física (hard delete), não lógica (soft delete).
     it('should perform hard delete (not soft delete)', async() => {
-      const tip = Tip.createWeather({
+      const tip = TipFactory.createWeather({
         title: 'Test',
         content: 'Content',
         locationId: null,
@@ -406,7 +407,7 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
 
     // Verifica que o repositório reconstrói a entidade Tip a partir dos dados do banco.
     it('should return Tip entity by id', async() => {
-      const tip = Tip.createWeather({
+      const tip = TipFactory.createWeather({
         title: 'Test',
         content: 'Content',
         locationId: null,
@@ -422,7 +423,7 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
 
     // Valida o contrato de mapeamento: todas as propriedades da entidade devem bater.
     it('should return Tip entity with all properties', async() => {
-      const tip = Tip.createWeather({
+      const tip = TipFactory.createWeather({
         title: 'Test',
         content: 'Content',
         locationId: null,
@@ -438,7 +439,7 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
 
     // Verifica que a entidade reconstruída possui os métodos de domínio (expire, remove, update).
     it('should return Tip entity with business methods', async() => {
-      const tip = Tip.createWeather({
+      const tip = TipFactory.createWeather({
         title: 'Test',
         content: 'Content',
         locationId: null,
@@ -460,7 +461,7 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
     // Verifica que dicas LOCAIS são reconstruídas com os métodos corretos (isLocal, isWeather).
     it('should return local tip with business methods', async() => {
       const locationId = 'Santos Dumont Airport';
-      const tip = Tip.createLocal({
+      const tip = TipFactory.createLocal({
         title: 'Test',
         content: 'Content',
         locationId,

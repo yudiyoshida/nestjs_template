@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { TOKENS } from 'src/core/di/token';
-import { Tip } from '../../../domain/entities/tip.entity';
+import { TipFactory } from '../../../domain/factories/tip.factory';
 import type { ITipRepository } from '../../persistence/repository/tip-repository.interface';
 import { CreateWeatherTipInputDto, CreateWeatherTipOutputDto } from './dtos/create-weather-tip.dto';
 
@@ -11,7 +11,7 @@ export class CreateWeatherTip {
   ) {}
 
   public async execute(data: CreateWeatherTipInputDto, createdBy: string): Promise<CreateWeatherTipOutputDto> {
-    const tip = Tip.createWeather({
+    const tip = TipFactory.createWeather({
       title: data.title,
       content: data.content,
       locationId: data.locationId ?? null,

@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { TOKENS } from 'src/core/di/token';
-import { Tip } from '../../../domain/entities/tip.entity';
+import { TipFactory } from '../../../domain/factories/tip.factory';
 import type { ITipRepository } from '../../persistence/repository/tip-repository.interface';
 import { CreateLocalTipInputDto, CreateLocalTipOutputDto } from './dtos/create-local-tip.dto';
 
@@ -11,7 +11,7 @@ export class CreateLocalTip {
   ) {}
 
   public async execute(data: CreateLocalTipInputDto, createdBy: string): Promise<CreateLocalTipOutputDto> {
-    const tip = Tip.createLocal({
+    const tip = TipFactory.createLocal({
       title: data.title,
       content: data.content,
       locationId: data.locationId,

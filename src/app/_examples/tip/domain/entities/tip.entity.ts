@@ -1,6 +1,4 @@
-import { AppException } from 'src/core/filters/app.exception';
 import { UTCDate } from 'src/shared/value-objects/utc-date/utc-date.vo';
-import { UUID } from 'src/shared/value-objects/uuid/uuid.vo';
 import { TipStatus } from '../enums/tip-status.enum';
 import { TipType } from '../enums/tip-type.enum';
 import { TipCannotBeEditedError } from '../errors/tip-cannot-be-edited.error';
@@ -24,66 +22,12 @@ export type TipCreateProps = {
 export class Tip {
   private readonly _props: TipProps;
 
-  private validateRequiredFields(props: TipProps): void {
-    if (typeof props.title !== 'string' || !props.title || !props.title.trim()) {
-      throw new AppException('O campo title não pode ser vazio');
-    }
-    if (typeof props.content !== 'string' || !props.content || !props.content.trim()) {
-      throw new AppException('O campo content não pode ser vazio');
-    }
-  }
-
-  static createWeather(props: TipCreateProps): Tip {
-    const now = UTCDate.create();
-    const expiresAt = now.addDays(1);
-
-    return new Tip({
-      ...props,
-      id: new UUID().value,
-      type: TipType.WEATHER,
-      status: TipStatus.ACTIVE,
-      expiresAt: expiresAt.value,
-      createdAt: now.value,
-      updatedAt: now.value,
-    });
-  }
-
-  static createLocal(props: TipCreateProps): Tip {
-    if (!props.locationId) {
-      throw new AppException('Location ID is required for local tips.');
-    }
-
-    const now = UTCDate.create().value;
-
-    return new Tip({
-      ...props,
-      id: new UUID().value,
-      type: TipType.LOCAL,
-      status: TipStatus.ACTIVE,
-      expiresAt: null,
-      createdAt: now,
-      updatedAt: now,
-    });
-  }
-
-  static load(props: TipProps): Tip {
+  static _instantiate(props: TipProps): Tip {
     return new Tip(props);
   }
 
   private constructor(props: TipProps) {
-    this.validateRequiredFields(props);
-    this._props = {
-      id: props.id,
-      type: props.type,
-      status: props.status,
-      title: props.title,
-      content: props.content,
-      locationId: props.locationId,
-      createdBy: props.createdBy,
-      expiresAt: props.expiresAt,
-      createdAt: props.createdAt,
-      updatedAt: props.updatedAt,
-    };
+    this._props = props;
   }
 
   public get props(): Readonly<TipProps> {
@@ -114,7 +58,9 @@ export class Tip {
     if (!this._props.expiresAt) return false;
 
     const expirationDate = UTCDate.from(this._props.expiresAt);
-    return UTCDate.create().isAfter(expirationDate);
+    const now = UTCDate.create();
+
+    return now.isAfter(expirationDate);
   }
 
   public expire(): void {
