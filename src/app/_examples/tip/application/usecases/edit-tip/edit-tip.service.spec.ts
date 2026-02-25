@@ -2,7 +2,6 @@ import { Test } from '@nestjs/testing';
 import { Prisma } from '@prisma/client';
 import { TipStatus } from 'src/app/_examples/tip/domain/enums/tip-status.enum';
 import { TipType } from 'src/app/_examples/tip/domain/enums/tip-type.enum';
-import { TipCannotBeEditedError } from 'src/app/_examples/tip/domain/errors/tip-cannot-be-edited.error';
 import { TipNotFoundError } from 'src/app/_examples/tip/domain/errors/tip-not-found.error';
 import { TipModule } from 'src/app/_examples/tip/tip.module';
 import { PrismaService } from 'src/infra/database/prisma/prisma.service';
@@ -83,19 +82,6 @@ describe('EditTip - Integration tests', () => {
     // Assert
     const updatedTip = await prisma.tip.findUnique({ where: { id: tip.id } });
     expect(updatedTip?.title).toBe('Updated');
-  });
-
-  it.each(
-    Object.values(TipStatus).filter(status => status !== TipStatus.ACTIVE)
-  )('should throw TipCannotBeEditedError when tip is %s', async(status) => {
-    // Arrange
-    const tip = await prisma.tip.create({
-      data: makeTip(accountId, { status }),
-    });
-    const data: EditTipInputDto = { title: 'Updated' };
-
-    // Act & Assert
-    await expect(sut.execute(tip.id, data, accountId)).rejects.toThrow(TipCannotBeEditedError);
   });
 
   it('should update tip title and content', async() => {

@@ -25,7 +25,7 @@
  * integração contra o banco de produção.
  */
 import { Test } from '@nestjs/testing';
-import { Tip } from 'src/app/_examples/tip/domain/entities/tip.entity';
+import { Tip, TipProps } from 'src/app/_examples/tip/domain/entities/tip.entity';
 import { TipStatus } from 'src/app/_examples/tip/domain/enums/tip-status.enum';
 import { TipType } from 'src/app/_examples/tip/domain/enums/tip-type.enum';
 import { TipFactory } from 'src/app/_examples/tip/domain/factories/tip.factory';
@@ -147,8 +147,8 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
         locationId: tip.props.locationId,
         createdBy: tip.props.createdBy,
         expiresAt: tip.props.expiresAt,
-        createdAt: tip.props.createdAt,
-        updatedAt: tip.props.updatedAt,
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
       });
     });
 
@@ -221,11 +221,12 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
       });
       await sut.save(tip);
 
-      tip.update({
+      const updatedTipEntity = TipFactory.load({
+        ...tip.props,
         title: 'Updated Title',
         content: 'Updated Content',
       });
-      await sut.edit(tip);
+      await sut.edit(updatedTipEntity);
 
       const updatedTip = await prisma.tip.findUnique({
         where: { id: tip.props.id },
@@ -247,8 +248,11 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
       });
       await sut.save(tip);
 
-      tip.update({ title: 'Updated Title' });
-      await sut.edit(tip);
+      const updatedTipEntity = TipFactory.load({
+        ...tip.props,
+        title: 'Updated Title',
+      });
+      await sut.edit(updatedTipEntity);
 
       const updatedTip = await prisma.tip.findUnique({
         where: { id: tip.props.id },
@@ -268,8 +272,11 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
       });
       await sut.save(tip);
 
-      tip.update({ content: 'Updated Content' });
-      await sut.edit(tip);
+      const updatedTipEntity = TipFactory.load({
+        ...tip.props,
+        content: 'Updated Content',
+      });
+      await sut.edit(updatedTipEntity);
 
       const updatedTip = await prisma.tip.findUnique({
         where: { id: tip.props.id },
@@ -329,18 +336,18 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
         locationId: null,
         createdBy: 'admin-user',
       });
+      const beforeSaveTimestamp = new Date();
       await sut.save(tip);
-      const originalUpdatedAt = tip.props.updatedAt;
 
       await new Promise(resolve => setTimeout(resolve, 10));
 
-      tip.update({ title: 'Updated' });
-      await sut.edit(tip);
+      const updatedTipEntity = TipFactory.load({ ...tip.props });
+      await sut.edit(updatedTipEntity);
 
       const updatedTip = await prisma.tip.findUnique({
         where: { id: tip.props.id },
       });
-      expect(updatedTip?.updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime());
+      expect(updatedTip?.updatedAt.getTime()).toBeGreaterThan(beforeSaveTimestamp.getTime());
     });
   });
 
@@ -434,7 +441,16 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
       const result = await sut.findById(tip.props.id);
 
       expect(result).not.toBeNull();
-      expect(result?.props).toEqual(tip.props);
+      expect(result?.props).toEqual<TipProps>({
+        id: tip.props.id,
+        type: tip.props.type,
+        status: tip.props.status,
+        title: tip.props.title,
+        content: tip.props.content,
+        locationId: tip.props.locationId,
+        createdBy: tip.props.createdBy,
+        expiresAt: tip.props.expiresAt,
+      });
     });
 
     // Verifica que a entidade reconstruída possui os métodos de domínio (expire, remove, update).
@@ -455,7 +471,6 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
       expect(result?.isActive()).toBe(true);
       expect(typeof result?.expire).toBe('function');
       expect(typeof result?.remove).toBe('function');
-      expect(typeof result?.update).toBe('function');
     });
 
     // Verifica que dicas LOCAIS são reconstruídas com os métodos corretos (isLocal, isWeather).

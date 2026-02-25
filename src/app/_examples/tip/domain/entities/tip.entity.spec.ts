@@ -26,9 +26,8 @@
  */
 import { TipStatus } from '../enums/tip-status.enum';
 import { TipType } from '../enums/tip-type.enum';
-import { TipCannotBeEditedError } from '../errors/tip-cannot-be-edited.error';
 import { TipFactory } from '../factories/tip.factory';
-import { Tip, TipCreateProps, TipProps } from './tip.entity';
+import { TipCreateProps, TipProps } from './tip.entity';
 
 /**
  * Fábrica de props de criação com suporte a overrides.
@@ -62,8 +61,6 @@ function makeTipLoadProps(overrides?: Partial<TipProps>): TipProps {
     locationId: null,
     createdBy: 'user-id',
     expiresAt: new Date(),
-    createdAt: new Date(),
-    updatedAt: new Date(),
     ...overrides,
   };
 }
@@ -169,25 +166,6 @@ describe('Tip Entity', () => {
       expect(tip.isActive()).toBe(false);
       expect(tip.isRemoved()).toBe(false);
     });
-
-    /**
-     * Verifica que a transição de estado atualiza o `updatedAt`.
-     * O `setTimeout` de 10ms garante que o novo timestamp seja estritamente
-     * maior que o original — sem o delay, ambos poderiam cair no mesmo milissegundo
-     * e a asserção `toBeGreaterThan` falharia mesmo com a implementação correta.
-     */
-    it('should update updatedAt timestamp', async() => {
-      // Arrange
-      const tip = TipFactory.createWeather(makeTipCreateProps());
-      const originalUpdatedAt = tip.props.updatedAt;
-
-      // Act
-      await new Promise(resolve => setTimeout(resolve, 10));
-      tip.expire();
-
-      // Assert
-      expect(tip.props.updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime());
-    });
   });
 
   describe('remove', () => {
@@ -203,153 +181,6 @@ describe('Tip Entity', () => {
       expect(tip.isRemoved()).toBe(true);
       expect(tip.isActive()).toBe(false);
       expect(tip.isExpired()).toBe(false);
-    });
-
-    it('should update updatedAt timestamp', async() => {
-      // Arrange
-      const tip = TipFactory.createWeather(makeTipCreateProps());
-      const originalUpdatedAt = tip.props.updatedAt;
-
-      // Act
-      await new Promise(resolve => setTimeout(resolve, 10));
-      tip.remove();
-
-      // Assert
-      expect(tip.props.updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime());
-    });
-  });
-
-  describe('update', () => {
-    it('should update title when provided', () => {
-      // Arrange
-      const tip = TipFactory.createWeather({
-        title: 'Original Title',
-        content: 'Original Content',
-        locationId: null,
-        createdBy: 'user-id',
-      });
-
-      // Act
-      tip.update({ title: 'Updated Title' });
-
-      // Assert
-      expect(tip.props).toEqual<Tip['props']>({
-        ...tip.props,
-        title: 'Updated Title',
-      });
-    });
-
-    it('should update content when provided', () => {
-      // Arrange
-      const tip = TipFactory.createLocal({
-        title: 'Original Title',
-        content: 'Original Content',
-        locationId: 'location-id',
-        createdBy: 'user-id',
-      });
-
-      // Act
-      tip.update({ content: 'Updated Content' });
-
-      // Assert
-      expect(tip.props).toEqual<Tip['props']>({
-        ...tip.props,
-        content: 'Updated Content',
-      });
-    });
-
-    it('should update both title and content when provided', () => {
-      // Arrange
-      const tip = TipFactory.createWeather({
-        title: 'Original Title',
-        content: 'Original Content',
-        locationId: null,
-        createdBy: 'user-id',
-      });
-
-      // Act
-      tip.update({ title: 'New Title', content: 'New Content' });
-
-      // Assert
-      expect(tip.props).toEqual<Tip['props']>({
-        ...tip.props,
-        title: 'New Title',
-        content: 'New Content',
-      });
-    });
-
-    it('should update updatedAt timestamp', async() => {
-      // Arrange
-      const tip = TipFactory.createWeather({
-        title: 'Test',
-        content: 'Test',
-        locationId: null,
-        createdBy: 'user-id',
-      });
-      const originalUpdatedAt = tip.props.updatedAt;
-
-      // Act
-      await new Promise(resolve => setTimeout(resolve, 10));
-      tip.update({ title: 'Updated' });
-
-      // Assert
-      expect(tip.props.updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime());
-    });
-
-    /**
-     * Testa regras de negócio de proteção de estado: uma dica expirada ou
-     * removida não pode ser editada. Verificamos DOIS aspectos do erro:
-     *   1. O tipo (`TipCannotBeEditedError`) — garante que o filter HTTP trate
-     *      corretamente e retorne o status adequado ao cliente.
-     *   2. A mensagem — garante que o texto não mude silenciosamente.
-     *
-     * Os estados EXPIRED e REMOVED são testados separadamente para garantir
-     * que a regra se aplica a ambos, não apenas a um deles.
-     */
-    it('should throw TipCannotBeEditedError when tip is EXPIRED', () => {
-      // Arrange
-      const tip = TipFactory.createWeather({
-        title: 'Test',
-        content: 'Test',
-        locationId: null,
-        createdBy: 'user-id',
-      });
-      tip.expire();
-
-      // Act & Assert
-      expect(() => tip.update({ title: 'New Title' })).toThrow(TipCannotBeEditedError);
-      expect(() => tip.update({ title: 'New Title' })).toThrow('Dica não pode ser editada porque está expirada ou removida');
-    });
-
-    it('should throw TipCannotBeEditedError when tip is REMOVED', () => {
-      // Arrange
-      const tip = TipFactory.createLocal({
-        title: 'Test',
-        content: 'Test',
-        locationId: 'location-id',
-        createdBy: 'user-id',
-      });
-      tip.remove();
-
-      // Act & Assert
-      expect(() => tip.update({ title: 'New Title' })).toThrow(TipCannotBeEditedError);
-      expect(() => tip.update({ title: 'New Title' })).toThrow('Dica não pode ser editada porque está expirada ou removida');
-    });
-
-    it('should not update when no fields are provided', () => {
-      // Arrange
-      const tip = TipFactory.createWeather({
-        title: 'Original Title',
-        content: 'Original Content',
-        locationId: null,
-        createdBy: 'user-id',
-      });
-
-      // Act
-      tip.update({});
-
-      // Assert
-      expect(tip.props).toEqual<Tip['props']>(tip.props);
     });
   });
 

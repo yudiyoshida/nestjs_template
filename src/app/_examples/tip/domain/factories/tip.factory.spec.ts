@@ -53,8 +53,6 @@ function makeTipLoadProps(overrides?: Partial<TipProps>): TipProps {
     locationId: null,
     createdBy: 'user-id',
     expiresAt: new Date(),
-    createdAt: new Date(),
-    updatedAt: new Date(),
     ...overrides,
   };
 }
@@ -137,30 +135,6 @@ describe('TipFactory', () => {
       expect(tip.props.expiresAt).not.toBeNull();
       expect(tip.props.expiresAt!.getTime()).toBeGreaterThanOrEqual(minExpiration.getTime());
       expect(tip.props.expiresAt!.getTime()).toBeLessThanOrEqual(maxExpiration.getTime());
-    });
-
-    /**
-     * Verifica que `createdAt` e `updatedAt` são gerados automaticamente
-     * e estão dentro do intervalo de tempo de execução do teste.
-     */
-    it('should set createdAt and updatedAt to the current time', async() => {
-      // Arrange
-      const props = makeTipCreateProps();
-      const beforeCreate = new Date();
-
-      // Act
-      await new Promise((resolve) => setTimeout(resolve, 10));
-      const tip = TipFactory.createWeather(props);
-      await new Promise((resolve) => setTimeout(resolve, 10));
-
-      // Assert
-      const afterCreate = new Date();
-
-      expect(tip.props.createdAt.getTime()).toBeGreaterThanOrEqual(beforeCreate.getTime());
-      expect(tip.props.createdAt.getTime()).toBeLessThanOrEqual(afterCreate.getTime());
-
-      expect(tip.props.updatedAt.getTime()).toBeGreaterThanOrEqual(beforeCreate.getTime());
-      expect(tip.props.updatedAt.getTime()).toBeLessThanOrEqual(afterCreate.getTime());
     });
 
     it('should preserve title, content, locationId and createdBy from input props', () => {
@@ -302,26 +276,6 @@ describe('TipFactory', () => {
       expect(tip1.props.id).not.toBe(tip2.props.id);
     });
 
-    it('should set createdAt and updatedAt to the current time', async() => {
-      // Arrange
-      const props = makeTipCreateProps({ locationId: 'loc-id' });
-      const beforeCreate = new Date();
-
-      // Act
-      await new Promise((resolve) => setTimeout(resolve, 10));
-      const tip = TipFactory.createLocal(props);
-      await new Promise((resolve) => setTimeout(resolve, 10));
-
-      // Assert
-      const afterCreate = new Date();
-
-      expect(tip.props.createdAt.getTime()).toBeGreaterThanOrEqual(beforeCreate.getTime());
-      expect(tip.props.createdAt.getTime()).toBeLessThanOrEqual(afterCreate.getTime());
-
-      expect(tip.props.updatedAt.getTime()).toBeGreaterThanOrEqual(beforeCreate.getTime());
-      expect(tip.props.updatedAt.getTime()).toBeLessThanOrEqual(afterCreate.getTime());
-    });
-
     it('should preserve title, content, locationId and createdBy from input props', () => {
       // Arrange
       const props = makeTipCreateProps({
@@ -402,7 +356,6 @@ describe('TipFactory', () => {
   describe('load', () => {
     it('should return a Tip with the same props provided', () => {
       // Arrange
-      const now = new Date();
       const props = makeTipLoadProps({
         id: 'existing-id',
         type: TipType.LOCAL,
@@ -412,8 +365,6 @@ describe('TipFactory', () => {
         locationId: 'loc-456',
         createdBy: 'user-789',
         expiresAt: null,
-        createdAt: now,
-        updatedAt: now,
       });
 
       // Act
@@ -428,8 +379,6 @@ describe('TipFactory', () => {
       expect(tip.props.locationId).toBe('loc-456');
       expect(tip.props.createdBy).toBe('user-789');
       expect(tip.props.expiresAt).toBeNull();
-      expect(tip.props.createdAt).toBe(now);
-      expect(tip.props.updatedAt).toBe(now);
     });
 
     it('should load a tip with WEATHER type correctly', () => {
@@ -480,8 +429,6 @@ describe('TipFactory', () => {
       expect(tip.props.status).toBe(props.status);
       expect(tip.props.title).toBe(props.title);
       expect(tip.props.content).toBe(props.content);
-      expect(tip.props.createdAt).toBe(props.createdAt);
-      expect(tip.props.updatedAt).toBe(props.updatedAt);
     });
   });
 });

@@ -27,8 +27,6 @@ export class TipFactory {
       type: TipType.WEATHER,
       status: TipStatus.ACTIVE,
       expiresAt: expiresAt.value,
-      createdAt: now.value,
-      updatedAt: now.value,
     });
   }
 
@@ -39,16 +37,12 @@ export class TipFactory {
       throw new AppException('Location ID is required for local tips.');
     }
 
-    const now = UTCDate.create().value;
-
     return Tip._instantiate({
       ...props,
       id: new UUID().value,
       type: TipType.LOCAL,
       status: TipStatus.ACTIVE,
       expiresAt: null,
-      createdAt: now,
-      updatedAt: now,
     });
   }
 

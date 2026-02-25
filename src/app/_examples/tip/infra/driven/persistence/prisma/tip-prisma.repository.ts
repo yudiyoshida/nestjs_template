@@ -21,8 +21,6 @@ export class TipRepositoryAdapterPrisma implements ITipRepository {
         locationId: tip.props.locationId,
         createdBy: tip.props.createdBy,
         expiresAt: tip.props.expiresAt,
-        createdAt: tip.props.createdAt,
-        updatedAt: tip.props.updatedAt,
       },
     });
   }
@@ -40,7 +38,6 @@ export class TipRepositoryAdapterPrisma implements ITipRepository {
         locationId: tip.props.locationId,
         createdBy: tip.props.createdBy,
         expiresAt: tip.props.expiresAt,
-        updatedAt: tip.props.updatedAt,
       },
     });
   }
@@ -69,8 +66,6 @@ export class TipRepositoryAdapterPrisma implements ITipRepository {
       locationId: tip.locationId,
       createdBy: tip.createdBy,
       expiresAt: tip.expiresAt,
-      createdAt: tip.createdAt,
-      updatedAt: tip.updatedAt,
     });
   }
 }
