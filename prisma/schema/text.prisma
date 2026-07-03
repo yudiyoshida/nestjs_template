@@ -1,0 +1,7 @@
+model Text {
+  id        String   @id @default(uuid())
+  type      String   @unique
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

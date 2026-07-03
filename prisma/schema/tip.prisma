@@ -1,0 +1,12 @@
+model Tip {
+  id         String    @id @default(uuid())
+  type       String
+  title      String    @db.VarChar(256)
+  content    String    @db.Text
+  status     String
+  locationId String?
+  createdBy  String
+  expiresAt  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}

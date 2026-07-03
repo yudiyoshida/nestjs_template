@@ -109,7 +109,7 @@ OrderDao: Symbol.for('OrderDao'),
 OrderRepository: Symbol.for('OrderRepository'), // DDD mode only
 ```
 
-2. **Prisma model** — add the corresponding model to `prisma/schema.prisma` with the base fields (`id`, `status`, `createdAt`, `updatedAt`) and run the migration:
+2. **Prisma model** — add the model to `prisma/schema/<module>.prisma` (generator and datasource live in `prisma/schema/schema.prisma`) with the base fields (`id`, `status`, `createdAt`, `updatedAt`) and run the migration:
 
 ```bash
 $ npm run db:migration
