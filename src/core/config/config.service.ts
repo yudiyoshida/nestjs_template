@@ -87,4 +87,9 @@ export class ConfigService {
   get redisUrl(): string {
     return this.nestConfigService.get<string>('REDIS_URL')!;
   }
+
+  // viacep
+  get viacepApiUrl(): string {
+    return this.nestConfigService.get<string>('VIACEP_API_URL')!;
+  }
 }
