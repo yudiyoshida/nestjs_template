@@ -1,0 +1,134 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: template-postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-template}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    networks:
+      - template-dev-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis
+  redis:
+    image: redis:8-alpine
+    container_name: template-redis-dev
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_dev_data:/data
+    networks:
+      - template-dev-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # API (Development with hot reload)
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: development
+    container_name: template-api-dev
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-template}?schema=public
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "${PORT:-3000}:3000"
+      - "9229:9229" # Debug port
+    networks:
+      - template-dev-network
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run start:dev
+
+  # Log watchers - cada um faz tail -F de um log file e joga no stdout
+  # O Dozzle captura o stdout e exibe na interface web
+  log-http:
+    image: alpine:3.21
+    container_name: template-log-http
+    restart: unless-stopped
+    volumes:
+      - ./logs:/logs:ro
+    command: ["tail", "-n", "50", "-F", "/logs/http.log"]
+
+  log-ws:
+    image: alpine:3.21
+    container_name: template-log-ws
+    restart: unless-stopped
+    volumes:
+      - ./logs:/logs:ro
+    command: ["tail", "-n", "50", "-F", "/logs/ws.log"]
+
+  log-cache:
+    image: alpine:3.21
+    container_name: template-log-cache
+    restart: unless-stopped
+    volumes:
+      - ./logs:/logs:ro
+    command: ["tail", "-n", "50", "-F", "/logs/cache.log"]
+
+  log-cep-lookup:
+    image: alpine:3.21
+    container_name: template-log-cep-lookup
+    restart: unless-stopped
+    volumes:
+      - ./logs:/logs:ro
+    command: ["tail", "-n", "50", "-F", "/logs/cep-lookup.log"]
+
+  log-smtp:
+    image: alpine:3.21
+    container_name: template-log-smtp
+    restart: unless-stopped
+    volumes:
+      - ./logs:/logs:ro
+    command: ["tail", "-n", "50", "-F", "/logs/smtp.log"]
+
+  log-upload:
+    image: alpine:3.21
+    container_name: template-log-upload
+    restart: unless-stopped
+    volumes:
+      - ./logs:/logs:ro
+    command: ["tail", "-n", "50", "-F", "/logs/upload-file.log"]
+
+  # Dozzle - Web UI para logs em tempo real (containers + log watchers)
+  # Acesse http://localhost:9999
+  dozzle:
+    image: amir20/dozzle:latest
+    container_name: template-dozzle-dev
+    restart: unless-stopped
+    ports:
+      - "${DOZZLE_PORT:-9999}:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+networks:
+  template-dev-network:
+    driver: bridge
+
+volumes:
+  postgres_dev_data:
+  redis_dev_data:
