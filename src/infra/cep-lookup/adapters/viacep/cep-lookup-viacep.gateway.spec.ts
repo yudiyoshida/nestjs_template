@@ -64,6 +64,7 @@ describe('CepLookupViacepAdapterGateway', () => {
   describe('lookup', () => {
     describe('invalid CEP format', () => {
       it('should throw ExternalApiError when CEP has less than 8 digits', async() => {
+        // Act & Assert
         await expect(sut.lookup('1234567')).rejects.toThrow(ExternalApiError);
         await expect(sut.lookup('1234567')).rejects.toThrow('CEP inválido');
 
@@ -71,6 +72,7 @@ describe('CepLookupViacepAdapterGateway', () => {
       });
 
       it('should throw ExternalApiError when CEP has more than 8 digits', async() => {
+        // Act & Assert
         await expect(sut.lookup('123456789')).rejects.toThrow(ExternalApiError);
         await expect(sut.lookup('123456789')).rejects.toThrow('CEP inválido');
 
@@ -78,6 +80,7 @@ describe('CepLookupViacepAdapterGateway', () => {
       });
 
       it('should throw ExternalApiError when CEP has letters and fewer than 8 digits after normalization', async() => {
+        // Act & Assert
         await expect(sut.lookup('12345ABC')).rejects.toThrow(ExternalApiError);
         await expect(sut.lookup('12345ABC')).rejects.toThrow('CEP inválido');
 
@@ -85,6 +88,7 @@ describe('CepLookupViacepAdapterGateway', () => {
       });
 
       it('should throw ExternalApiError when CEP is empty after normalization', async() => {
+        // Act & Assert
         await expect(sut.lookup('abc')).rejects.toThrow(ExternalApiError);
         await expect(sut.lookup('abc')).rejects.toThrow('CEP inválido');
 
@@ -94,6 +98,7 @@ describe('CepLookupViacepAdapterGateway', () => {
 
     describe('success scenarios', () => {
       it('should return address when API returns valid data', async() => {
+        // Arrange
         const mockResponse = createMock<ViacepOutputDto>({
           cep: '01001-000',
           logradouro: 'Praça da Sé',
@@ -105,8 +110,10 @@ describe('CepLookupViacepAdapterGateway', () => {
 
         httpService.axiosRef.get = jest.fn().mockResolvedValue({ data: mockResponse });
 
+        // Act
         const result = await sut.lookup(CEP);
 
+        // Assert
         expect(result).toEqual<CepLookupOutputDto>({
           zipCode: '01001-000',
           street: 'Praça da Sé',
@@ -119,6 +126,7 @@ describe('CepLookupViacepAdapterGateway', () => {
       });
 
       it('should return null complement when complemento is empty', async() => {
+        // Arrange
         const mockResponse = createMock<ViacepOutputDto>({
           cep: '01001-000',
           logradouro: 'Praça da Sé',
@@ -130,12 +138,15 @@ describe('CepLookupViacepAdapterGateway', () => {
 
         httpService.axiosRef.get = jest.fn().mockResolvedValue({ data: mockResponse });
 
+        // Act
         const result = await sut.lookup(CEP);
 
+        // Assert
         expect(result.complement).toBeNull();
       });
 
       it('should return null complement when complemento is whitespace only', async() => {
+        // Arrange
         const mockResponse = createMock<ViacepOutputDto>({
           cep: '01001-000',
           logradouro: 'Praça da Sé',
@@ -147,12 +158,15 @@ describe('CepLookupViacepAdapterGateway', () => {
 
         httpService.axiosRef.get = jest.fn().mockResolvedValue({ data: mockResponse });
 
+        // Act
         const result = await sut.lookup(CEP);
 
+        // Assert
         expect(result.complement).toBeNull();
       });
 
       it('should normalize CEP with dashes before request', async() => {
+        // Arrange
         const mockResponse = createMock<ViacepOutputDto>({
           cep: '01001-000',
           logradouro: 'Praça da Sé',
@@ -164,12 +178,15 @@ describe('CepLookupViacepAdapterGateway', () => {
 
         httpService.axiosRef.get = jest.fn().mockResolvedValue({ data: mockResponse });
 
+        // Act
         await sut.lookup('01001-000');
 
+        // Assert
         expect(httpService.axiosRef.get).toHaveBeenCalledWith(`${API_URL}/01001000/json/`);
       });
 
       it('should use empty string for missing optional fields', async() => {
+        // Arrange
         const mockResponse = createMock<ViacepOutputDto>({
           cep: '01001-000',
           logradouro: undefined,
@@ -181,8 +198,10 @@ describe('CepLookupViacepAdapterGateway', () => {
 
         httpService.axiosRef.get = jest.fn().mockResolvedValue({ data: mockResponse });
 
+        // Act
         const result = await sut.lookup(CEP);
 
+        // Assert
         expect(result).toEqual<CepLookupOutputDto>({
           zipCode: '01001-000',
           street: '',
@@ -196,6 +215,7 @@ describe('CepLookupViacepAdapterGateway', () => {
 
     describe('when CEP not found', () => {
       it('should throw ExternalApiError when API returns erro: true', async() => {
+        // Arrange
         const mockResponse = createMock<ViacepOutputDto>({
           cep: '99999-999',
           erro: true,
@@ -203,6 +223,7 @@ describe('CepLookupViacepAdapterGateway', () => {
 
         httpService.axiosRef.get = jest.fn().mockResolvedValue({ data: mockResponse });
 
+        // Act & Assert
         await expect(sut.lookup('99999999')).rejects.toThrow(ExternalApiError);
         await expect(sut.lookup('99999999')).rejects.toThrow('CEP não encontrado');
 
@@ -214,6 +235,7 @@ describe('CepLookupViacepAdapterGateway', () => {
       });
 
       it('should throw ExternalApiError when cep field is missing', async() => {
+        // Arrange
         const mockResponse = createMock<ViacepOutputDto>({
           cep: undefined,
           logradouro: 'Street',
@@ -224,6 +246,7 @@ describe('CepLookupViacepAdapterGateway', () => {
 
         httpService.axiosRef.get = jest.fn().mockResolvedValue({ data: mockResponse });
 
+        // Act & Assert
         await expect(sut.lookup(CEP)).rejects.toThrow(ExternalApiError);
         await expect(sut.lookup(CEP)).rejects.toThrow('CEP não encontrado');
 
@@ -235,6 +258,7 @@ describe('CepLookupViacepAdapterGateway', () => {
       });
 
       it('should throw ExternalApiError when cep field is empty string', async() => {
+        // Arrange
         const mockResponse = createMock<ViacepOutputDto>({
           cep: '',
           logradouro: 'Street',
@@ -245,6 +269,7 @@ describe('CepLookupViacepAdapterGateway', () => {
 
         httpService.axiosRef.get = jest.fn().mockResolvedValue({ data: mockResponse });
 
+        // Act & Assert
         await expect(sut.lookup(CEP)).rejects.toThrow(ExternalApiError);
         await expect(sut.lookup(CEP)).rejects.toThrow('CEP não encontrado');
 
@@ -258,8 +283,10 @@ describe('CepLookupViacepAdapterGateway', () => {
 
     describe('when API returns different format', () => {
       it('should throw ExternalApiError and log when data is missing', async() => {
+        // Arrange
         httpService.axiosRef.get = jest.fn().mockResolvedValue({ data: undefined });
 
+        // Act & Assert
         await expect(sut.lookup(CEP)).rejects.toThrow(ExternalApiError);
         await expect(sut.lookup(CEP)).rejects.toThrow('CEP não encontrado');
 
@@ -271,6 +298,7 @@ describe('CepLookupViacepAdapterGateway', () => {
       });
 
       it('should throw ExternalApiError and log when API returns different nested structure', async() => {
+        // Arrange
         const mockResponse = {
           data: {
             endereco: {
@@ -285,6 +313,7 @@ describe('CepLookupViacepAdapterGateway', () => {
 
         httpService.axiosRef.get = jest.fn().mockResolvedValue(mockResponse);
 
+        // Act & Assert
         await expect(sut.lookup(CEP)).rejects.toThrow(ExternalApiError);
         await expect(sut.lookup(CEP)).rejects.toThrow('CEP não encontrado');
 
@@ -296,6 +325,7 @@ describe('CepLookupViacepAdapterGateway', () => {
       });
 
       it('should throw ExternalApiError and log when API returns array instead of object', async() => {
+        // Arrange
         const mockResponse = {
           data: [
             {
@@ -310,6 +340,7 @@ describe('CepLookupViacepAdapterGateway', () => {
 
         httpService.axiosRef.get = jest.fn().mockResolvedValue(mockResponse);
 
+        // Act & Assert
         await expect(sut.lookup(CEP)).rejects.toThrow(ExternalApiError);
         await expect(sut.lookup(CEP)).rejects.toThrow('CEP não encontrado');
 
@@ -321,12 +352,14 @@ describe('CepLookupViacepAdapterGateway', () => {
       });
 
       it('should throw ExternalApiError and log when API returns string instead of object', async() => {
+        // Arrange
         const mockResponse = {
           data: 'invalid response',
         };
 
         httpService.axiosRef.get = jest.fn().mockResolvedValue(mockResponse);
 
+        // Act & Assert
         await expect(sut.lookup(CEP)).rejects.toThrow(ExternalApiError);
         await expect(sut.lookup(CEP)).rejects.toThrow('CEP não encontrado');
 
@@ -338,8 +371,10 @@ describe('CepLookupViacepAdapterGateway', () => {
       });
 
       it('should throw ExternalApiError and log when API returns null', async() => {
+        // Arrange
         httpService.axiosRef.get = jest.fn().mockResolvedValue({ data: null });
 
+        // Act & Assert
         await expect(sut.lookup(CEP)).rejects.toThrow(ExternalApiError);
         await expect(sut.lookup(CEP)).rejects.toThrow('CEP não encontrado');
 
@@ -353,9 +388,11 @@ describe('CepLookupViacepAdapterGateway', () => {
 
     describe('network/HTTP error scenarios', () => {
       it('should throw ExternalApiError and log when HTTP request fails', async() => {
+        // Act
         const networkError = new Error('Network Error');
         httpService.axiosRef.get = jest.fn().mockRejectedValue(networkError);
 
+        // Assert
         await expect(sut.lookup(CEP)).rejects.toThrow(ExternalApiError);
         await expect(sut.lookup(CEP)).rejects.toThrow('Network Error');
 
@@ -367,12 +404,14 @@ describe('CepLookupViacepAdapterGateway', () => {
       });
 
       it('should throw ExternalApiError and log when API returns 400', async() => {
+        // Arrange
         const axiosError = {
           response: { status: 400 },
           message: 'Request failed with status code 400',
         };
         httpService.axiosRef.get = jest.fn().mockRejectedValue(axiosError);
 
+        // Act & Assert
         await expect(sut.lookup(CEP)).rejects.toThrow(ExternalApiError);
         await expect(sut.lookup(CEP)).rejects.toThrow('Request failed with status code 400');
 
@@ -384,12 +423,14 @@ describe('CepLookupViacepAdapterGateway', () => {
       });
 
       it('should throw ExternalApiError and log when API returns 404', async() => {
+        // Arrange
         const axiosError = {
           response: { status: 404 },
           message: 'Request failed with status code 404',
         };
         httpService.axiosRef.get = jest.fn().mockRejectedValue(axiosError);
 
+        // Act & Assert
         await expect(sut.lookup(CEP)).rejects.toThrow(ExternalApiError);
         await expect(sut.lookup(CEP)).rejects.toThrow('Request failed with status code 404');
 
@@ -401,12 +442,14 @@ describe('CepLookupViacepAdapterGateway', () => {
       });
 
       it('should throw ExternalApiError and log when API returns 500', async() => {
+        // Arrange
         const axiosError = {
           response: { status: 500 },
           message: 'Request failed with status code 500',
         };
         httpService.axiosRef.get = jest.fn().mockRejectedValue(axiosError);
 
+        // Act & Assert
         await expect(sut.lookup(CEP)).rejects.toThrow(ExternalApiError);
         await expect(sut.lookup(CEP)).rejects.toThrow('Request failed with status code 500');
 
@@ -418,9 +461,11 @@ describe('CepLookupViacepAdapterGateway', () => {
       });
 
       it('should throw ExternalApiError and log when timeout occurs', async() => {
+        // Act
         const timeoutError = new Error('timeout of 5000ms exceeded');
         httpService.axiosRef.get = jest.fn().mockRejectedValue(timeoutError);
 
+        // Assert
         await expect(sut.lookup(CEP)).rejects.toThrow(ExternalApiError);
         await expect(sut.lookup(CEP)).rejects.toThrow('timeout of 5000ms exceeded');
 
@@ -434,6 +479,7 @@ describe('CepLookupViacepAdapterGateway', () => {
 
     describe('integration with dependencies', () => {
       it('should use ConfigService URL in request', async() => {
+        // Arrange
         const customUrl = 'https://custom-api.example.com/ws';
         (configService as any).viacepApiUrl = customUrl;
 
@@ -447,12 +493,15 @@ describe('CepLookupViacepAdapterGateway', () => {
         });
         httpService.axiosRef.get = jest.fn().mockResolvedValue({ data: mockResponse });
 
+        // Act
         await sut.lookup(CEP);
 
+        // Assert
         expect(httpService.axiosRef.get).toHaveBeenCalledWith(`${customUrl}/${CEP}/json/`);
       });
 
       it('should pass normalized CEP in URL', async() => {
+        // Arrange
         const mockResponse = createMock<ViacepOutputDto>({
           cep: '01310-100',
           logradouro: 'Avenida Paulista',
@@ -463,8 +512,10 @@ describe('CepLookupViacepAdapterGateway', () => {
         });
         httpService.axiosRef.get = jest.fn().mockResolvedValue({ data: mockResponse });
 
+        // Act
         await sut.lookup('01310-100');
 
+        // Assert
         expect(httpService.axiosRef.get).toHaveBeenCalledWith(`${API_URL}/01310100/json/`);
       });
     });

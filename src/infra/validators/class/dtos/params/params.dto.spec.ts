@@ -27,8 +27,10 @@ describe('Params', () => {
         '  ',
       ]
     )(`should throw an error if ${field} is empty (%s)`, async(value: any) => {
+      // Arrange
       const data = { [field]: value };
 
+      // Act & Assert
       expect.assertions(1);
       return target.transform(data, metadata).catch((error) => {
         expect(error.getResponse().message).toContain(`${field} é obrigatório`);
@@ -55,8 +57,10 @@ describe('Params', () => {
         new Int32Array(8),
       ]
     )(`should throw an error if ${field} is not a string (%s)`, async(value: any) => {
+      // Arrange
       const data = { [field]: value };
 
+      // Act & Assert
       expect.assertions(1);
       return target.transform(data, metadata).catch((error) => {
         expect(error.getResponse().message).toContain(`${field} deve ser um texto`);
@@ -65,12 +69,15 @@ describe('Params', () => {
   });
 
   it('should pass if all fields are valid', async() => {
+    // Arrange
     const data = {
       id: '  random - - id  ',
     };
 
+    // Act
     const result = await target.transform(data, metadata);
 
+    // Assert
     expect(result).toBeInstanceOf(Params);
     expect(result).toEqual({ id: 'random - - id' });
   });

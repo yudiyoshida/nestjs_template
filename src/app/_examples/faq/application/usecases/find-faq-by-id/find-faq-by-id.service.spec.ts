@@ -74,6 +74,7 @@ describe('FindFaqById - Integration tests', () => {
   // Teste de sanidade: garante que o módulo foi configurado corretamente
   // e que o caso de uso foi instanciado sem erros de injeção de dependência.
   it('should be defined', () => {
+    // Act & Assert
     expect(sut).toBeDefined();
   });
 
@@ -87,19 +88,24 @@ describe('FindFaqById - Integration tests', () => {
    *   2. A mensagem — garante que o texto exibido ao cliente não muda silenciosamente.
    */
   it('should throw FaqNotFoundError when faq does not exist', async() => {
+    // Arrange
     const id = 'non-existing-id';
 
+    // Act & Assert
     await expect(sut.execute(id)).rejects.toThrow(FaqNotFoundError);
     await expect(sut.execute(id)).rejects.toThrow('FAQ não encontrado na base de dados.');
   });
 
   it('should return faq by id', async() => {
+    // Arrange
     const faq = await prisma.faq.create({
       data: { question: 'Como recuperar senha?', answer: 'Clique em esqueci.' },
     });
 
+    // Act
     const result = await sut.execute(faq.id);
 
+    // Assert
     expect(result).not.toBeNull();
     expect(result.id).toBe(faq.id);
     expect(result.question).toBe(faq.question);
@@ -113,12 +119,15 @@ describe('FindFaqById - Integration tests', () => {
    * nenhum campo foi adicionado ou removido do DTO sem atualizar o teste.
    */
   it('should return all faq fields correctly', async() => {
+    // Arrange
     const faq = await prisma.faq.create({
       data: { question: 'Test?', answer: 'Test answer.' },
     });
 
+    // Act
     const result = await sut.execute(faq.id);
 
+    // Assert
     expect(result).toEqual<FaqDto>({
       id: faq.id,
       question: faq.question,

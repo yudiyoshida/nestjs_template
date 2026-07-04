@@ -50,6 +50,7 @@ describe('UploadS3AdapterGateway', () => {
 
   describe('upload', () => {
     it('should return Location from S3 upload response', async() => {
+      // Arrange
       const file = createMock<Express.Multer.File>({
         buffer: Buffer.from('data'),
         originalname: 'photo.jpg',
@@ -57,8 +58,10 @@ describe('UploadS3AdapterGateway', () => {
         size: 4,
       });
 
+      // Act
       const url = await sut.upload(file, 'client-attachments');
 
+      // Assert
       expect(url).toBe('https://my-bucket.s3.amazonaws.com/client-attachments/00000000-0000-0000-0000-000000000001-photo.jpg');
       expect(mockUploadDone).toHaveBeenCalledTimes(1);
       expect(Upload).toHaveBeenCalledWith(
@@ -74,6 +77,7 @@ describe('UploadS3AdapterGateway', () => {
     });
 
     it('should omit folder prefix when folder is undefined', async() => {
+      // Arrange
       const file = createMock<Express.Multer.File>({
         buffer: Buffer.from('x'),
         originalname: 'a.png',
@@ -81,8 +85,10 @@ describe('UploadS3AdapterGateway', () => {
         size: 1,
       });
 
+      // Act
       await sut.upload(file);
 
+      // Assert
       expect(Upload).toHaveBeenCalledWith(
         expect.objectContaining({
           params: expect.objectContaining({
@@ -93,6 +99,7 @@ describe('UploadS3AdapterGateway', () => {
     });
 
     it('should log and throw ExternalApiError when upload fails', async() => {
+      // Act
       const failure = new Error('S3 network error');
       mockUploadDone.mockRejectedValueOnce(failure);
 
@@ -103,6 +110,7 @@ describe('UploadS3AdapterGateway', () => {
         size: 4,
       });
 
+      // Assert
       await expect(sut.upload(file)).rejects.toThrow('Erro ao fazer upload do arquivo');
 
       expect(logger.error).toHaveBeenCalledWith(LogContext.UPLOAD_FILE, {
@@ -118,10 +126,13 @@ describe('UploadS3AdapterGateway', () => {
 
   describe('delete', () => {
     it('should call S3 delete with key extracted from public URL', async() => {
+      // Arrange
       const publicUrl = 'https://my-bucket.s3.amazonaws.com/client-attachments/uuid-old.pdf';
 
+      // Act
       await sut.delete(publicUrl);
 
+      // Assert
       expect(mockS3Send).toHaveBeenCalledTimes(1);
       expect(DeleteObjectCommand).toHaveBeenCalledWith({
         Bucket: 'my-bucket',
@@ -131,23 +142,30 @@ describe('UploadS3AdapterGateway', () => {
     });
 
     it('should not call S3 when URL has empty path', async() => {
+      // Act
       await sut.delete('https://my-bucket.s3.amazonaws.com/');
 
+      // Assert
       expect(mockS3Send).not.toHaveBeenCalled();
       expect(logger.error).not.toHaveBeenCalled();
     });
 
     it('should not call S3 when URL is invalid', async() => {
+      // Act
       await sut.delete('not-a-valid-url');
 
+      // Assert
       expect(mockS3Send).not.toHaveBeenCalled();
     });
 
     it('should log and throw ExternalApiError when delete fails', async() => {
+      // Arrange
       const publicUrl = 'https://my-bucket.s3.amazonaws.com/path/file.pdf';
+      // Act
       const failure = new Error('AccessDenied');
       mockS3Send.mockRejectedValueOnce(failure);
 
+      // Assert
       await expect(sut.delete(publicUrl)).rejects.toThrow('Erro ao excluir o arquivo');
 
       expect(logger.error).toHaveBeenCalledWith(LogContext.UPLOAD_FILE, {

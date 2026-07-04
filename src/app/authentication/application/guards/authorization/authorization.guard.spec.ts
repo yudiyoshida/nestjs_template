@@ -26,6 +26,7 @@ describe('AuthorizationGuard', () => {
   });
 
   it('should be defined', () => {
+    // Act & Assert
     expect(guard).toBeDefined();
   });
 

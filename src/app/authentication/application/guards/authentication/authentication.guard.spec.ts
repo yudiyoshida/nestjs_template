@@ -40,6 +40,7 @@ describe('AuthenticationGuard', () => {
     'ws',
   ])('%s case', (type: any) => {
     it('should be defined', () => {
+      // Act & Assert
       expect(guard).toBeDefined();
     });
 

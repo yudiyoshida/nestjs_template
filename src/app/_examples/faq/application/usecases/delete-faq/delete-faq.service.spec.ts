@@ -74,6 +74,7 @@ describe('DeleteFaq - Integration tests', () => {
   // Teste de sanidade: garante que o módulo foi configurado corretamente
   // e que o caso de uso foi instanciado sem erros de injeção de dependência.
   it('should be defined', () => {
+    // Act & Assert
     expect(sut).toBeDefined();
   });
 
@@ -85,8 +86,10 @@ describe('DeleteFaq - Integration tests', () => {
    * HTTP adequado ao cliente.
    */
   it('should throw FaqNotFoundError when faq does not exist', async() => {
+    // Arrange
     const id = 'non-existing-id';
 
+    // Act & Assert
     await expect(sut.execute(id)).rejects.toThrow(FaqNotFoundError);
   });
 
@@ -97,13 +100,16 @@ describe('DeleteFaq - Integration tests', () => {
    * sem erro mesmo que o DELETE não tivesse sido executado.
    */
   it('should delete faq from database', async() => {
+    // Arrange
     const faq = await prisma.faq.create({
       data: { question: 'Pergunta?', answer: 'Resposta.' },
     });
 
+    // Act
     await sut.execute(faq.id);
 
     const deleted = await prisma.faq.findUnique({ where: { id: faq.id } });
+    // Assert
     expect(deleted).toBeNull();
   });
 
@@ -113,12 +119,15 @@ describe('DeleteFaq - Integration tests', () => {
    * garante que mudanças no texto não quebrem a resposta da API silenciosamente.
    */
   it('should return success message', async() => {
+    // Arrange
     const faq = await prisma.faq.create({
       data: { question: 'P?', answer: 'R.' },
     });
 
+    // Act
     const result = await sut.execute(faq.id);
 
+    // Assert
     expect(result).toEqual({ message: 'FAQ excluído com sucesso' });
   });
 });

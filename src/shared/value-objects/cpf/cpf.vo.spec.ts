@@ -16,6 +16,7 @@ describe('CPF Value Object', () => {
       '374.852.529-07',
     ]
   )('should throw an error when providing invalid cpf (%s)', (cpf: string) => {
+    // Act & Assert
     expect(() => new CPF(cpf)).toThrow('CPF inválido');
     expect(() => new CPF(cpf)).toThrow(InvalidCpfError);
   });
@@ -28,8 +29,10 @@ describe('CPF Value Object', () => {
       '123.456.789-09',
     ]
   )('should create a cpf value object when providing valid cpf (%s)', (cpf: string) => {
+    // Act
     const cpfVo = new CPF(cpf);
 
+    // Assert
     expect(cpfVo).toBeInstanceOf(CPF);
     expect(cpfVo.value).toBe(cpf.replace(/[.-]/g, ''));
   });

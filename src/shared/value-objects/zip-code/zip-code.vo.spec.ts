@@ -3,6 +3,7 @@ import { ZipCode } from './zip-code.vo';
 
 describe('ZipCode - Unit tests', () => {
   it('should be defined', () => {
+    // Act & Assert
     expect(ZipCode).toBeDefined();
   });
 
@@ -17,6 +18,7 @@ describe('ZipCode - Unit tests', () => {
     '12ab34cd',
     '12345-67',
   ])('should throw when zip code is invalid (%s)', (zipCode: string) => {
+    // Act & Assert
     expect(() => new ZipCode(zipCode)).toThrow(`CEP inválido: ${zipCode}`);
     expect(() => new ZipCode(zipCode)).toThrow(InvalidZipCodeError);
   });

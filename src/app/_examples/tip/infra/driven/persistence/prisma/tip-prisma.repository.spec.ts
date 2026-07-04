@@ -85,6 +85,7 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
     // Verifica que dicas do tipo WEATHER são persistidas corretamente no banco.
     // Após salvar, busca o registro diretamente no Prisma para confirmar a persistência.
     it('should save a new weather tip to database', async() => {
+      // Arrange
       const tip = TipFactory.createWeather({
         title: 'Ventos fortes',
         content: 'Rajadas podem chegar a 60 km/h',
@@ -92,17 +93,20 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
         createdBy: 'admin-user',
       });
 
+      // Act
       await sut.save(tip);
 
       const savedTip = await prisma.tip.findUnique({
         where: { id: tip.props.id },
       });
+      // Assert
       expect(savedTip).not.toBeNull();
     });
 
     // Verifica que dicas do tipo LOCAL são persistidas com o `locationId` correto.
     // Diferente das dicas WEATHER, as dicas LOCAIS têm associação a um local específico.
     it('should save a new local tip to database', async() => {
+      // Arrange
       const locationId = 'Aeroporto de Congonhas';
       const tip = TipFactory.createLocal({
         title: 'Pista em manutenção',
@@ -111,11 +115,13 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
         createdBy: 'admin-user',
       });
 
+      // Act
       await sut.save(tip);
 
       const savedTip = await prisma.tip.findUnique({
         where: { id: tip.props.id },
       });
+      // Assert
       expect(savedTip).not.toBeNull();
       expect(savedTip?.locationId).toBe(locationId);
     });
@@ -126,6 +132,7 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
      * como campos renomeados, omitidos ou com tipos incorretos.
      */
     it('should save weather tip with all fields', async() => {
+      // Arrange
       const tip = TipFactory.createWeather({
         title: 'Ventos fortes',
         content: 'Rajadas podem chegar a 60 km/h',
@@ -133,11 +140,13 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
         createdBy: 'admin-user',
       });
 
+      // Act
       await sut.save(tip);
 
       const savedTip = await prisma.tip.findUnique({
         where: { id: tip.props.id },
       });
+      // Assert
       expect(savedTip).toEqual({
         id: tip.props.id,
         type: tip.props.type,
@@ -154,6 +163,7 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
 
     // Valida que `createdAt` e `updatedAt` são persistidos como instâncias de Date.
     it('should save tip with correct timestamps', async() => {
+      // Arrange
       const tip = TipFactory.createWeather({
         title: 'Test',
         content: 'Content',
@@ -161,17 +171,20 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
         createdBy: 'admin-user',
       });
 
+      // Act
       await sut.save(tip);
 
       const savedTip = await prisma.tip.findUnique({
         where: { id: tip.props.id },
       });
+      // Assert
       expect(savedTip?.createdAt).toBeInstanceOf(Date);
       expect(savedTip?.updatedAt).toBeInstanceOf(Date);
     });
 
     // Dicas WEATHER têm data de expiração (`expiresAt`) e status ACTIVE por padrão.
     it('should save weather tip with ACTIVE status and expiresAt', async() => {
+      // Arrange
       const tip = TipFactory.createWeather({
         title: 'Test',
         content: 'Content',
@@ -179,11 +192,13 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
         createdBy: 'admin-user',
       });
 
+      // Act
       await sut.save(tip);
 
       const savedTip = await prisma.tip.findUnique({
         where: { id: tip.props.id },
       });
+      // Assert
       expect(savedTip?.type).toBe(TipType.WEATHER);
       expect(savedTip?.status).toBe(TipStatus.ACTIVE);
       expect(savedTip?.expiresAt).toBeInstanceOf(Date);
@@ -191,6 +206,7 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
 
     // Dicas LOCAIS não têm data de expiração (`expiresAt` é null) e ficam ACTIVE.
     it('should save local tip with ACTIVE status and no expiresAt', async() => {
+      // Arrange
       const locationId = 'Santos Dumont Airport';
       const tip = TipFactory.createLocal({
         title: 'Test',
@@ -199,11 +215,13 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
         createdBy: 'admin-user',
       });
 
+      // Act
       await sut.save(tip);
 
       const savedTip = await prisma.tip.findUnique({
         where: { id: tip.props.id },
       });
+      // Assert
       expect(savedTip?.type).toBe(TipType.LOCAL);
       expect(savedTip?.status).toBe(TipStatus.ACTIVE);
       expect(savedTip?.expiresAt).toBeNull();
@@ -213,6 +231,7 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
   describe('edit', () => {
     // Verifica que título e conteúdo podem ser atualizados em conjunto.
     it('should update an existing tip', async() => {
+      // Arrange
       const tip = TipFactory.createWeather({
         title: 'Original Title',
         content: 'Original Content',
@@ -226,11 +245,13 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
         title: 'Updated Title',
         content: 'Updated Content',
       });
+      // Act
       await sut.edit(updatedTipEntity);
 
       const updatedTip = await prisma.tip.findUnique({
         where: { id: tip.props.id },
       });
+      // Assert
       expect(updatedTip?.title).toBe('Updated Title');
       expect(updatedTip?.content).toBe('Updated Content');
     });
@@ -240,6 +261,7 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
      * Garante que o repositório não sobrescreve campos não enviados (patch parcial).
      */
     it('should update only title', async() => {
+      // Arrange
       const tip = TipFactory.createWeather({
         title: 'Original Title',
         content: 'Original Content',
@@ -252,11 +274,13 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
         ...tip.props,
         title: 'Updated Title',
       });
+      // Act
       await sut.edit(updatedTipEntity);
 
       const updatedTip = await prisma.tip.findUnique({
         where: { id: tip.props.id },
       });
+      // Assert
       expect(updatedTip?.title).toBe('Updated Title');
       // Garante que o campo não enviado permaneceu inalterado.
       expect(updatedTip?.content).toBe('Original Content');
@@ -264,6 +288,7 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
 
     // Testa atualização parcial: apenas o conteúdo é alterado.
     it('should update only content', async() => {
+      // Arrange
       const tip = TipFactory.createWeather({
         title: 'Original Title',
         content: 'Original Content',
@@ -276,18 +301,21 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
         ...tip.props,
         content: 'Updated Content',
       });
+      // Act
       await sut.edit(updatedTipEntity);
 
       const updatedTip = await prisma.tip.findUnique({
         where: { id: tip.props.id },
       });
       // Garante que o campo não enviado permaneceu inalterado.
+      // Assert
       expect(updatedTip?.title).toBe('Original Title');
       expect(updatedTip?.content).toBe('Updated Content');
     });
 
     // Verifica que o método `expire()` da entidade persiste o status EXPIRED no banco.
     it('should update status when expired', async() => {
+      // Arrange
       const tip = TipFactory.createWeather({
         title: 'Test',
         content: 'Content',
@@ -297,16 +325,19 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
       await sut.save(tip);
 
       tip.expire();
+      // Act
       await sut.edit(tip);
 
       const updatedTip = await prisma.tip.findUnique({
         where: { id: tip.props.id },
       });
+      // Assert
       expect(updatedTip?.status).toBe(TipStatus.EXPIRED);
     });
 
     // Verifica que o método `remove()` da entidade persiste o status REMOVED no banco.
     it('should update status when removed', async() => {
+      // Arrange
       const tip = TipFactory.createWeather({
         title: 'Test',
         content: 'Content',
@@ -316,11 +347,13 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
       await sut.save(tip);
 
       tip.remove();
+      // Act
       await sut.edit(tip);
 
       const updatedTip = await prisma.tip.findUnique({
         where: { id: tip.props.id },
       });
+      // Assert
       expect(updatedTip?.status).toBe(TipStatus.REMOVED);
     });
 
@@ -330,6 +363,7 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
      * o timestamp original e o novo, tornando o teste determinístico.
      */
     it('should update updatedAt timestamp', async() => {
+      // Arrange
       const tip = TipFactory.createWeather({
         title: 'Test',
         content: 'Content',
@@ -342,11 +376,13 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
       await new Promise(resolve => setTimeout(resolve, 10));
 
       const updatedTipEntity = TipFactory.load({ ...tip.props });
+      // Act
       await sut.edit(updatedTipEntity);
 
       const updatedTip = await prisma.tip.findUnique({
         where: { id: tip.props.id },
       });
+      // Assert
       expect(updatedTip?.updatedAt.getTime()).toBeGreaterThan(beforeSaveTimestamp.getTime());
     });
   });
@@ -359,6 +395,7 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
      * completar sem erro mesmo que o DELETE não tenha sido executado.
      */
     it('should delete a tip from database', async() => {
+      // Arrange
       const tip = TipFactory.createWeather({
         title: 'Test',
         content: 'Content',
@@ -367,16 +404,19 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
       });
       await sut.save(tip);
 
+      // Act
       await sut.delete(tip.props.id);
 
       const deletedTip = await prisma.tip.findUnique({
         where: { id: tip.props.id },
       });
+      // Assert
       expect(deletedTip).toBeNull();
     });
 
     // Confirma que a exclusão é física (hard delete), não lógica (soft delete).
     it('should perform hard delete (not soft delete)', async() => {
+      // Arrange
       const tip = TipFactory.createWeather({
         title: 'Test',
         content: 'Content',
@@ -386,16 +426,20 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
       await sut.save(tip);
       const tipId = tip.props.id;
 
+      // Act
       await sut.delete(tipId);
 
       const count = await prisma.tip.count({ where: { id: tipId } });
+      // Assert
       expect(count).toBe(0);
     });
 
     // Verifica que o método lança exceção ao tentar excluir um ID inexistente.
     it('should not throw error when deleting non-existing tip', async() => {
+      // Arrange
       const nonExistingId = 'non-existing-id';
 
+      // Act & Assert
       await expect(sut.delete(nonExistingId)).rejects.toThrow();
     });
   });
@@ -405,15 +449,19 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
     // não lançar uma exceção. O comportamento esperado aqui é um contrato
     // importante para as camadas superiores (serviços) que dependem desse repositório.
     it('should return null when tip does not exist', async() => {
+      // Arrange
       const id = 'non-existing-id';
 
+      // Act
       const result = await sut.findById(id);
 
+      // Assert
       expect(result).toBeNull();
     });
 
     // Verifica que o repositório reconstrói a entidade Tip a partir dos dados do banco.
     it('should return Tip entity by id', async() => {
+      // Arrange
       const tip = TipFactory.createWeather({
         title: 'Test',
         content: 'Content',
@@ -422,14 +470,17 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
       });
       await sut.save(tip);
 
+      // Act
       const result = await sut.findById(tip.props.id);
 
+      // Assert
       expect(result).toBeInstanceOf(Tip);
       expect(result?.props.id).toBe(tip.props.id);
     });
 
     // Valida o contrato de mapeamento: todas as propriedades da entidade devem bater.
     it('should return Tip entity with all properties', async() => {
+      // Arrange
       const tip = TipFactory.createWeather({
         title: 'Test',
         content: 'Content',
@@ -438,8 +489,10 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
       });
       await sut.save(tip);
 
+      // Act
       const result = await sut.findById(tip.props.id);
 
+      // Assert
       expect(result).not.toBeNull();
       expect(result?.props).toEqual<TipProps>({
         id: tip.props.id,
@@ -455,6 +508,7 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
 
     // Verifica que a entidade reconstruída possui os métodos de domínio (expire, remove, update).
     it('should return Tip entity with business methods', async() => {
+      // Arrange
       const tip = TipFactory.createWeather({
         title: 'Test',
         content: 'Content',
@@ -463,8 +517,10 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
       });
       await sut.save(tip);
 
+      // Act
       const result = await sut.findById(tip.props.id);
 
+      // Assert
       expect(result).not.toBeNull();
       expect(result?.isWeather()).toBe(true);
       expect(result?.isLocal()).toBe(false);
@@ -475,6 +531,7 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
 
     // Verifica que dicas LOCAIS são reconstruídas com os métodos corretos (isLocal, isWeather).
     it('should return local tip with business methods', async() => {
+      // Arrange
       const locationId = 'Santos Dumont Airport';
       const tip = TipFactory.createLocal({
         title: 'Test',
@@ -484,8 +541,10 @@ describe('TipRepositoryAdapterPrisma - Integration tests', () => {
       });
       await sut.save(tip);
 
+      // Act
       const result = await sut.findById(tip.props.id);
 
+      // Assert
       expect(result).not.toBeNull();
       expect(result?.isWeather()).toBe(false);
       expect(result?.isLocal()).toBe(true);

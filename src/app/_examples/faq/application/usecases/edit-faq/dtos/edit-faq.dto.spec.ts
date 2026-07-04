@@ -70,8 +70,10 @@ describe('EditFaqInputDto', () => {
       {},
       [],
     ])('should throw an error if question is not a string (%s)', async(value: any) => {
+      // Arrange
       const data = makeValidInputDto({ question: value });
 
+      // Act & Assert
       expect.assertions(1);
       return target.transform(data, metadata).catch((error) => {
         expect(error.getResponse().message).toContain('question must be a string');
@@ -80,8 +82,10 @@ describe('EditFaqInputDto', () => {
 
     // Teste de valor limite (boundary): 513 chars deve falhar; 512 deve passar (ver abaixo).
     it('should throw an error if question exceeds 512 characters', async() => {
+      // Arrange
       const data = makeValidInputDto({ question: 'a'.repeat(513) });
 
+      // Act & Assert
       expect.assertions(1);
       return target.transform(data, metadata).catch((error) => {
         expect(error.getResponse().message).toContain('question must be shorter than or equal to 512 characters');
@@ -89,19 +93,25 @@ describe('EditFaqInputDto', () => {
     });
 
     it('should accept valid question', async() => {
+      // Arrange
       const data = makeValidInputDto({ question: 'Nova pergunta?' });
 
+      // Act
       const result = await target.transform(data, metadata);
 
+      // Assert
       expect(result.question).toBe('Nova pergunta?');
     });
 
     // Verifica que o decorator de trim remove espaços das bordas antes de persistir.
     it('should trim whitespace from question', async() => {
+      // Arrange
       const data = makeValidInputDto({ question: '  Nova pergunta?  ' });
 
+      // Act
       const result = await target.transform(data, metadata);
 
+      // Assert
       expect(result.question).toBe('Nova pergunta?');
     });
 
@@ -111,10 +121,13 @@ describe('EditFaqInputDto', () => {
      * sem forçar o cliente a reenviar todos os campos.
      */
     it('should be optional', async() => {
+      // Arrange
       const data = makeValidInputDto({ question: undefined });
 
+      // Act
       const result = await target.transform(data, metadata);
 
+      // Assert
       expect(result.question).toBeUndefined();
     });
   });
@@ -127,8 +140,10 @@ describe('EditFaqInputDto', () => {
       {},
       [],
     ])('should throw an error if answer is not a string (%s)', async(value: any) => {
+      // Arrange
       const data = makeValidInputDto({ answer: value });
 
+      // Act & Assert
       expect.assertions(1);
       return target.transform(data, metadata).catch((error) => {
         expect(error.getResponse().message).toContain('answer must be a string');
@@ -137,8 +152,10 @@ describe('EditFaqInputDto', () => {
 
     // O limite de `answer` é maior (8192 chars) pois respostas podem ser mais longas.
     it('should throw an error if answer exceeds 8192 characters', async() => {
+      // Arrange
       const data = makeValidInputDto({ answer: 'a'.repeat(8193) });
 
+      // Act & Assert
       expect.assertions(1);
       return target.transform(data, metadata).catch((error) => {
         expect(error.getResponse().message).toContain('answer must be shorter than or equal to 8192 characters');
@@ -146,26 +163,35 @@ describe('EditFaqInputDto', () => {
     });
 
     it('should accept valid answer', async() => {
+      // Arrange
       const data = makeValidInputDto({ answer: 'Nova resposta.' });
 
+      // Act
       const result = await target.transform(data, metadata);
 
+      // Assert
       expect(result.answer).toBe('Nova resposta.');
     });
 
     it('should trim whitespace from answer', async() => {
+      // Arrange
       const data = makeValidInputDto({ answer: '  Nova resposta.  ' });
 
+      // Act
       const result = await target.transform(data, metadata);
 
+      // Assert
       expect(result.answer).toBe('Nova resposta.');
     });
 
     it('should be optional', async() => {
+      // Arrange
       const data = makeValidInputDto({ answer: undefined });
 
+      // Act
       const result = await target.transform(data, metadata);
 
+      // Assert
       expect(result.answer).toBeUndefined();
     });
   });
@@ -179,42 +205,54 @@ describe('EditFaqInputDto', () => {
      * classe `EditFaqInputDto` (importante para uso de `instanceof`).
      */
     it('should pass with empty object', async() => {
+      // Arrange
       const data = makeValidInputDto({});
 
+      // Act
       const result = await target.transform(data, metadata);
 
+      // Assert
       expect(result).toBeInstanceOf(EditFaqInputDto);
     });
 
     // Garante que enviar apenas `question` não gera erro por `answer` ausente.
     it('should pass with only question', async() => {
+      // Arrange
       const data = makeValidInputDto({ question: 'Nova pergunta?' });
 
+      // Act
       const result = await target.transform(data, metadata);
 
+      // Assert
       expect(result.question).toBe('Nova pergunta?');
       expect(result.answer).toBeUndefined();
     });
 
     // Garante que enviar apenas `answer` não gera erro por `question` ausente.
     it('should pass with only answer', async() => {
+      // Arrange
       const data = makeValidInputDto({ answer: 'Nova resposta.' });
 
+      // Act
       const result = await target.transform(data, metadata);
 
+      // Assert
       expect(result.answer).toBe('Nova resposta.');
       expect(result.question).toBeUndefined();
     });
 
     // Caminho feliz: todos os campos presentes e válidos.
     it('should pass with all fields', async() => {
+      // Arrange
       const data = makeValidInputDto({
         question: 'Pergunta atualizada?',
         answer: 'Resposta atualizada.',
       });
 
+      // Act
       const result = await target.transform(data, metadata);
 
+      // Assert
       expect(result.question).toBe('Pergunta atualizada?');
       expect(result.answer).toBe('Resposta atualizada.');
     });

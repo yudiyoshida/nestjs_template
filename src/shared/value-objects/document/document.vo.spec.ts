@@ -3,26 +3,33 @@ import { Document } from './document.vo';
 
 describe('Document Value Object', () => {
   it('should not throw an error when providing a valid cpf', () => {
+    // Act
     const document = new Document('820.670.530-94');
+    // Assert
     expect(document.value).toBe('82067053094');
   });
 
   it('should not throw an error when providing a valid cnpj', () => {
+    // Act
     const document = new Document('28.695.096/0001-79');
+    // Assert
     expect(document.value).toBe('28695096000179');
   });
 
   it('should throw an error when providing an invalid document', () => {
+    // Act & Assert
     expect(() => new Document('123')).toThrow('CPF/CNPJ inválido');
     expect(() => new Document('123')).toThrow(InvalidDocumentError);
   });
 
   it('should throw an error when providing an invalid cpf', () => {
+    // Act & Assert
     expect(() => new Document('123.456.789-00')).toThrow('CPF inválido');
     expect(() => new Document('123')).toThrow(InvalidDocumentError);
   });
 
   it('should throw an error when providing an invalid cnpj', () => {
+    // Act & Assert
     expect(() => new Document('12.345.678/0001-00')).toThrow('CNPJ inválido');
     expect(() => new Document('123')).toThrow(InvalidDocumentError);
   });

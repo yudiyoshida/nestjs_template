@@ -26,9 +26,12 @@ describe('Queries DTO', () => {
         null,
       ]
     )(`should not throw an error if ${field} is empty (%s)`, async(value: any) => {
+      // Arrange
       const data = { [field]: value };
 
+      // Act
       const result = await target.transform(data, metadata);
+      // Assert
       expect(result).toBeInstanceOf(Queries);
     });
 
@@ -39,9 +42,12 @@ describe('Queries DTO', () => {
         '100',
       ]
     )('should convert valid string numbers to integers (%s)', async(value: string) => {
+      // Arrange
       const data = { [field]: value };
 
+      // Act
       const result = await target.transform(data, metadata);
+      // Assert
       expect(result[field]).toBe(parseInt(value));
     });
 
@@ -55,8 +61,10 @@ describe('Queries DTO', () => {
         -10,
       ]
     )(`should throw an error if ${field} is not positive (%s)`, async(value: string) => {
+      // Arrange
       const data = { [field]: value };
 
+      // Act & Assert
       expect.assertions(1);
       return target.transform(data, metadata).catch((error) => {
         expect(error.getResponse().message).toContain(`${field} deve ser um número positivo`);
@@ -75,8 +83,10 @@ describe('Queries DTO', () => {
         [],
       ]
     )(`should throw an error if ${field} is not an integer (%s)`, async(value: string) => {
+      // Arrange
       const data = { [field]: value };
 
+      // Act & Assert
       expect.assertions(1);
       return target.transform(data, metadata).catch((error) => {
         expect(error.getResponse().message).toContain(`${field} deve ser um número inteiro`);
@@ -93,9 +103,12 @@ describe('Queries DTO', () => {
         '  ',
       ]
     )('should not throw an error if search is empty (%s)', async(value: any) => {
+      // Arrange
       const data = { search: value };
 
+      // Act
       const result = await target.transform(data, metadata);
+      // Assert
       expect(result).toBeInstanceOf(Queries);
     });
 
@@ -107,9 +120,12 @@ describe('Queries DTO', () => {
         '123',
       ]
     )('should accept valid string values (%s)', async(value: string) => {
+      // Arrange
       const data = { search: value };
 
+      // Act
       const result = await target.transform(data, metadata);
+      // Assert
       expect(result.search).toBe(value.trim());
     });
 
@@ -126,8 +142,10 @@ describe('Queries DTO', () => {
         new Date(),
       ]
     )('should throw an error if search is not a string (%s)', async(value: any) => {
+      // Arrange
       const data = { search: value };
 
+      // Act & Assert
       expect.assertions(1);
       return target.transform(data, metadata).catch((error) => {
         expect(error.getResponse().message).toContain('search deve ser um texto');
@@ -137,14 +155,17 @@ describe('Queries DTO', () => {
 
   describe('combined fields validation', () => {
     it('should pass if all fields are valid', async() => {
+      // Arrange
       const data = {
         page: '1',
         size: '10',
         search: '  test  -- search  ',
       };
 
+      // Act
       const result = await target.transform(data, metadata);
 
+      // Assert
       expect(result).toBeInstanceOf(Queries);
       expect(result).toEqual({
         page: 1,
@@ -154,22 +175,28 @@ describe('Queries DTO', () => {
     });
 
     it('should pass if no fields are provided', async() => {
+      // Arrange
       const data = {};
 
+      // Act
       const result = await target.transform(data, metadata);
 
+      // Assert
       expect(result).toBeInstanceOf(Queries);
       expect(result).toEqual({});
     });
 
     it('should pass with partial fields', async() => {
+      // Arrange
       const data = {
         page: '2',
         search: 'partial search',
       };
 
+      // Act
       const result = await target.transform(data, metadata);
 
+      // Assert
       expect(result).toBeInstanceOf(Queries);
       expect(result).toEqual({
         page: 2,

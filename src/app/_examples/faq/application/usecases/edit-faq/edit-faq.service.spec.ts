@@ -74,6 +74,7 @@ describe('EditFaq - Integration tests', () => {
   // Teste de sanidade: garante que o módulo foi configurado corretamente
   // e que o caso de uso foi instanciado sem erros de injeção de dependência.
   it('should be defined', () => {
+    // Act & Assert
     expect(sut).toBeDefined();
   });
 
@@ -85,9 +86,11 @@ describe('EditFaq - Integration tests', () => {
    * HTTP adequado ao cliente.
    */
   it('should throw FaqNotFoundError when faq does not exist', async() => {
+    // Arrange
     const id = 'non-existing-id';
     const data: EditFaqInputDto = { question: 'Nova pergunta' };
 
+    // Act & Assert
     await expect(sut.execute(id, data)).rejects.toThrow(FaqNotFoundError);
   });
 
@@ -99,34 +102,41 @@ describe('EditFaq - Integration tests', () => {
    * Verificamos o banco diretamente após a execução para confirmar a persistência.
    */
   it('should update faq question', async() => {
+    // Arrange
     const faq = await prisma.faq.create({
       data: { question: 'Pergunta original?', answer: 'Resposta original.' },
     });
     const data: EditFaqInputDto = { question: 'Pergunta atualizada?' };
 
+    // Act
     await sut.execute(faq.id, data);
 
     const updated = await prisma.faq.findUnique({ where: { id: faq.id } });
+    // Assert
     expect(updated?.question).toBe('Pergunta atualizada?');
     // Garante que o campo não enviado permaneceu inalterado.
     expect(updated?.answer).toBe('Resposta original.');
   });
 
   it('should update faq answer', async() => {
+    // Arrange
     const faq = await prisma.faq.create({
       data: { question: 'Pergunta?', answer: 'Resposta original.' },
     });
     const data: EditFaqInputDto = { answer: 'Resposta atualizada.' };
 
+    // Act
     await sut.execute(faq.id, data);
 
     const updated = await prisma.faq.findUnique({ where: { id: faq.id } });
     // Garante que o campo não enviado permaneceu inalterado.
+    // Assert
     expect(updated?.question).toBe('Pergunta?');
     expect(updated?.answer).toBe('Resposta atualizada.');
   });
 
   it('should update both question and answer', async() => {
+    // Arrange
     const faq = await prisma.faq.create({
       data: { question: 'P1?', answer: 'R1.' },
     });
@@ -135,9 +145,11 @@ describe('EditFaq - Integration tests', () => {
       answer: 'Resposta nova.',
     };
 
+    // Act
     await sut.execute(faq.id, data);
 
     const updated = await prisma.faq.findUnique({ where: { id: faq.id } });
+    // Assert
     expect(updated?.question).toBe('Pergunta nova?');
     expect(updated?.answer).toBe('Resposta nova.');
   });
@@ -148,13 +160,16 @@ describe('EditFaq - Integration tests', () => {
    * garante que mudanças no texto não quebrem a resposta da API silenciosamente.
    */
   it('should return success message', async() => {
+    // Arrange
     const faq = await prisma.faq.create({
       data: { question: 'P?', answer: 'R.' },
     });
     const data: EditFaqInputDto = { question: 'Nova?' };
 
+    // Act
     const result = await sut.execute(faq.id, data);
 
+    // Assert
     expect(result).toEqual({ message: 'FAQ atualizado com sucesso' });
   });
 });

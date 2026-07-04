@@ -39,6 +39,7 @@ describe('CreateLocalTip - Integration tests', () => {
   });
 
   it('should be defined', () => {
+    // Act & Assert
     expect(sut).toBeDefined();
   });
 

@@ -28,8 +28,10 @@ describe('SigninWithCredentialAndPasswordInputDto', () => {
         '  ',
       ]
     )(`should throw an error if ${field} is empty (%s)`, async(value: any) => {
+      // Arrange
       const data = { [field]: value };
 
+      // Act & Assert
       expect.assertions(1);
       return target.transform(data, metadata).catch((error) => {
         expect(error.getResponse().message).toContain(`${field} é obrigatório`);
@@ -45,8 +47,10 @@ describe('SigninWithCredentialAndPasswordInputDto', () => {
         [],
       ]
     )(`should throw an error if ${field} is not a string (%s)`, async(value: any) => {
+      // Arrange
       const data = { [field]: value };
 
+      // Act & Assert
       expect.assertions(1);
       return target.transform(data, metadata).catch((error) => {
         expect(error.getResponse().message).toContain(`${field} deve ser uma string`);
@@ -55,13 +59,16 @@ describe('SigninWithCredentialAndPasswordInputDto', () => {
   });
 
   it('should pass if all fields are valid', async() => {
+    // Arrange
     const data = {
       credential: 'credential',
       password: 'password',
     };
 
+    // Act
     const result = await target.transform(data, metadata);
 
+    // Assert
     expect(result).toBeInstanceOf(SigninWithCredentialAndPasswordInputDto);
     expect(result).toEqual(data);
   });

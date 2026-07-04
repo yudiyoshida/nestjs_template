@@ -61,6 +61,7 @@ describe('FaqUserController - Unit tests', () => {
   // Teste de sanidade: verifica se o módulo de teste foi configurado corretamente
   // e que o controller foi instanciado sem erros de injeção de dependência.
   it('should be defined', () => {
+    // Act & Assert
     expect(sut).toBeDefined();
   });
 
@@ -78,12 +79,15 @@ describe('FaqUserController - Unit tests', () => {
      * o cenário sem depender do banco de dados.
      */
     it('should call findAllFaq.execute with queries', async() => {
+      // Arrange
       const queries = createMock<FindAllFaqQueryDto>();
       const output = createMock<IPagination<FaqDto>>();
       const findAllSpy = jest.spyOn(findAllFaqService, 'execute').mockResolvedValue(output);
 
+      // Act
       const result = await sut.findAll(queries);
 
+      // Assert
       expect(result).toEqual(output);
       // Garante que o controller delegou a chamada com os parâmetros corretos.
       expect(findAllSpy).toHaveBeenCalledWith(queries);
@@ -96,6 +100,7 @@ describe('FaqUserController - Unit tests', () => {
      * Isso é útil para documentar o contrato de resposta esperado pelo cliente.
      */
     it('should return paginated result', async() => {
+      // Arrange
       const queries = createMock<FindAllFaqQueryDto>({ page: 1, size: 10 });
       const output: IPagination<FaqDto> = {
         data: [],
@@ -106,8 +111,10 @@ describe('FaqUserController - Unit tests', () => {
       };
       jest.spyOn(findAllFaqService, 'execute').mockResolvedValue(output);
 
+      // Act
       const result = await sut.findAll(queries);
 
+      // Assert
       expect(result).toEqual(output);
       expect(result.data).toEqual([]);
       expect(result.totalItems).toBe(0);

@@ -36,17 +36,21 @@ describe('ConfigService', () => {
     ]
   )('environment properties', (value: string) => {
     it(`should return the NODE_ENV value (${value})`, () => {
+      // Arrange
       nestConfigService.get.mockReturnValue(value);
 
       const result = sut.nodeEnv;
 
+      // Act & Assert
       expect(nestConfigService.get).toHaveBeenCalledWith('NODE_ENV');
       expect(result).toBe(value);
     });
 
     it(`should return true for NODE_ENV value (${value})`, () => {
+      // Arrange
       nestConfigService.get.mockReturnValue(value);
 
+      // Act & Assert
       expect(sut.isDevelopment).toBe(value === Environment.Development);
       expect(sut.isProduction).toBe(value === Environment.Production);
       expect(sut.isTest).toBe(value === Environment.Test);
@@ -56,11 +60,13 @@ describe('ConfigService', () => {
   describe('server properties', () => {
     describe('port', () => {
       it('should return the PORT value as number', () => {
+        // Arrange
         const mockPort = 3000;
         nestConfigService.get.mockReturnValue(mockPort);
 
         const result = sut.port;
 
+        // Act & Assert
         expect(nestConfigService.get).toHaveBeenCalledWith('PORT');
         expect(result).toBe(mockPort);
       });
@@ -68,11 +74,13 @@ describe('ConfigService', () => {
 
     describe('sslKeyPath', () => {
       it('should return the SSL_KEY value', () => {
+        // Arrange
         const mockPath = '/path/to/ssl.key';
         nestConfigService.get.mockReturnValue(mockPath);
 
         const result = sut.sslKeyPath;
 
+        // Act & Assert
         expect(nestConfigService.get).toHaveBeenCalledWith('SSL_KEY');
         expect(result).toBe(mockPath);
       });
@@ -80,11 +88,13 @@ describe('ConfigService', () => {
 
     describe('sslCertPath', () => {
       it('should return the SSL_CERT value', () => {
+        // Arrange
         const mockPath = '/path/to/ssl.cert';
         nestConfigService.get.mockReturnValue(mockPath);
 
         const result = sut.sslCertPath;
 
+        // Act & Assert
         expect(nestConfigService.get).toHaveBeenCalledWith('SSL_CERT');
         expect(result).toBe(mockPath);
       });
@@ -92,11 +102,13 @@ describe('ConfigService', () => {
 
     describe('sslCaPath', () => {
       it('should return the SSL_CA value', () => {
+        // Arrange
         const mockPath = '/path/to/ssl.ca';
         nestConfigService.get.mockReturnValue(mockPath);
 
         const result = sut.sslCaPath;
 
+        // Act & Assert
         expect(nestConfigService.get).toHaveBeenCalledWith('SSL_CA');
         expect(result).toBe(mockPath);
       });
@@ -106,11 +118,13 @@ describe('ConfigService', () => {
   describe('cors properties', () => {
     describe('corsOrigin', () => {
       it('should return the CORS_ORIGIN value', () => {
+        // Arrange
         const mockOrigin = 'http://localhost:3000';
         nestConfigService.get.mockReturnValue(mockOrigin);
 
         const result = sut.corsOrigin;
 
+        // Act & Assert
         expect(nestConfigService.get).toHaveBeenCalledWith('CORS_ORIGIN');
         expect(result).toBe(mockOrigin);
       });
@@ -120,11 +134,13 @@ describe('ConfigService', () => {
   describe('jwt properties', () => {
     describe('jwtSecret', () => {
       it('should return the JWT_SECRET value', () => {
+        // Arrange
         const mockSecret = 'super-secret-jwt-key';
         nestConfigService.get.mockReturnValue(mockSecret);
 
         const result = sut.jwtSecret;
 
+        // Act & Assert
         expect(nestConfigService.get).toHaveBeenCalledWith('JWT_SECRET');
         expect(result).toBe(mockSecret);
       });
@@ -134,11 +150,13 @@ describe('ConfigService', () => {
   describe('database properties', () => {
     describe('databaseUrl', () => {
       it('should return the DATABASE_URL value', () => {
+        // Arrange
         const mockUrl = 'postgresql://user:pass@localhost:5432/db';
         nestConfigService.get.mockReturnValue(mockUrl);
 
         const result = sut.databaseUrl;
 
+        // Act & Assert
         expect(nestConfigService.get).toHaveBeenCalledWith('DATABASE_URL');
         expect(result).toBe(mockUrl);
       });
@@ -148,11 +166,13 @@ describe('ConfigService', () => {
   describe('aws properties', () => {
     describe('awsAccessKeyId', () => {
       it('should return the AWS_ACCESS_KEY_ID value', () => {
+        // Arrange
         const mockKeyId = 'AKIAIOSFODNN7EXAMPLE';
         nestConfigService.get.mockReturnValue(mockKeyId);
 
         const result = sut.awsAccessKeyId;
 
+        // Act & Assert
         expect(nestConfigService.get).toHaveBeenCalledWith('AWS_ACCESS_KEY_ID');
         expect(result).toBe(mockKeyId);
       });
@@ -160,11 +180,13 @@ describe('ConfigService', () => {
 
     describe('awsSecretAccessKey', () => {
       it('should return the AWS_SECRET_ACCESS_KEY value', () => {
+        // Arrange
         const mockSecret = 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY';
         nestConfigService.get.mockReturnValue(mockSecret);
 
         const result = sut.awsSecretAccessKey;
 
+        // Act & Assert
         expect(nestConfigService.get).toHaveBeenCalledWith('AWS_SECRET_ACCESS_KEY');
         expect(result).toBe(mockSecret);
       });
@@ -172,11 +194,13 @@ describe('ConfigService', () => {
 
     describe('awsRegion', () => {
       it('should return the AWS_REGION value', () => {
+        // Arrange
         const mockRegion = 'us-east-1';
         nestConfigService.get.mockReturnValue(mockRegion);
 
         const result = sut.awsRegion;
 
+        // Act & Assert
         expect(nestConfigService.get).toHaveBeenCalledWith('AWS_REGION');
         expect(result).toBe(mockRegion);
       });
@@ -184,11 +208,13 @@ describe('ConfigService', () => {
 
     describe('awsBucketName', () => {
       it('should return the AWS_BUCKET_NAME value', () => {
+        // Arrange
         const mockBucket = 'my-s3-bucket';
         nestConfigService.get.mockReturnValue(mockBucket);
 
         const result = sut.awsBucketName;
 
+        // Act & Assert
         expect(nestConfigService.get).toHaveBeenCalledWith('AWS_BUCKET_NAME');
         expect(result).toBe(mockBucket);
       });
@@ -198,11 +224,13 @@ describe('ConfigService', () => {
   describe('smtp properties', () => {
     describe('smtpHost', () => {
       it('should return the SMTP_HOST value', () => {
+        // Arrange
         const mockHost = 'smtp.gmail.com';
         nestConfigService.get.mockReturnValue(mockHost);
 
         const result = sut.smtpHost;
 
+        // Act & Assert
         expect(nestConfigService.get).toHaveBeenCalledWith('SMTP_HOST');
         expect(result).toBe(mockHost);
       });
@@ -210,11 +238,13 @@ describe('ConfigService', () => {
 
     describe('smtpPort', () => {
       it('should return the SMTP_PORT value as number', () => {
+        // Arrange
         const mockPort = 587;
         nestConfigService.get.mockReturnValue(mockPort);
 
         const result = sut.smtpPort;
 
+        // Act & Assert
         expect(nestConfigService.get).toHaveBeenCalledWith('SMTP_PORT');
         expect(result).toBe(mockPort);
       });
@@ -222,11 +252,13 @@ describe('ConfigService', () => {
 
     describe('smtpTo', () => {
       it('should return the SMTP_TO value', () => {
+        // Arrange
         const mockTo = 'recipient@example.com';
         nestConfigService.get.mockReturnValue(mockTo);
 
         const result = sut.smtpTo;
 
+        // Act & Assert
         expect(nestConfigService.get).toHaveBeenCalledWith('SMTP_TO');
         expect(result).toBe(mockTo);
       });
@@ -234,11 +266,13 @@ describe('ConfigService', () => {
 
     describe('smtpFrom', () => {
       it('should return the SMTP_FROM value', () => {
+        // Arrange
         const mockFrom = 'sender@example.com';
         nestConfigService.get.mockReturnValue(mockFrom);
 
         const result = sut.smtpFrom;
 
+        // Act & Assert
         expect(nestConfigService.get).toHaveBeenCalledWith('SMTP_FROM');
         expect(result).toBe(mockFrom);
       });
@@ -246,11 +280,13 @@ describe('ConfigService', () => {
 
     describe('smtpUsername', () => {
       it('should return the SMTP_USERNAME value', () => {
+        // Arrange
         const mockUsername = 'smtp-user';
         nestConfigService.get.mockReturnValue(mockUsername);
 
         const result = sut.smtpUsername;
 
+        // Act & Assert
         expect(nestConfigService.get).toHaveBeenCalledWith('SMTP_USERNAME');
         expect(result).toBe(mockUsername);
       });
@@ -258,11 +294,13 @@ describe('ConfigService', () => {
 
     describe('smtpPassword', () => {
       it('should return the SMTP_PASSWORD value', () => {
+        // Arrange
         const mockPassword = 'smtp-password';
         nestConfigService.get.mockReturnValue(mockPassword);
 
         const result = sut.smtpPassword;
 
+        // Act & Assert
         expect(nestConfigService.get).toHaveBeenCalledWith('SMTP_PASSWORD');
         expect(result).toBe(mockPassword);
       });
@@ -272,11 +310,13 @@ describe('ConfigService', () => {
   describe('redis properties', () => {
     describe('redisUrl', () => {
       it('should return the REDIS_URL value', () => {
+        // Arrange
         const mockUrl = 'redis_teste://localhost:6379';
         nestConfigService.get.mockReturnValue(mockUrl);
 
         const result = sut.redisUrl;
 
+        // Act & Assert
         expect(nestConfigService.get).toHaveBeenCalledWith('REDIS_URL');
         expect(result).toBe(mockUrl);
       });
@@ -286,11 +326,13 @@ describe('ConfigService', () => {
   describe('cep lookup properties', () => {
     describe('viacepApiUrl', () => {
       it('should return the VIACEP_API_URL value', () => {
+        // Arrange
         const mockUrl = 'https://viacep.com.br/ws/01001000/json/';
         nestConfigService.get.mockReturnValue(mockUrl);
 
         const result = sut.viacepApiUrl;
 
+        // Act & Assert
         expect(nestConfigService.get).toHaveBeenCalledWith('VIACEP_API_URL');
         expect(result).toBe(mockUrl);
       });
@@ -299,6 +341,7 @@ describe('ConfigService', () => {
 
   describe('integration scenarios', () => {
     it('should call nestConfigService.get for each property access', () => {
+      // Arrange
       nestConfigService.get
         .mockReturnValueOnce(Environment.Development)
         .mockReturnValueOnce(3000)
@@ -308,6 +351,7 @@ describe('ConfigService', () => {
       sut.port;
       sut.corsOrigin;
 
+      // Act & Assert
       expect(nestConfigService.get).toHaveBeenCalledTimes(3);
       expect(nestConfigService.get).toHaveBeenNthCalledWith(1, 'NODE_ENV');
       expect(nestConfigService.get).toHaveBeenNthCalledWith(2, 'PORT');

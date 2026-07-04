@@ -78,8 +78,10 @@ describe('CreateFaqInputDto', () => {
       '',
       '  ',
     ])('should throw an error if question is empty (%s)', async(value: any) => {
+      // Arrange
       const data = makeValidInputDto({ question: value });
 
+      // Act & Assert
       expect.assertions(1);
       return target.transform(data, metadata).catch((error) => {
         expect(error.getResponse().message).toContain('question should not be empty');
@@ -94,8 +96,10 @@ describe('CreateFaqInputDto', () => {
       {},
       [],
     ])('should throw an error if question is not a string (%s)', async(value: any) => {
+      // Arrange
       const data = makeValidInputDto({ question: value });
 
+      // Act & Assert
       expect.assertions(1);
       return target.transform(data, metadata).catch((error) => {
         expect(error.getResponse().message).toContain('question must be a string');
@@ -104,8 +108,10 @@ describe('CreateFaqInputDto', () => {
 
     // Teste de valor limite (boundary): 513 chars deve falhar; 512 deve passar (ver abaixo).
     it('should throw an error if question exceeds 512 characters', async() => {
+      // Arrange
       const data = makeValidInputDto({ question: 'a'.repeat(513) });
 
+      // Act & Assert
       expect.assertions(1);
       return target.transform(data, metadata).catch((error) => {
         expect(error.getResponse().message).toContain('question must be shorter than or equal to 512 characters');
@@ -116,18 +122,24 @@ describe('CreateFaqInputDto', () => {
     // espaços das bordas antes de persistir. Sem esse teste, um bug no
     // decorator de trim passaria despercebido.
     it('should trim whitespace from question', async() => {
+      // Arrange
       const data = makeValidInputDto({ question: '  Valid question?  ' });
 
+      // Act
       const result = await target.transform(data, metadata);
 
+      // Assert
       expect(result.question).toBe('Valid question?');
     });
 
     it('should accept valid question', async() => {
+      // Arrange
       const data = makeValidInputDto({ question: 'Como recuperar senha?' });
 
+      // Act
       const result = await target.transform(data, metadata);
 
+      // Assert
       expect(result.question).toBe('Como recuperar senha?');
     });
   });
@@ -139,8 +151,10 @@ describe('CreateFaqInputDto', () => {
       '',
       '  ',
     ])('should throw an error if answer is empty (%s)', async(value: any) => {
+      // Arrange
       const data = makeValidInputDto({ answer: value });
 
+      // Act & Assert
       expect.assertions(1);
       return target.transform(data, metadata).catch((error) => {
         expect(error.getResponse().message).toContain('answer should not be empty');
@@ -154,8 +168,10 @@ describe('CreateFaqInputDto', () => {
       {},
       [],
     ])('should throw an error if answer is not a string (%s)', async(value: any) => {
+      // Arrange
       const data = makeValidInputDto({ answer: value });
 
+      // Act & Assert
       expect.assertions(1);
       return target.transform(data, metadata).catch((error) => {
         expect(error.getResponse().message).toContain('answer must be a string');
@@ -165,8 +181,10 @@ describe('CreateFaqInputDto', () => {
     // O limite de `answer` é maior (8192 chars) pois respostas de FAQ
     // podem ser mais longas que perguntas.
     it('should throw an error if answer exceeds 8192 characters', async() => {
+      // Arrange
       const data = makeValidInputDto({ answer: 'a'.repeat(8193) });
 
+      // Act & Assert
       expect.assertions(1);
       return target.transform(data, metadata).catch((error) => {
         expect(error.getResponse().message).toContain('answer must be shorter than or equal to 8192 characters');
@@ -174,18 +192,24 @@ describe('CreateFaqInputDto', () => {
     });
 
     it('should trim whitespace from answer', async() => {
+      // Arrange
       const data = makeValidInputDto({ answer: '  Valid answer.  ' });
 
+      // Act
       const result = await target.transform(data, metadata);
 
+      // Assert
       expect(result.answer).toBe('Valid answer.');
     });
 
     it('should accept valid answer', async() => {
+      // Arrange
       const data = makeValidInputDto({ answer: 'Clique em esqueci senha.' });
 
+      // Act
       const result = await target.transform(data, metadata);
 
+      // Assert
       expect(result.answer).toBe('Clique em esqueci senha.');
     });
   });
@@ -198,13 +222,16 @@ describe('CreateFaqInputDto', () => {
      * do sistema possam usar `instanceof` de forma confiável).
      */
     it('should pass if all fields are valid', async() => {
+      // Arrange
       const data = makeValidInputDto({
         question: 'Como faço para recuperar minha senha?',
         answer: 'Clique em "Esqueci minha senha" na tela de login.',
       });
 
+      // Act
       const result = await target.transform(data, metadata);
 
+      // Assert
       expect(result).toBeInstanceOf(CreateFaqInputDto);
       expect(result.question).toBe('Como faço para recuperar minha senha?');
       expect(result.answer).toBe('Clique em "Esqueci minha senha" na tela de login.');
@@ -217,20 +244,26 @@ describe('CreateFaqInputDto', () => {
      * decorator causariam rejeição de valores que deveriam ser aceitos.
      */
     it('should accept boundary values for question (512 chars)', async() => {
+      // Arrange
       const question = 'a'.repeat(512);
       const data = makeValidInputDto({ question });
 
+      // Act
       const result = await target.transform(data, metadata);
 
+      // Assert
       expect(result.question).toBe(question);
     });
 
     it('should accept boundary values for answer (8192 chars)', async() => {
+      // Arrange
       const answer = 'a'.repeat(8192);
       const data = makeValidInputDto({ answer });
 
+      // Act
       const result = await target.transform(data, metadata);
 
+      // Assert
       expect(result.answer).toBe(answer);
     });
   });

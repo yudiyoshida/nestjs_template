@@ -76,6 +76,7 @@ describe('CreateFaq - Integration tests', () => {
   // Teste de sanidade: garante que o módulo foi configurado corretamente
   // e que o caso de uso foi instanciado sem erros de injeção de dependência.
   it('should be defined', () => {
+    // Act & Assert
     expect(sut).toBeDefined();
   });
 
@@ -87,13 +88,16 @@ describe('CreateFaq - Integration tests', () => {
    * persistência ocorreu de verdade, e não apenas que o método não lançou erro.
    */
   it('should create faq and return id', async() => {
+    // Arrange
     const input: CreateFaqInputDto = {
       question: 'Como recuperar minha senha?',
       answer: 'Clique em "Esqueci minha senha" na tela de login.',
     };
 
+    // Act
     const result = await sut.execute(input);
 
+    // Assert
     expect(result.id).toBeDefined();
     expect(typeof result.id).toBe('string');
 
@@ -110,14 +114,17 @@ describe('CreateFaq - Integration tests', () => {
    * exato dos timestamps, tornando o teste mais robusto a variações de tempo.
    */
   it('should persist faq in database', async() => {
+    // Arrange
     const input: CreateFaqInputDto = {
       question: 'Qual o horário de funcionamento?',
       answer: 'Segunda a sexta, das 8h às 18h.',
     };
 
+    // Act
     const { id } = await sut.execute(input);
 
     const faq = await prisma.faq.findUnique({ where: { id } });
+    // Assert
     expect(faq).toEqual(
       expect.objectContaining({
         id,

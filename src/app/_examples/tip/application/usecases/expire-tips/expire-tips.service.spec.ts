@@ -43,6 +43,7 @@ describe('ExpireTips - Integration tests', () => {
   });
 
   it('should be defined', () => {
+    // Act & Assert
     expect(sut).toBeDefined();
   });
 

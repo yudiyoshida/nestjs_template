@@ -79,15 +79,19 @@ describe('FaqDaoAdapterPrisma - Integration tests', () => {
     // Testa o comportamento padrão (estado vazio): importante para garantir
     // que o DAO trata corretamente o caso em que não há dados no banco.
     it('should return empty array when no faqs exist', async() => {
+      // Arrange
       const query: FindAllFaqQueryDto = {};
 
+      // Act
       const [faqs, total] = await sut.findAll(query);
 
+      // Assert
       expect(faqs).toEqual([]);
       expect(total).toBe(0);
     });
 
     it('should return all faqs with default pagination', async() => {
+      // Arrange
       await prisma.faq.createMany({
         data: [
           { question: 'P1?', answer: 'R1.' },
@@ -96,8 +100,10 @@ describe('FaqDaoAdapterPrisma - Integration tests', () => {
       });
       const query: FindAllFaqQueryDto = {};
 
+      // Act
       const [faqs, total] = await sut.findAll(query);
 
+      // Assert
       expect(faqs).toHaveLength(2);
       expect(total).toBe(2);
     });
@@ -108,6 +114,7 @@ describe('FaqDaoAdapterPrisma - Integration tests', () => {
      * garantir que a última página retorna apenas os itens restantes (5 de 25).
      */
     it('should paginate results correctly', async() => {
+      // Arrange
       await prisma.faq.createMany({
         data: Array.from({ length: 25 }, (_, i) => ({
           question: `P${i + 1}?`,
@@ -115,7 +122,9 @@ describe('FaqDaoAdapterPrisma - Integration tests', () => {
         })),
       });
 
+      // Act
       const [faqs, total] = await sut.findAll({ page: 1, size: 10 });
+      // Assert
       expect(faqs).toHaveLength(10);
       expect(total).toBe(25);
 
@@ -126,6 +135,7 @@ describe('FaqDaoAdapterPrisma - Integration tests', () => {
 
     // Valida que o filtro de busca é aplicado sobre o campo `question`.
     it('should search in question field (case-insensitive)', async() => {
+      // Arrange
       await prisma.faq.createMany({
         data: [
           { question: 'Como recuperar senha?', answer: 'Clique em esqueci.' },
@@ -134,8 +144,10 @@ describe('FaqDaoAdapterPrisma - Integration tests', () => {
       });
       const query: FindAllFaqQueryDto = { search: 'senha' };
 
+      // Act
       const [faqs, total] = await sut.findAll(query);
 
+      // Assert
       expect(faqs).toHaveLength(1);
       expect(total).toBe(1);
       expect(faqs[0].question).toBe('Como recuperar senha?');
@@ -143,6 +155,7 @@ describe('FaqDaoAdapterPrisma - Integration tests', () => {
 
     // Valida que o filtro de busca também é aplicado sobre o campo `answer`.
     it('should search in answer field (case-insensitive)', async() => {
+      // Arrange
       await prisma.faq.createMany({
         data: [
           { question: 'P1?', answer: 'Resposta sobre login.' },
@@ -151,8 +164,10 @@ describe('FaqDaoAdapterPrisma - Integration tests', () => {
       });
       const query: FindAllFaqQueryDto = { search: 'login' };
 
+      // Act
       const [faqs, total] = await sut.findAll(query);
 
+      // Assert
       expect(faqs).toHaveLength(1);
       expect(total).toBe(1);
       expect(faqs[0].answer).toBe('Resposta sobre login.');
@@ -161,6 +176,7 @@ describe('FaqDaoAdapterPrisma - Integration tests', () => {
     // Verifica que a busca usa OR entre os campos: um termo presente em qualquer
     // um dos dois campos (`question` ou `answer`) deve retornar o registro.
     it('should search in both question and answer', async() => {
+      // Arrange
       await prisma.faq.createMany({
         data: [
           { question: 'Pergunta sobre senha?', answer: 'Resposta.' },
@@ -169,8 +185,10 @@ describe('FaqDaoAdapterPrisma - Integration tests', () => {
       });
       const query: FindAllFaqQueryDto = { search: 'senha' };
 
+      // Act
       const [faqs, total] = await sut.findAll(query);
 
+      // Assert
       expect(faqs).toHaveLength(2);
       expect(total).toBe(2);
     });
@@ -183,6 +201,7 @@ describe('FaqDaoAdapterPrisma - Integration tests', () => {
      * qualquer ordem, fazendo o teste falhar de forma intermitente.
      */
     it('should return results ordered by createdAt desc', async() => {
+      // Arrange
       const faq1 = await prisma.faq.create({
         data: { question: 'Primeira?', answer: 'Primeira.' },
       });
@@ -194,8 +213,10 @@ describe('FaqDaoAdapterPrisma - Integration tests', () => {
       });
       const query: FindAllFaqQueryDto = {};
 
+      // Act
       const [faqs] = await sut.findAll(query);
 
+      // Assert
       expect(faqs).toHaveLength(2);
       expect(faqs[0].id).toBe(faq2.id);
       expect(faqs[1].id).toBe(faq1.id);
@@ -207,13 +228,16 @@ describe('FaqDaoAdapterPrisma - Integration tests', () => {
      * captura erros de mapeamento, como campos renomeados ou omitidos.
      */
     it('should return all faq fields correctly', async() => {
+      // Arrange
       const created = await prisma.faq.create({
         data: { question: 'Test?', answer: 'Test answer.' },
       });
       const query: FindAllFaqQueryDto = {};
 
+      // Act
       const [faqs] = await sut.findAll(query);
 
+      // Assert
       expect(faqs).toHaveLength(1);
       expect(faqs[0]).toEqual<FaqDto>({
         id: created.id,
@@ -230,20 +254,26 @@ describe('FaqDaoAdapterPrisma - Integration tests', () => {
     // não lançar uma exceção. O comportamento esperado aqui é um contrato
     // importante para as camadas superiores (serviços) que dependem desse DAO.
     it('should return null when faq does not exist', async() => {
+      // Arrange
       const id = 'non-existing-id';
 
+      // Act
       const result = await sut.findById(id);
 
+      // Assert
       expect(result).toBeNull();
     });
 
     it('should return faq by id', async() => {
+      // Arrange
       const created = await prisma.faq.create({
         data: { question: 'Test?', answer: 'Test answer.' },
       });
 
+      // Act
       const result = await sut.findById(created.id);
 
+      // Assert
       expect(result).not.toBeNull();
       expect(result?.id).toBe(created.id);
       expect(result?.question).toBe('Test?');
@@ -252,12 +282,15 @@ describe('FaqDaoAdapterPrisma - Integration tests', () => {
 
     // Assim como em `findAll`, valida o contrato de mapeamento completo dos campos.
     it('should return all faq fields correctly', async() => {
+      // Arrange
       const created = await prisma.faq.create({
         data: { question: 'Test?', answer: 'Test answer.' },
       });
 
+      // Act
       const result = await sut.findById(created.id);
 
+      // Assert
       expect(result).not.toBeNull();
       expect(result).toEqual<FaqDto>({
         id: created.id,
@@ -278,13 +311,16 @@ describe('FaqDaoAdapterPrisma - Integration tests', () => {
      * pois garante que a persistência ocorreu de verdade.
      */
     it('should create faq and return id', async() => {
+      // Arrange
       const data: CreateFaqInputDto = {
         question: 'Como recuperar senha?',
         answer: 'Clique em esqueci.',
       };
 
+      // Act
       const id = await sut.save(data);
 
+      // Assert
       expect(id).toBeDefined();
       expect(typeof id).toBe('string');
 
@@ -304,34 +340,41 @@ describe('FaqDaoAdapterPrisma - Integration tests', () => {
      * o caso de atualização completa fosse testado.
      */
     it('should update faq question', async() => {
+      // Arrange
       const faq = await prisma.faq.create({
         data: { question: 'Original?', answer: 'Original answer.' },
       });
       const data: EditFaqInputDto = { question: 'Updated?' };
 
+      // Act
       await sut.edit(faq.id, data);
 
       const updated = await prisma.faq.findUnique({ where: { id: faq.id } });
+      // Assert
       expect(updated?.question).toBe('Updated?');
       // Garante que o campo não enviado permaneceu inalterado.
       expect(updated?.answer).toBe('Original answer.');
     });
 
     it('should update faq answer', async() => {
+      // Arrange
       const faq = await prisma.faq.create({
         data: { question: 'Original?', answer: 'Original answer.' },
       });
       const data: EditFaqInputDto = { answer: 'Updated answer.' };
 
+      // Act
       await sut.edit(faq.id, data);
 
       const updated = await prisma.faq.findUnique({ where: { id: faq.id } });
       // Garante que o campo não enviado permaneceu inalterado.
+      // Assert
       expect(updated?.question).toBe('Original?');
       expect(updated?.answer).toBe('Updated answer.');
     });
 
     it('should update both question and answer', async() => {
+      // Arrange
       const faq = await prisma.faq.create({
         data: { question: 'P?', answer: 'R.' },
       });
@@ -340,9 +383,11 @@ describe('FaqDaoAdapterPrisma - Integration tests', () => {
         answer: 'New answer.',
       };
 
+      // Act
       await sut.edit(faq.id, data);
 
       const updated = await prisma.faq.findUnique({ where: { id: faq.id } });
+      // Assert
       expect(updated?.question).toBe('New question?');
       expect(updated?.answer).toBe('New answer.');
     });
@@ -356,13 +401,16 @@ describe('FaqDaoAdapterPrisma - Integration tests', () => {
      * completar sem erro mesmo que o DELETE não tenha sido executado.
      */
     it('should delete faq from database', async() => {
+      // Arrange
       const faq = await prisma.faq.create({
         data: { question: 'P?', answer: 'R.' },
       });
 
+      // Act
       await sut.delete(faq.id);
 
       const deleted = await prisma.faq.findUnique({ where: { id: faq.id } });
+      // Assert
       expect(deleted).toBeNull();
     });
   });

@@ -39,6 +39,7 @@ describe('CreateWeatherTip - Integration tests', () => {
   });
 
   it('should be defined', () => {
+    // Act & Assert
     expect(sut).toBeDefined();
   });
 

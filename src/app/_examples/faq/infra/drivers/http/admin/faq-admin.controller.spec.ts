@@ -92,6 +92,7 @@ describe('FaqAdminController - Unit tests', () => {
   // Teste de sanidade: verifica se o módulo de teste foi configurado corretamente
   // e que o controller foi instanciado sem erros de injeção de dependência.
   it('should be defined', () => {
+    // Act & Assert
     expect(sut).toBeDefined();
   });
 
@@ -102,12 +103,15 @@ describe('FaqAdminController - Unit tests', () => {
      * e validação de negócio é responsabilidade do serviço, não do controller.
      */
     it('should call createFaq.execute with body', async() => {
+      // Arrange
       const body = createMock<CreateFaqInputDto>();
       const output = createMock<CreateFaqOutputDto>();
       const createSpy = jest.spyOn(createFaqService, 'execute').mockResolvedValue(output);
 
+      // Act
       const result = await sut.create(body);
 
+      // Assert
       expect(result).toEqual(output);
       expect(createSpy).toHaveBeenCalledWith(body);
     });
@@ -119,12 +123,15 @@ describe('FaqAdminController - Unit tests', () => {
      * e retorna o resultado paginado sem transformações.
      */
     it('should call findAllFaq.execute with queries', async() => {
+      // Arrange
       const queries = createMock<FindAllFaqQueryDto>();
       const output = createMock<IPagination<FaqDto>>();
       const findAllSpy = jest.spyOn(findAllFaqService, 'execute').mockResolvedValue(output);
 
+      // Act
       const result = await sut.findAll(queries);
 
+      // Assert
       expect(result).toEqual(output);
       expect(findAllSpy).toHaveBeenCalledWith(queries);
     });
@@ -138,12 +145,15 @@ describe('FaqAdminController - Unit tests', () => {
      * ao invés de apenas o `params.id`.
      */
     it('should call findFaqById.execute with params.id', async() => {
+      // Arrange
       const params = createMock<Params>();
       const output = createMock<FaqDto>();
       const findOneSpy = jest.spyOn(findFaqByIdService, 'execute').mockResolvedValue(output);
 
+      // Act
       const result = await sut.findOne(params);
 
+      // Assert
       expect(result).toEqual(output);
       // Garante que apenas o ID foi enviado, não o objeto params completo.
       expect(findOneSpy).toHaveBeenCalledWith(params.id);
@@ -157,13 +167,16 @@ describe('FaqAdminController - Unit tests', () => {
      * requisição. Ambos precisam ser repassados juntos ao serviço de edição.
      */
     it('should call editFaq.execute with params.id and body', async() => {
+      // Arrange
       const params = createMock<Params>();
       const body = createMock<EditFaqInputDto>();
       const output = createMock<SuccessMessage>();
       const updateSpy = jest.spyOn(editFaqService, 'execute').mockResolvedValue(output);
 
+      // Act
       const result = await sut.update(params, body);
 
+      // Assert
       expect(result).toEqual(output);
       expect(updateSpy).toHaveBeenCalledWith(params.id, body);
     });
@@ -175,12 +188,15 @@ describe('FaqAdminController - Unit tests', () => {
      * a exclusão ao serviço correto, retornando a mensagem de sucesso.
      */
     it('should call deleteFaq.execute with params.id', async() => {
+      // Arrange
       const params = createMock<Params>();
       const output = createMock<SuccessMessage>();
       const removeSpy = jest.spyOn(deleteFaqService, 'execute').mockResolvedValue(output);
 
+      // Act
       const result = await sut.remove(params);
 
+      // Assert
       expect(result).toEqual(output);
       expect(removeSpy).toHaveBeenCalledWith(params.id);
     });

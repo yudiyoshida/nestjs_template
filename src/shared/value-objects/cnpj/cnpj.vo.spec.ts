@@ -18,6 +18,7 @@ describe('CNPJ Value Object', () => {
       '47.846.258/0001-71',
     ]
   )('should throw an error when providing invalid cnpj (%s)', (cnpj: string) => {
+    // Act & Assert
     expect(() => new CNPJ(cnpj)).toThrow('CNPJ inválido');
     expect(() => new CNPJ(cnpj)).toThrow(InvalidCnpjError);
   });
@@ -31,8 +32,10 @@ describe('CNPJ Value Object', () => {
       '16.474.222/0001-86',
     ]
   )('should create a cnpj value object when providing valid cnpj (%s)', (cnpj: string) => {
+    // Act
     const cnpjVo = new CNPJ(cnpj);
 
+    // Assert
     expect(cnpjVo).toBeInstanceOf(CNPJ);
     expect(cnpjVo.value).toBe(cnpj.replace(/[/.-]/g, ''));
   });

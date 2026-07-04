@@ -74,16 +74,20 @@ describe('FindAllFaq - Integration tests', () => {
   // Teste de sanidade: garante que o módulo foi configurado corretamente
   // e que o caso de uso foi instanciado sem erros de injeção de dependência.
   it('should be defined', () => {
+    // Act & Assert
     expect(sut).toBeDefined();
   });
 
   // Testa o comportamento padrão (estado vazio): garante que o caso de uso
   // retorna uma estrutura de paginação válida mesmo sem dados no banco.
   it('should return empty results when no faqs exist', async() => {
+    // Arrange
     const query: FindAllFaqQueryDto = {};
 
+    // Act
     const result = await sut.execute(query);
 
+    // Assert
     expect(result.data).toEqual([]);
     expect(result.totalItems).toBe(0);
   });
@@ -94,6 +98,7 @@ describe('FindAllFaq - Integration tests', () => {
    * Esses campos são consumidos pelo frontend para construir a navegação de páginas.
    */
   it('should return all faqs with pagination', async() => {
+    // Arrange
     await prisma.faq.createMany({
       data: [
         { question: 'Pergunta 1?', answer: 'Resposta 1.' },
@@ -102,8 +107,10 @@ describe('FindAllFaq - Integration tests', () => {
       ],
     });
 
+    // Act
     const result = await sut.execute({ page: 1, size: 10 });
 
+    // Assert
     expect(result.data).toHaveLength(3);
     expect(result.totalItems).toBe(3);
     expect(result.currentPage).toBe(1);
@@ -118,6 +125,7 @@ describe('FindAllFaq - Integration tests', () => {
    * e que `totalPages` é calculado corretamente (ceil(25/10) = 3).
    */
   it('should paginate results correctly', async() => {
+    // Arrange
     await prisma.faq.createMany({
       data: Array.from({ length: 25 }, (_, i) => ({
         question: `Pergunta ${i + 1}?`,
@@ -126,8 +134,10 @@ describe('FindAllFaq - Integration tests', () => {
     });
 
     const page1 = await sut.execute({ page: 1, size: 10 });
+    // Act
     const page3 = await sut.execute({ page: 3, size: 10 });
 
+    // Assert
     expect(page1.data).toHaveLength(10);
     expect(page1.totalItems).toBe(25);
     expect(page1.currentPage).toBe(1);
@@ -144,6 +154,7 @@ describe('FindAllFaq - Integration tests', () => {
    * pelos IDs para tornar o teste determinístico e independente dessa garantia.
    */
   it('should order by createdAt desc', async() => {
+    // Arrange
     const first = await prisma.faq.create({
       data: { question: 'Primeira?', answer: 'Primeira.' },
     });
@@ -156,8 +167,10 @@ describe('FindAllFaq - Integration tests', () => {
       data: { question: 'Terceira?', answer: 'Terceira.' },
     });
 
+    // Act
     const result = await sut.execute({ page: 1, size: 10 });
 
+    // Assert
     expect(result.data[0].id).toBe(third.id);
     expect(result.data[1].id).toBe(second.id);
     expect(result.data[2].id).toBe(first.id);
@@ -167,6 +180,7 @@ describe('FindAllFaq - Integration tests', () => {
   // O uso de `.every()` na assertion garante que TODOS os itens retornados
   // contêm o termo buscado, não apenas o primeiro.
   it('should filter by search in question', async() => {
+    // Arrange
     await prisma.faq.createMany({
       data: [
         { question: 'Como recuperar senha?', answer: 'Clique em esqueci.' },
@@ -175,8 +189,10 @@ describe('FindAllFaq - Integration tests', () => {
       ],
     });
 
+    // Act
     const result = await sut.execute({ page: 1, size: 10, search: 'senha' });
 
+    // Assert
     expect(result.data).toHaveLength(2);
     expect(result.totalItems).toBe(2);
     expect(result.data.every((f: FaqDto) => f.question.toLowerCase().includes('senha'))).toBe(true);
@@ -184,6 +200,7 @@ describe('FindAllFaq - Integration tests', () => {
 
   // Valida que o filtro de busca também é aplicado sobre o campo `answer`.
   it('should filter by search in answer', async() => {
+    // Arrange
     await prisma.faq.createMany({
       data: [
         { question: 'P1?', answer: 'Resposta sobre login.' },
@@ -192,8 +209,10 @@ describe('FindAllFaq - Integration tests', () => {
       ],
     });
 
+    // Act
     const result = await sut.execute({ page: 1, size: 10, search: 'login' });
 
+    // Assert
     expect(result.data).toHaveLength(2);
     expect(result.totalItems).toBe(2);
     expect(result.data.every((f: FaqDto) => f.answer.toLowerCase().includes('login'))).toBe(true);
@@ -206,12 +225,15 @@ describe('FindAllFaq - Integration tests', () => {
    * nenhum campo foi adicionado ou removido do DTO sem atualizar o teste.
    */
   it('should return correct FaqDto structure', async() => {
+    // Arrange
     const faq = await prisma.faq.create({
       data: { question: 'Test?', answer: 'Test answer.' },
     });
 
+    // Act
     const result = await sut.execute({ page: 1, size: 10 });
 
+    // Assert
     expect(result.data[0]).toEqual<FaqDto>({
       id: faq.id,
       question: faq.question,
