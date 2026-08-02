@@ -1,11 +1,46 @@
-# `.cursor/` — Skills, Rules e Contexto Arquitetural do nestjs_template
+# `.agents/` — Skills, Rules e Contexto Arquitetural do nestjs_template
 
 Esta pasta concentra a **memória arquitetural** do projeto para uso por agentes de IA (Cursor, Claude Code) e onboarding de pessoas. Tudo aqui deve ser mantido **em sincronia** com a evolução da arquitetura.
+
+## ⚠️ Fonte única da verdade
+
+`.agents/` é o **único lugar com arquivos reais**. `.cursor/`, `.claude/`, `AGENTS.md` e `CLAUDE.md` são **symlinks** apontando para cá — editar em qualquer um deles é editar este conteúdo, mas por clareza **sempre edite pelo caminho `.agents/…`**.
+
+```
+.agents/                          # arquivos reais (fonte da verdade)
+
+.cursor/
+├── settings.json                 # real — config de plugin do Cursor, não portável
+├── rules    -> ../.agents/rules
+├── commands -> ../.agents/commands
+└── skills   -> ../.agents/skills
+
+.claude/
+├── commands -> ../.agents/commands
+└── skills   -> ../.agents/skills
+
+AGENTS.md -> .agents/context.md   # Cursor carrega automaticamente
+CLAUDE.md -> .agents/context.md   # Claude Code carrega automaticamente
+```
+
+Como cada ferramenta enxerga:
+
+| Item | Cursor | Claude Code |
+|---|---|---|
+| `context.md` | auto via `AGENTS.md` | auto via `CLAUDE.md` |
+| `rules/architecture.mdc` | auto (`alwaysApply: true`) via `.cursor/rules/` | sob demanda — `context.md` manda ler |
+| `commands/*.md` | slash commands via `.cursor/commands/` | slash commands via `.claude/commands/` |
+| `skills/*/SKILL.md` | skills via `.cursor/skills/` | skills via `.claude/skills/` |
+| `.cursor/settings.json` | só Cursor | ignorado |
+
+**Adicionar uma skill/command novo**: crie só em `.agents/skills/<nome>/SKILL.md` (ou `.agents/commands/<nome>.md`). Os symlinks são de diretório, então ambas as ferramentas veem na hora — nenhum symlink novo é necessário.
+
+**Requisito**: symlinks versionados no git (`core.symlinks=true`, default em macOS/Linux). No Windows, exige Developer Mode ou Git com symlink habilitado.
 
 ## Estrutura
 
 ```
-.cursor/
+.agents/
 ├── README.md                       # Você está aqui
 ├── context.md                      # Passaporte arquitetural (resumo)
 ├── commands/
@@ -46,7 +81,7 @@ Para qualquer feature nova (CRUD, use case, rota), invoque:
 /nova-feature
 ```
 
-Esse comando (definido em `.cursor/commands/nova-feature.md`) **força** o agente a:
+Esse comando (definido em `.agents/commands/nova-feature.md`) **força** o agente a:
 1. Ler `context.md`, `rules/architecture.mdc` e `skills/adding-new-feature/SKILL.md` antes de qualquer ação
 2. Coletar requisitos via formulário estruturado
 3. Apresentar plano detalhado de arquivos a criar/modificar
@@ -58,7 +93,7 @@ Esse comando (definido em `.cursor/commands/nova-feature.md`) **força** o agent
 
 Para forçar carregamento explícito numa nova sessão, abra com:
 
-> "Leia `.cursor/context.md` e siga as regras de `.cursor/rules/architecture.mdc` antes de qualquer implementação. Use as skills em `.cursor/skills/` conforme o tópico."
+> "Leia `.agents/context.md` e siga as regras de `.agents/rules/architecture.mdc` antes de qualquer implementação. Use as skills em `.agents/skills/` conforme o tópico."
 
 ### 3) Para humanos (onboarding e referência)
 
@@ -85,7 +120,7 @@ Para **gerar ou estender testes** com ciclo TDD e fluxo de QA sênior:
 /qa-tdd
 ```
 
-Definição em `.cursor/commands/qa-tdd.md`.
+Definição em `.agents/commands/qa-tdd.md`.
 
 ### 5) Slash command apenas checklist (`/feature-checklist`)
 
@@ -95,7 +130,7 @@ Para **revisar** um PR ou **validar** o que falta contra o checklist oficial:
 /feature-checklist
 ```
 
-Definição em `.cursor/commands/feature-checklist.md`.
+Definição em `.agents/commands/feature-checklist.md`.
 
 ## Anatomia de uma SKILL.md
 
@@ -125,7 +160,7 @@ description: >-
 - **Não duplique regras** entre `rules/architecture.mdc` e skills: rules são absolutas e curtas; skills explicam o "como" com exemplos
 - **Use code references reais** (`src/app/...`) com line ranges, não pseudo-código
 - **Idioma**: pt-BR para conteúdo, en-US para identificadores e nomes de arquivos das skills
-- **Versionamento**: a pasta `.cursor/` é versionada com o código (commitada)
+- **Versionamento**: a pasta `.agents/` é versionada com o código (commitada)
 
 ## Mapa rápido de conceitos para localização
 

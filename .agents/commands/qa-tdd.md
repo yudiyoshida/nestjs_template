@@ -1,3 +1,7 @@
+---
+description: Gera ou estende testes com ciclo TDD (RED-GREEN-REFACTOR) e matriz de cenários de QA sênior, seguindo os padrões de teste do repositório
+---
+
 # /qa-tdd — Testes com TDD + QA sênior
 
 Use este comando quando quiser **gerar ou estender testes** (unit, integration, DTO, DAO, controller, domínio) com **dois trilhos obrigatórios**:
@@ -11,8 +15,8 @@ Use este comando quando quiser **gerar ou estender testes** (unit, integration, 
 
 **Antes de qualquer código ou plano detalhado**, leia **na íntegra**:
 
-1. **`.cursor/skills/qa-test-generator/SKILL.md`** — workflow de QA.
-2. **`.cursor/skills/testing-strategy/SKILL.md`** — sufixos, `createMock`, `prisma.<model>.deleteMany()`, estrutura canônica dos `describe`/`it`.
+1. **`.agents/skills/qa-test-generator/SKILL.md`** — workflow de QA.
+2. **`.agents/skills/testing-strategy/SKILL.md`** — sufixos, `createMock`, `prisma.<model>.deleteMany()`, estrutura canônica dos `describe`/`it`.
 
 **TDD (Superpowers / skill anexada)**  
 Se a skill **`test-driven-development`** estiver disponível, **leia-a na íntegra** também.
@@ -92,7 +96,7 @@ Siga a **Fase 5** do `qa-test-generator`: `npm test` nos arquivos tocados, `npm 
 
 | Recurso | Caminho |
 |--------|---------|
-| QA + matriz + scaffolds | `.cursor/skills/qa-test-generator/SKILL.md` |
-| Política de specs do repo | `.cursor/skills/testing-strategy/SKILL.md` |
-| Rule 5 (testes) | `.cursor/rules/architecture.mdc` |
+| QA + matriz + scaffolds | `.agents/skills/qa-test-generator/SKILL.md` |
+| Política de specs do repo | `.agents/skills/testing-strategy/SKILL.md` |
+| Rule 5 (testes) | `.agents/rules/architecture.mdc` |
 | TDD completo (se instalado) | skill **test-driven-development** (Superpowers) |

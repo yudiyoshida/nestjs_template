@@ -1,3 +1,7 @@
+---
+description: Pipeline completo para implementar uma funcionalidade nova seguindo a arquitetura do projeto (memória arquitetural → requisitos → plano → código → validação)
+---
+
 # /nova-feature — Implementar funcionalidade nova respeitando arquitetura
 
 Você é um arquiteto sênior do projeto **nestjs_template** (NestJS + Prisma + Hexagonal/DDD-light + autorização por roles). O usuário acabou de invocar este comando para implementar uma nova funcionalidade. Sua missão é entregar essa funcionalidade **seguindo rigorosamente os padrões do projeto**, sem improvisar.
@@ -8,10 +12,10 @@ Você é um arquiteto sênior do projeto **nestjs_template** (NestJS + Prisma + 
 
 Antes de fazer qualquer pergunta ou propor solução, **leia nesta ordem**, em paralelo quando possível:
 
-1. **`.cursor/context.md`** — passaporte arquitetural (stack, estrutura, regras de ouro, onde fica o quê)
-2. **`.cursor/rules/architecture.mdc`** — 10 regras absolutas que regem o projeto
-3. **`.cursor/skills/adding-new-feature/SKILL.md`** — checklist mestre end-to-end
-4. **`.cursor/skills/naming-conventions/SKILL.md`** — convenções de nomenclatura
+1. **`.agents/context.md`** — passaporte arquitetural (stack, estrutura, regras de ouro, onde fica o quê)
+2. **`.agents/rules/architecture.mdc`** — 10 regras absolutas que regem o projeto
+3. **`.agents/skills/adding-new-feature/SKILL.md`** — checklist mestre end-to-end
+4. **`.agents/skills/naming-conventions/SKILL.md`** — convenções de nomenclatura
 
 Mantenha os 4 conteúdos no contexto de trabalho até o final da tarefa. **Nunca confie em memória prévia** sobre este projeto — sempre re-leia os arquivos quando precisar conferir uma convenção.
 
@@ -87,26 +91,26 @@ Se o usuário não trouxe o pedido completo, apresente o **formulário abaixo** 
 
 ## ETAPA 2 — Plano de implementação (apresente ANTES de codificar)
 
-Depois de coletar os requisitos, **construa um plano detalhado** com base no checklist da Rule 10 (`.cursor/rules/architecture.mdc`) e da skill `adding-new-feature`. O plano deve listar **exatamente os arquivos** que serão criados/modificados, na ordem correta.
+Depois de coletar os requisitos, **construa um plano detalhado** com base no checklist da Rule 10 (`.agents/rules/architecture.mdc`) e da skill `adding-new-feature`. O plano deve listar **exatamente os arquivos** que serão criados/modificados, na ordem correta.
 
 Carregue **as skills específicas** que cobrem cada passo do plano:
 
 | Passo | Skill obrigatória |
 |---|---|
-| Schema Prisma | `.cursor/skills/prisma-conventions/SKILL.md` |
-| Tokens DI | `.cursor/skills/dependency-injection/SKILL.md` |
-| Estrutura de pastas | `.cursor/skills/module-structure/SKILL.md` |
-| Domínio (entity/factory/VO) | `.cursor/skills/domain-modeling/SKILL.md` |
-| DTOs e validação | `.cursor/skills/dto-and-validation/SKILL.md` |
-| Use cases | `.cursor/skills/use-case-creation/SKILL.md` |
-| DAO | `.cursor/skills/dao-pattern/SKILL.md` |
-| Repository (DDD) | `.cursor/skills/repository-pattern/SKILL.md` |
-| Erros tipados | `.cursor/skills/error-handling/SKILL.md` |
-| Controllers + Swagger | `.cursor/skills/controllers-and-swagger/SKILL.md` |
-| Autorização | `.cursor/skills/authentication-and-authorization/SKILL.md` |
-| Gateways externos (se aplicável) | `.cursor/skills/gateway-adapters/SKILL.md` |
-| Testes | `.cursor/skills/testing-strategy/SKILL.md` |
-| Doc integração frontend (após implementação) | `.cursor/skills/frontend-integration-docs/SKILL.md` |
+| Schema Prisma | `.agents/skills/prisma-conventions/SKILL.md` |
+| Tokens DI | `.agents/skills/dependency-injection/SKILL.md` |
+| Estrutura de pastas | `.agents/skills/module-structure/SKILL.md` |
+| Domínio (entity/factory/VO) | `.agents/skills/domain-modeling/SKILL.md` |
+| DTOs e validação | `.agents/skills/dto-and-validation/SKILL.md` |
+| Use cases | `.agents/skills/use-case-creation/SKILL.md` |
+| DAO | `.agents/skills/dao-pattern/SKILL.md` |
+| Repository (DDD) | `.agents/skills/repository-pattern/SKILL.md` |
+| Erros tipados | `.agents/skills/error-handling/SKILL.md` |
+| Controllers + Swagger | `.agents/skills/controllers-and-swagger/SKILL.md` |
+| Autorização | `.agents/skills/authentication-and-authorization/SKILL.md` |
+| Gateways externos (se aplicável) | `.agents/skills/gateway-adapters/SKILL.md` |
+| Testes | `.agents/skills/testing-strategy/SKILL.md` |
+| Doc integração frontend (após implementação) | `.agents/skills/frontend-integration-docs/SKILL.md` |
 
 Leia **somente** as skills relacionadas aos passos que serão executados.
 
@@ -220,7 +224,7 @@ Quando terminar, apresente um resumo curto:
 
 Depois do resumo da Etapa 4, **sempre**:
 
-1. **Leia** `.cursor/skills/frontend-integration-docs/SKILL.md` na íntegra.
+1. **Leia** `.agents/skills/frontend-integration-docs/SKILL.md` na íntegra.
 2. **Execute o fluxo da skill**: escopo das mudanças de contrato → conferência no código → redação → revisão.
 3. **Persista** um arquivo em `docs/` no formato `frontend-integracao-<contexto>.md`.
 4. Se a feature **não** alterar nem expor contrato HTTP relevante, registre isso explicitamente no resumo — **sem** criar doc vazio.
@@ -229,7 +233,7 @@ Depois do resumo da Etapa 4, **sempre**:
 
 ## REGRAS DE OURO DESTE COMANDO
 
-1. **NÃO comece a codificar sem ler `.cursor/context.md`, `.cursor/rules/architecture.mdc` e `.cursor/skills/adding-new-feature/SKILL.md` primeiro.**
+1. **NÃO comece a codificar sem ler `.agents/context.md`, `.agents/rules/architecture.mdc` e `.agents/skills/adding-new-feature/SKILL.md` primeiro.**
 2. **NÃO improvise convenções.** Se estiver em dúvida, leia a skill correspondente.
 3. **NÃO pule passos do checklist.** Se algum passo não se aplica, justifique no plano.
 4. **Use exemplos reais do código** (FAQ em `_examples/faq` para CRUD simples, Tip em `_examples/tip` para DDD).

@@ -2,6 +2,16 @@
 
 > Passaporte arquitetural — leia no início de cada sessão antes de implementar qualquer coisa.
 
+## Leitura obrigatória antes de codar
+
+Este arquivo é o único carregado automaticamente (via `CLAUDE.md` / `AGENTS.md`, ambos symlinks para cá). Antes de escrever ou alterar qualquer código:
+
+1. **Leia `.agents/rules/architecture.mdc`** — 10 regras arquiteturais absolutas. Não é opcional.
+2. **Carregue a skill do tópico** em `.agents/skills/<nome>/SKILL.md` conforme o que for fazer (ver tabela em `.agents/README.md`).
+3. Para uma feature nova completa, use o comando `/nova-feature`; para testes, `/qa-tdd`; para revisão, `/feature-checklist`.
+
+> `.agents/` é a fonte da verdade. `.cursor/` e `.claude/` são symlinks para ela — **nunca edite através deles**.
+
 ## Stack
 
 - **Linguagem**: TypeScript 5.1 (target ES2022, module node16, `strictNullChecks` + `noImplicitAny`)
@@ -134,7 +144,7 @@ prisma/
 
 ## Pré-requisitos para qualquer geração de código
 
-1. Ler **`.cursor/rules/architecture.mdc`** (rules absolutas)
-2. Ler a **skill específica** ao que está sendo feito (`.cursor/skills/<nome>/SKILL.md`)
+1. Ler **`.agents/rules/architecture.mdc`** (rules absolutas)
+2. Ler a **skill específica** ao que está sendo feito (`.agents/skills/<nome>/SKILL.md`)
 3. Olhar um **exemplo real do código** (FAQ em `_examples/faq` para CRUD simples; Tip em `_examples/tip` para DDD)
 4. Em caso de divergência entre rules e skills, **as rules vencem**; em caso de divergência entre skills e código, **o código vence** (e a skill deve ser atualizada)

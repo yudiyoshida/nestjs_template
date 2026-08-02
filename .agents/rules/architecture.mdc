@@ -139,7 +139,7 @@ Nomenclatura:
 
 DAO obrigatórios:
 - Constante `<Entity>Select satisfies Prisma.<Entity>Select` no topo do adapter
-- Where montado com array `conditions: Prisma.<X>WhereInput[]` + `AND` (ver `.cursor/skills/dao-pattern/SKILL.md`, secção 3)
+- Where montado com array `conditions: Prisma.<X>WhereInput[]` + `AND` (ver `.agents/skills/dao-pattern/SKILL.md`, secção 3)
 - Search com `contains: search.trim(), mode: 'insensitive'`
 - `findAll`: `findMany` + `count` em `$transaction([...])`
 - Pagination via `prisma.paginationFactory(page, size)`
@@ -312,8 +312,8 @@ Se algum item ficou "não aplicável", documente o motivo no PR. Pular passos se
 
 ## Referências
 
-- Skills detalhadas por tópico: `.cursor/skills/<nome-da-skill>/SKILL.md`
-- Padrão Where em DAOs: `.cursor/skills/dao-pattern/SKILL.md` (secção 3)
-- Scaffolding de módulo (`npm run generate:module`): `.cursor/skills/adding-new-feature/SKILL.md` (passo 3) — implementação em `scripts/cli.ts` + `scripts/templates/`
-- Autorização por roles / rotas protegidas: `.cursor/skills/authentication-and-authorization/SKILL.md`
-- Passaporte arquitetural conciso: `.cursor/context.md`
+- Skills detalhadas por tópico: `.agents/skills/<nome-da-skill>/SKILL.md`
+- Padrão Where em DAOs: `.agents/skills/dao-pattern/SKILL.md` (secção 3)
+- Scaffolding de módulo (`npm run generate:module`): `.agents/skills/adding-new-feature/SKILL.md` (passo 3) — implementação em `scripts/cli.ts` + `scripts/templates/`
+- Autorização por roles / rotas protegidas: `.agents/skills/authentication-and-authorization/SKILL.md`
+- Passaporte arquitetural conciso: `.agents/context.md`

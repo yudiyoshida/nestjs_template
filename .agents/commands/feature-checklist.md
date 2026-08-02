@@ -1,3 +1,7 @@
+---
+description: Aplica o checklist oficial de entrega de feature ou revisa um PR/diff contra ele, sem rodar o pipeline completo de /nova-feature
+---
+
 # /feature-checklist — Checklist de nova funcionalidade
 
 Use este comando quando precisar **aplicar apenas o checklist** de entrega de uma feature nova ou **revisar um PR / diff** contra esse checklist — sem rodar o pipeline completo do `/nova-feature`.
@@ -6,15 +10,15 @@ Use este comando quando precisar **aplicar apenas o checklist** de entrega de um
 
 ## Skill obrigatória (executar primeiro)
 
-1. Abra e siga **`.cursor/skills/code-reviewer/SKILL.md`** como **primeiro passo** deste comando.
-2. Para código deste projeto (NestJS/API/Prisma), carregue também **`.cursor/skills/code-reviewer/references/backend.md`** (e **`database.md`** se houver queries/migrations; **`security.md`** se tocar auth/autorização).
+1. Abra e siga **`.agents/skills/code-reviewer/SKILL.md`** como **primeiro passo** deste comando.
+2. Para código deste projeto (NestJS/API/Prisma), carregue também **`.agents/skills/code-reviewer/references/backend.md`** (e **`database.md`** se houver queries/migrations; **`security.md`** se tocar auth/autorização).
 3. A checklist arquitetural abaixo (Rule 10) e a revisão pela skill são **complementares**.
 
 ---
 
 ## Onde está a regra
 
-1. Abra **`.cursor/rules/architecture.mdc`**.
+1. Abra **`.agents/rules/architecture.mdc`**.
 2. Localize o bloco **`## Rule 10 — Checklist para Nova Funcionalidade`**.
 3. **Critério estável de fallback:** use a **última seção `## Rule …` antes de `## Referências`**.
 4. Copie mentalmente a **lista de checkbox** daquela seção e trate-a como **fonte única** para esta tarefa.
@@ -62,6 +66,6 @@ Texto ou subtítulos espelhando os bullets do arquivo de rules.
 
 ## Regras de ouro deste comando
 
-1. **Skill primeiro:** sempre carregar **`.cursor/skills/code-reviewer/SKILL.md`** quando há código.
-2. **Fonte única do checklist:** o texto vale o que está **agora** em `.cursor/rules/architecture.mdc`.
+1. **Skill primeiro:** sempre carregar **`.agents/skills/code-reviewer/SKILL.md`** quando há código.
+2. **Fonte única do checklist:** o texto vale o que está **agora** em `.agents/rules/architecture.mdc`.
 3. **`npm run lint`, `npm test`, `npm run build`:** só exija evidência quando o trabalho já deveria estar pronto para CI.
