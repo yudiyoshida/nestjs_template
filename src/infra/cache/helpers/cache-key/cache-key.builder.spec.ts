@@ -37,6 +37,7 @@ describe('CacheKeyBuilder', () => {
       { resource: 'banner', command: 'list', data: {}, expected: 'cache:global:banner:list:{}' },
       { resource: 'banner', command: 'list', data: { search: 'xpto' }, expected: 'cache:global:banner:list:{"search":"xpto"}' },
       { resource: 'banner', command: 'detail', data: 'random-id', expected: 'cache:global:banner:detail:random-id' },
+      { resource: 'refresh-token', command: 'detail', data: 'account-123', expected: 'cache:global:refresh-token:detail:account-123' },
 
       { accountId: 'acc-id', resource: 'account', command: 'list', data: undefined, expected: 'cache:acc-id:account:list' },
       { accountId: 'acc-id', resource: 'account', command: 'list', data: {}, expected: 'cache:acc-id:account:list:{}' },

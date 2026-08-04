@@ -46,6 +46,12 @@ export class ConfigService {
   get jwtExpiresIn(): string {
     return this.nestConfigService.get<string>('JWT_EXPIRES_IN')!;
   }
+  get refreshTokenSecret(): string {
+    return this.nestConfigService.get<string>('REFRESH_TOKEN_SECRET')!;
+  }
+  get refreshTokenExpiresIn(): number {
+    return this.nestConfigService.get<number>('REFRESH_TOKEN_EXPIRES_IN')!;
+  }
 
   // database
   get databaseUrl(): string {

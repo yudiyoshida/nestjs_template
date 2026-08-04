@@ -4,6 +4,7 @@ type Resource =
   | 'category'
   | 'faq'
   | 'product'
+  | 'refresh-token'
   | 'store'
   | 'text'
   | '*'

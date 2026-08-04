@@ -145,6 +145,48 @@ describe('ConfigService', () => {
         expect(result).toBe(mockSecret);
       });
     });
+
+    describe('jwtExpiresIn', () => {
+      it('should return the JWT_EXPIRES_IN value', () => {
+        // Arrange
+        const mockExpiresIn = '15m';
+        nestConfigService.get.mockReturnValue(mockExpiresIn);
+
+        const result = sut.jwtExpiresIn;
+
+        // Act & Assert
+        expect(nestConfigService.get).toHaveBeenCalledWith('JWT_EXPIRES_IN');
+        expect(result).toBe(mockExpiresIn);
+      });
+    });
+
+    describe('refreshTokenSecret', () => {
+      it('should return the REFRESH_TOKEN_SECRET value', () => {
+        // Arrange
+        const mockSecret = 'super-secret-refresh-key';
+        nestConfigService.get.mockReturnValue(mockSecret);
+
+        const result = sut.refreshTokenSecret;
+
+        // Act & Assert
+        expect(nestConfigService.get).toHaveBeenCalledWith('REFRESH_TOKEN_SECRET');
+        expect(result).toBe(mockSecret);
+      });
+    });
+
+    describe('refreshTokenExpiresIn', () => {
+      it('should return the REFRESH_TOKEN_EXPIRES_IN value as number', () => {
+        // Arrange
+        const mockExpiresIn = 604800;
+        nestConfigService.get.mockReturnValue(mockExpiresIn);
+
+        const result = sut.refreshTokenExpiresIn;
+
+        // Act & Assert
+        expect(nestConfigService.get).toHaveBeenCalledWith('REFRESH_TOKEN_EXPIRES_IN');
+        expect(result).toBe(mockExpiresIn);
+      });
+    });
   });
 
   describe('database properties', () => {

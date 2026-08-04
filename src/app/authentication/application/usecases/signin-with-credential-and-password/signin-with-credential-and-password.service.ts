@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { FindAccountByCredential } from 'src/app/account/application/usecases/find-account-by-credential/find-account-by-credential.service';
 import { Account } from 'src/app/account/domain/value-objects/account.vo';
+import { RefreshTokenSession } from 'src/app/authentication/application/services/refresh-token-session/refresh-token-session.service';
 import { Payload } from 'src/app/authentication/domain/types/payload.type';
 import { Password } from 'src/shared/value-objects/password/password.vo';
 import { ForbiddenAccountError } from '../../errors/forbidden-account.error';
@@ -14,6 +15,7 @@ export class SignInWithCredentialAndPassword {
   constructor(
     private readonly jwtService: JwtService,
     private readonly findAccountByCredential: FindAccountByCredential,
+    private readonly refreshTokenSession: RefreshTokenSession,
   ) {}
 
   public async execute(data: SigninWithCredentialAndPasswordInputDto): Promise<SigninWithCredentialAndPasswordOutputDto> {
@@ -40,7 +42,8 @@ export class SignInWithCredentialAndPassword {
       roles: accountData.roles,
     };
     const accessToken = this.jwtService.sign(payload);
+    const refreshToken = await this.refreshTokenSession.issue(payload);
 
-    return { accessToken };
+    return { accessToken, refreshToken };
   }
 }
