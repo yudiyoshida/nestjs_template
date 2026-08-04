@@ -10,37 +10,53 @@ description: >-
 
 ## Contexto
 
-Testes co-locados ao lado do código. Tudo em `*.spec.ts` — o tipo é definido pelo `describe`, não pelo sufixo do arquivo.
+Testes **co-locados** ao lado do código (sem pasta `__tests__/`). Não existe `*.module.spec.ts` — a cobertura é por **artefato** (use case, controller, DAO, etc.).
 
-## Tipos de Teste
+O tipo de teste é identificado pelo **`describe`** (`'… - Unit tests'` | `'… - Integration tests'`). Em **use cases**, o sufixo do arquivo também distingue os dois arquivos:
 
-| Alvo | Tipo | Estratégia | Describe |
-|---|---|---|---|
-| Controller | Unit | `createMock` para use cases | `'<Sujeito> - Unit tests'` |
-| Guard | Unit | `createMock` para deps | `'<Sujeito> - Unit tests'` |
-| Use case | Integration | Módulo real + banco real | `'<Sujeito> - Integration tests'` |
-| DAO/Repository | Integration | Provider real + banco real | `'<Sujeito> - Integration tests'` |
-| DTO | Unit | `validateSync` ou `ValidationPipe` | `'<Dto> - Unit tests'` |
-| Entity/Factory | Unit | Teste puro (sem NestJS) | `'<Sujeito> - Unit tests'` |
+| Artefato | Arquivo(s) | Tipo |
+|---|---|---|
+| Use case | `<verbo>-<modulo>.service.spec.ts` + `<verbo>-<modulo>.service.integration.spec.ts` | Unit **e** Integration (par obrigatório) |
+| Controller | `*-admin.controller.spec.ts` / `*-user.controller.spec.ts` | Unit |
+| Guard / strategy | `*.guard.spec.ts`, `*.strategy.spec.ts` | Unit |
+| Entity / factory / VO | `*.entity.spec.ts`, `*.factory.spec.ts`, `*.vo.spec.ts` | Unit (TS puro, sem Nest) |
+| DTO de input do use case | `dtos/<verbo>-<modulo>.dto.spec.ts` | Unit (`validateSync` ou `ValidationPipe`) |
+| DTO de agregado (`application/dtos/*.dto.ts`) | — | Sem spec (apenas shape, sem decorators) |
+| DAO / repository Prisma | `*-prisma.dao.spec.ts`, `*-prisma.repository.spec.ts` ou `*.dao.spec.ts` | Integration (**um** arquivo, sem par unit) |
 
-## Unit Test (Controller)
+Módulos em `src/app/`: **account**, **authentication**, **`_examples/faq`**, **`_examples/tip`**. O padrão acima vale para todos; `account` não expõe controllers HTTP (use cases consumidos por outros módulos).
+
+## Tipos de Teste (resumo)
+
+| Alvo | Unit | Integration |
+|---|---|---|
+| Use case | `*.service.spec.ts` — mocks nos ports (`createMock` + `TOKENS`) | `*.service.integration.spec.ts` — `imports: [<Modulo>Module]` + banco real |
+| Controller | `createMock` nos use cases | — |
+| Guard / strategy | `createMock` nas deps ou instância direta | — |
+| DAO / repository | — | adapter real + `PrismaService` |
+| DTO (input validado) | `validateSync` / `ValidationPipe` | — |
+| Entity / factory | lógica pura | — |
+
+## Unit Test — Use Case
+
+Orquestração e ramos de erro **sem** banco: DAO/repository/outros use cases mockados.
 
 ```typescript
-describe('FaqAdminController - Unit tests', () => {
-  let sut: FaqAdminController;
-  let createFaqService: CreateFaq;
+describe('CreateFaq - Unit tests', () => {
+  let sut: CreateFaq;
+  let faqDao: IFaqDao;
 
   beforeEach(async () => {
+    faqDao = createMock<IFaqDao>();
+
     const module = await Test.createTestingModule({
-      imports: [AuthenticationGuardsModule],
-      controllers: [FaqAdminController],
       providers: [
-        { provide: CreateFaq, useValue: createMock<CreateFaq>() },
+        CreateFaq,
+        { provide: TOKENS.FaqDao, useValue: faqDao },
       ],
     }).compile();
 
-    sut = module.get(FaqAdminController);
-    createFaqService = module.get(CreateFaq);
+    sut = module.get(CreateFaq);
   });
 
   it('should be defined', () => {
@@ -50,9 +66,11 @@ describe('FaqAdminController - Unit tests', () => {
 ```
 
 - Use `createMock<T>()` do `@golevelup/ts-jest`
-- Importe `AuthenticationGuardsModule` real (não mockar guards)
+- Mockar **ports** (`TOKENS.*`); não importar o módulo de feature inteiro
 
-## Integration Test (Use Case / DAO)
+## Integration Test — Use Case
+
+Fluxo real: grafo de DI de produção + persistência + gateways fake (`NODE_ENV=test`).
 
 ```typescript
 describe('CreateFaq - Integration tests', () => {
@@ -82,20 +100,82 @@ describe('CreateFaq - Integration tests', () => {
 });
 ```
 
+- **Não** mockar DAO/repository neste arquivo
+- Limpar com `prisma.<model>.deleteMany()` (model em camelCase)
+
+## Unit Test — Controller
+
+```typescript
+describe('FaqAdminController - Unit tests', () => {
+  let sut: FaqAdminController;
+  let createFaqService: CreateFaq;
+
+  beforeEach(async () => {
+    const module = await Test.createTestingModule({
+      imports: [AuthenticationGuardsModule],
+      controllers: [FaqAdminController],
+      providers: [
+        { provide: CreateFaq, useValue: createMock<CreateFaq>() },
+      ],
+    }).compile();
+
+    sut = module.get(FaqAdminController);
+    createFaqService = module.get(CreateFaq);
+  });
+
+  it('should be defined', () => {
+    expect(sut).toBeDefined();
+  });
+});
+```
+
+- Importe `AuthenticationGuardsModule` real em controllers **admin** (não mockar guards de auth)
+
+## Integration Test — DAO / Repository
+
+Um único `*.spec.ts` por adapter, sempre integration:
+
+```typescript
+describe('FaqDaoAdapterPrisma - Integration tests', () => {
+  let sut: FaqDaoAdapterPrisma;
+  let prisma: PrismaService;
+
+  beforeAll(async () => {
+    const module = await Test.createTestingModule({
+      providers: [FaqDaoAdapterPrisma, PrismaService, /* … */],
+    }).compile();
+
+    sut = module.get(FaqDaoAdapterPrisma);
+    prisma = module.get(PrismaService);
+  });
+
+  beforeEach(async () => {
+    await prisma.faq.deleteMany();
+  });
+
+  afterAll(async () => {
+    await prisma.$disconnect();
+  });
+});
+```
+
 ## Padrões Obrigatórios
 
 - `let sut: <Class>` — variável universal
-- Helper `makeValid<X>Input(overrides = {})` no topo
+- Helper `make<Verbo><Entity>Input(overrides = {}): <X>InputDto` no topo (use cases)
 - Triple-A com comentários `// Arrange`, `// Act`, `// Assert`
 - Primeiro `it`: `should be defined`
-- Integration: `beforeAll` (setup), `beforeEach(deleteMany)`, `afterAll($disconnect)`
+- Integration: `beforeAll` (setup do módulo), `beforeEach(deleteMany)`, `afterAll($disconnect)`
 - Não use `Promise.all` em integration tests com unique constraints
 - Mensagens de assert alinhadas a erros **pt-BR**
 - Banco de teste via `DATABASE_URL` em `.env.test`
+- `npm test` roda unit **e** integration (`jest` inclui `*.spec.ts` e `*.integration.spec.ts`)
 
 ## Anti-Padrões
 
-- ❌ Sufixo `*.integration.spec.ts` (use `*.spec.ts` com describe correto)
+- ❌ Use case com **apenas** um dos dois arquivos (falta unit **ou** integration)
+- ❌ Mockar DAO/repository no `*.service.integration.spec.ts`
+- ❌ Colocar teste de integração de use case só no `*.service.spec.ts` (unit deve usar mocks)
 - ❌ `prisma.truncate()` (não existe — use `deleteMany`)
-- ❌ Mockar DAO em teste de use case (use banco real)
 - ❌ Testar contra banco de produção
+- ❌ Spec de DTO para `application/dtos/<modulo>.dto.ts` de saída (sem validação)

@@ -158,11 +158,13 @@ Tokens vão **exclusivamente** em `src/core/di/token.ts` como `Symbol.for('<Nome
 
 Co-locação obrigatória (ao lado do código, sem pasta `__tests__/`):
 
-| Sufixo | Tipo | Estratégia |
+| Arquivo | Tipo | Estratégia |
 |---|---|---|
-| `*.spec.ts` (controller/guard) | **Unit** | Mocks via `createMock<I>()` do `@golevelup/ts-jest` |
-| `*.spec.ts` (use case/DAO/repository) | **Integration** | `Test.createTestingModule({ imports: [<X>Module] })` + banco real |
-| `<x>.dto.spec.ts` | **DTO** | `validateSync` ou `ValidationPipe` real |
+| `*.spec.ts` (controller/guard/strategy) | **Unit** | Mocks via `createMock<I>()` do `@golevelup/ts-jest` |
+| `*.service.spec.ts` (use case) | **Unit** | Ports mockados (`TOKENS.*`); sem módulo de feature |
+| `*.service.integration.spec.ts` (use case) | **Integration** | `Test.createTestingModule({ imports: [<X>Module] })` + banco real |
+| `*.spec.ts` (DAO/repository Prisma) | **Integration** | Adapter real + `PrismaService`; um arquivo por adapter |
+| `<x>.dto.spec.ts` (input do use case) | **DTO** | `validateSync` ou `ValidationPipe` real |
 
 Padrões obrigatórios:
 - `describe('<Sujeito> - Unit tests' | '<Sujeito> - Integration tests', …)`

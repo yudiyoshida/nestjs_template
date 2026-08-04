@@ -45,7 +45,7 @@ Apresentar matriz ao usuário. Aguardar aprovação de escopo/prioridades.
 |---|---|---|
 | `*-admin.controller.ts` | Unit | `createMock` + `AuthenticationGuardsModule` |
 | `*-user.controller.ts` | Unit | `createMock` |
-| `*.service.ts` (use case) | Integration | `imports: [<Modulo>Module]` |
+| `*.service.ts` (use case) | Unit + Integration | `*.service.spec.ts` (mocks) + `*.service.integration.spec.ts` (`imports: [<Modulo>Module]`) |
 | `*-prisma.dao.ts` | Integration | Provider + `PrismaService` |
 | `*.dto.ts` (input) | DTO | `validateSync` ou `ValidationPipe` |
 | `*.entity.ts` | Unit | Teste puro |
@@ -110,7 +110,7 @@ describe('<X>AdminController - Unit tests', () => {
 
 ## Anti-Padrões
 
-- ❌ `*.integration.spec.ts` como sufixo
+- ❌ Use case sem par `*.service.spec.ts` + `*.service.integration.spec.ts`
 - ❌ `prisma.truncate()`
 - ❌ Escrever 20 `it()` de uma vez sem validar incrementalmente
 - ❌ Mockar use case em teste de controller com cenário de integração

@@ -39,11 +39,13 @@ description: >-
 
 ## Testes
 
-| Tipo | Sufixo | Describe |
+| Tipo | Arquivo | Describe |
 |---|---|---|
-| Unit (controller/guard) | `*.spec.ts` | `'<Sujeito> - Unit tests'` |
-| Integration (use case/DAO) | `*.spec.ts` | `'<Sujeito> - Integration tests'` |
-| DTO | `*.dto.spec.ts` | `'<Dto> - Unit tests'` |
+| Unit (controller/guard/strategy) | `*.spec.ts` | `'<Sujeito> - Unit tests'` |
+| Unit (use case) | `*.service.spec.ts` | `'<Verbo><Entity> - Unit tests'` |
+| Integration (use case) | `*.service.integration.spec.ts` | `'<Verbo><Entity> - Integration tests'` |
+| Integration (DAO/repository) | `*.spec.ts` ou `*.dao.spec.ts` | `'<Adapter> - Integration tests'` |
+| DTO (input validado) | `*.dto.spec.ts` | `'<Dto> - Unit tests'` |
 
 ## Idioma
 

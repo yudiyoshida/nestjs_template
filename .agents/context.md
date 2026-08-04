@@ -102,7 +102,7 @@ prisma/
 7. **Erros tipados extends `AppException`** — sem `BadRequestException` do Nest.
 8. **Mensagens em português para o usuário final**, identificadores e código em inglês.
 9. **Adapter de gateway sempre tem fake correspondente**, escolhido por `NODE_ENV === 'test'` em `XxxModule.register()`.
-10. **Testes co-locados**: `*.spec.ts` — unit com mocks (controllers/guards) ou integration com banco real (use cases/DAO).
+10. **Testes co-locados**: por artefato — use cases em par `*.service.spec.ts` (unit, mocks) + `*.service.integration.spec.ts` (integration, banco real); demais camadas em um `*.spec.ts` (ver `testing-strategy`).
 
 ## Onde Fica o Quê
 
