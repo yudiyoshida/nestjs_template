@@ -914,6 +914,32 @@ Validado gerando um módulo de teste (`test-c4-check`) via `npm run generate:mod
 
 ---
 
+### 6º — M-3: default de paginação
+**Status: ⏳ Pendente**
+
+`src/infra/database/prisma/prisma.service.ts:14-19` (`paginationFactory`) sem `page`/`size` devolve `skip`/`take` undefined — qualquer listagem sem query params traz a tabela inteira. Fix: `size ?? 20`, teto 100. Um arquivo só, corrige toda listagem do projeto de uma vez — inclui `GET /user/faq`, rota pública que hoje despeja a tabela inteira sem autenticação. Mesma categoria de risco do A-3 já corrigido. Primeiro do bloco por ser risco ativo + maior alavancagem por linha alterada.
+
+### 7º — M-2 + M-4 + M-7 + M-5: fechar o módulo Tip
+**Status: ⏳ Pendente**
+
+Continuação do que já foi mexido no 3º passo (C-2/A-1/M-6) — agrupado por localidade para minimizar troca de contexto. Ordem interna:
+- **M-2** — N+1 em `ExpireTips` (`expire-tips.service.ts:17-28`): troca loop `findById`+`edit` por uma query única (`updateMany`), novo método `expireOverdue()` no `ITipRepository`.
+- **M-4** — `tip-prisma.dao.ts:59` usa `Promise.all` em vez de `$transaction` no `findAll` — mesma área de arquivo tocada por M-2, risco de `totalItems`/`totalPages` inconsistentes sob concorrência.
+- **M-7** — `tip.factory.ts:11,14,37` lança `AppException` cru + mensagem em inglês (`Location ID is required for local tips.`). Cria `TipInvalidTitleError`, `TipInvalidContentError`, `TipLocationRequiredError` em `domain/errors/`.
+- **M-5** — regra de negócio (`status: TipStatus.ACTIVE`) no `tip-user.controller.ts:63-68`. Move para use case (`FindAllActiveTip` ou parâmetro de scope).
+
+Ao final deste bloco, o módulo de referência DDD (Tip) fica coerente com todas as rules do `architecture.mdc`.
+
+### 8º (último) — M-8 + M-9: módulo separado / estrutural
+**Status: ⏳ Pendente**
+
+- **M-8** — `Account` mora em `domain/value-objects/` mas não é VO (setters privados sem imutabilidade real, sem `equals()`, array `_roles` mutável por referência). Mover para `domain/policies/account.policy.ts`, `account.error.ts` para `domain/errors/`, `readonly` + cópia defensiva do array. Checar consumidores (`authentication.guard.ts` e outros) antes de mover.
+- **M-9** — nenhuma fronteira transacional no projeto. Sem bug ativo hoje (nenhum use case grava em 2+ tabelas ainda), mas é pré-requisito antes do módulo `account` crescer (criar `Account`+`Role`+`Admin` é 3 tabelas). Adicionar `transaction<T>(fn: (tx) => Promise<T>)` ao `PrismaService` + seção no `.agents/skills/repository-pattern/SKILL.md`. Maior escopo e decisão arquitetural — por isso fica por último.
+
+**Fora do fluxo:** M-1 (ports de DAO tipados com DTO de entrada HTTP) — já registrado no achado como concessão consciente endossada pela doc (`dao-pattern/SKILL.md:20-21`). Não vira task de correção; só guardrail para não regredir isso em módulos DDD (que já usam entidade no port).
+
+---
+
 ### Nota sobre o eixo 3.8 (testes)
 
 A suíte é sólida em cobertura — todo use case tem spec, caminhos de erro são testados em 20 arquivos. O desequilíbrio é de forma: **28 specs de integração contra 10 unitários com mock**. A pirâmide está invertida, e a consequência prática é que a suíte exige PostgreSQL no ar e roda com `--runInBand` (serial, por `package.json:15`).
