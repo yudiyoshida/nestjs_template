@@ -891,22 +891,22 @@ Trivial (4 linhas + 1 env var), e é a única falha aqui que já vale contra o s
 
 Trivial (duas funções), e a janela era **agora**: hoje nenhum dos dois tem consumidor, então a correção foi uma troca isolada com zero risco de regressão. No momento em que a recuperação de senha (**B-6**) for ligada — e a infraestrutura dela já está toda pronta, faltando só o use case — isso viraria uma tomada de contas explorável e a correção passaria a exigir invalidar códigos em trânsito. Corrigido antes de precisar.
 
-### 3º — C-4: consertar o gerador
+### 3º — C-2 + A-1 + M-6: fechar o modelo de domínio do Tip
 **Status: ⏳ Pendente** — próximo passo.
-
-Localizado, mas com o maior multiplicador do repositório. Cada módulo gerado hoje nasce sem compilar, sem subir e com uma rota de escrita sem guard — e o desenvolvedor conserta na mão, do jeito dele, o que é exatamente o que o `.agents/` foi escrito para impedir. Todo dia que isso fica no ar produz mais divergência entre módulos. Priorize o item (c) — `@RequiredRoles` no template — que é o de menor custo e maior consequência.
-
-### 4º — C-2 + A-1 + M-6: fechar o modelo de domínio do Tip
-**Status: ⏳ Pendente**
 
 Localizado, e são três sintomas do mesmo buraco, então trate como uma unidade: implementar `TipFactory.edit` (A-1) cria o lugar onde a checagem de `TipCannotBeEditedError` (C-2) naturalmente mora, e mover a guarda de transição para `expire()` (M-6) completa o padrão. Fazer separado significa mexer nos mesmos quatro arquivos três vezes. Vem depois dos itens de segurança porque o impacto é corrupção de dados de negócio, não comprometimento de conta — mas vem antes de tudo o mais porque `tip` é o módulo que ensina DDD neste repositório, e hoje ele ensina a versão sem invariantes. **A-2** (mistura DAO/Repository) cai fora quase de graça no mesmo refactor.
 
-### 5º — A-3 + A-5: ligar o que já está construído
+### 4º — A-3 + A-5: ligar o que já está construído
 **Status: ⏳ Pendente**
 
 Trivial os dois, e agrupo por serem o mesmo tipo de defeito: infraestrutura correta e completa que ninguém plugou. `enableCors()` com a origem configurada é uma linha e fecha a API para o navegador; registrar `Smtp`/`UploadFile`/`CepLookup` no `InfraModule` são três linhas e desbloqueia B-6 e qualquer feature que dependa deles. Alto retorno por linha alterada, e nenhum risco de regressão — hoje esses caminhos simplesmente não executam.
 
-**Fora do top 5, mas barato:** **B-1** (tirar `--fix` do script de lint) é uma linha e é o que impede o CI de mascarar os próximos problemas. Faça junto com qualquer um dos cinco acima. **Status: ⏳ Pendente**
+**Fora do top 5, mas barato:** **B-1** (tirar `--fix` do script de lint) é uma linha e é o que impede o CI de mascarar os próximos problemas. Faça junto com qualquer um dos itens acima. **Status: ⏳ Pendente**
+
+### 5º (último) — C-4: consertar o gerador
+**Status: ⏳ Pendente**
+
+Movido para o fim de propósito, apesar do maior multiplicador do repositório. Motivo: o gerador deve ensinar o padrão *já corrigido*, não o atual. Os templates (`service.hbs`, `module.hbs`, `controller.hbs`, `factory.hbs`) precisam refletir `TipFactory.edit` (item 3º), a checagem de invariante na entidade, e o guard de autorização coerente com A-3/A-5 — mexer no gerador antes disso significa reescrever os mesmos templates duas vezes. Ao chegar aqui: item (c) primeiro — `@RequiredRoles` no template, menor custo e maior consequência —, depois (b) módulo/controller/`service.hbs` de `create` (achado adicional durante investigação: o body do `create/service.hbs` é um placeholder sem `return`, quebra `tsc` mesmo sem mexer em nada de Prisma), depois (a) o placeholder `field`.
 
 ---
 
