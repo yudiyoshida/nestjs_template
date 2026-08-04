@@ -6,6 +6,7 @@ import { Payload } from 'src/app/authentication/domain/types/payload.type';
 import { TOKENS } from 'src/core/di/token';
 import type { ICacheGateway } from 'src/infra/cache/cache.gateway';
 import { CacheKeyBuilder } from 'src/infra/cache/helpers/cache-key/cache-key.builder';
+import { ForbiddenAccountError } from '../../errors/forbidden-account.error';
 import { InactiveAccountError } from '../../errors/inactive-account.error';
 
 @Injectable()
@@ -32,6 +33,9 @@ export class AuthenticationGuard implements CanActivate {
     const account = new Account(accountData.status, accountData.roles);
     if (account.isInactive) {
       throw new InactiveAccountError();
+    }
+    if (!account.canAuthenticate) {
+      throw new ForbiddenAccountError();
     }
 
     return true;

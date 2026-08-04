@@ -32,6 +32,9 @@ export class Account {
   get isInactive(): boolean {
     return this._status === AccountStatus.INACTIVE;
   }
+  get canAuthenticate(): boolean {
+    return this.isActive;
+  }
   // Add more status checks as needed
 
   get isAdmin(): boolean {

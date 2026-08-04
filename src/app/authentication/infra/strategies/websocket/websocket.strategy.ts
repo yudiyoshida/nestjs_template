@@ -9,7 +9,7 @@ export class JwtWebSocketStrategy extends PassportStrategy(Strategy, 'jwt-ws') {
   constructor() {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([JwtWebSocketStrategy.extractJwtFromSocket]),
-      ignoreExpiration: true,
+      ignoreExpiration: false,
       secretOrKey: process.env.JWT_SECRET,
     });
   }

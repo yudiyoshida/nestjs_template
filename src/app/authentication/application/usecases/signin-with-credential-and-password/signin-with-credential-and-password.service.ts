@@ -31,7 +31,7 @@ export class SignInWithCredentialAndPassword {
     if (account.isInactive) {
       throw new InactiveAccountError();
     }
-    if (!account.isActive) {
+    if (!account.canAuthenticate) {
       throw new ForbiddenAccountError();
     }
 

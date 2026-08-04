@@ -20,6 +20,7 @@ import { Environment } from './environment.enum';
 
         CORS_ORIGIN: Joi.string().required(),
         JWT_SECRET: Joi.string().required(),
+        JWT_EXPIRES_IN: Joi.string().required(),
         DATABASE_URL: Joi.string().required(),
 
         AWS_ACCESS_KEY_ID: Joi.string().required(),

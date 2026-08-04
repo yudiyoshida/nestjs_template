@@ -43,6 +43,9 @@ export class ConfigService {
   get jwtSecret(): string {
     return this.nestConfigService.get<string>('JWT_SECRET')!;
   }
+  get jwtExpiresIn(): string {
+    return this.nestConfigService.get<string>('JWT_EXPIRES_IN')!;
+  }
 
   // database
   get databaseUrl(): string {
