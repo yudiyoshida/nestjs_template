@@ -77,10 +77,6 @@ src/app/_examples/tip/
 export class <Modulo>Module {}
 ```
 
-## Scaffolding
-
-Use `npm run generate:module <nome>` para gerar a estrutura base via `scripts/cli.ts`.
-
 ## Anti-Padrões
 
 - ❌ Barrel files (`index.ts`) nos módulos

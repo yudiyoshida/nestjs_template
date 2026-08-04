@@ -289,7 +289,7 @@ Antes de implementar qualquer nova funcionalidade, confirme **na ordem**:
 
 - [ ] **Schema Prisma** criado em `prisma/schema/<modulo>.prisma` (model singular, campos com tipos corretos)
 - [ ] **Tokens DI** adicionados em `src/core/di/token.ts` (`<X>Dao`, `<X>Repository` se DDD)
-- [ ] **Estrutura `domain/application/infra`** criada (use `npm run generate:module <nome>` como ponto de partida)
+- [ ] **Estrutura `domain/application/infra`** criada
 - [ ] **Domínio modelado** (entity + factory em DDD; só erros em CRUD simples)
 - [ ] **Ports definidos**: `IxxxDao` (sempre) + `IxxxRepository` (DDD) em `application/persistence/`
 - [ ] **DTOs do use case** com validação pt-BR + decorators custom (`@Trim`, `@StringToNumber`)
@@ -314,6 +314,5 @@ Se algum item ficou "não aplicável", documente o motivo no PR. Pular passos se
 
 - Skills detalhadas por tópico: `.agents/skills/<nome-da-skill>/SKILL.md`
 - Padrão Where em DAOs: `.agents/skills/dao-pattern/SKILL.md` (secção 3)
-- Scaffolding de módulo (`npm run generate:module`): `.agents/skills/adding-new-feature/SKILL.md` (passo 3) — implementação em `scripts/cli.ts` + `scripts/templates/`
 - Autorização por roles / rotas protegidas: `.agents/skills/authentication-and-authorization/SKILL.md`
 - Passaporte arquitetural conciso: `.agents/context.md`

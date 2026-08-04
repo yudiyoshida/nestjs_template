@@ -5,7 +5,7 @@ description: >-
   Use SEMPRE que o usuário pedir uma feature do zero, um novo CRUD, um
   novo módulo, um novo recurso, ou disser "implementar X", "adicionar
   funcionalidade Y", "criar feature", "novo endpoint", "como começar X
-  do zero", "fluxo completo", "feature completa", "scaffolding".
+  do zero", "fluxo completo", "feature completa".
 ---
 
 # Adicionando uma Nova Funcionalidade
@@ -52,7 +52,7 @@ Siga **na ordem**. Marque conforme avança.
 
 ### 3. Estrutura de Pastas
 
-- [ ] Rodar `npm run generate:module <nome>` ou criar manualmente
+- [ ] Criar a estrutura de pastas manualmente
 - [ ] `domain/errors/` (sempre)
 - [ ] `domain/entities/` + `factories/` (se DDD)
 - [ ] `application/dtos/`, `persistence/`, `usecases/`
@@ -119,14 +119,6 @@ Siga **na ordem**. Marque conforme avança.
 - [ ] `npm run lint`
 - [ ] `npm test`
 - [ ] `npm run build`
-
-## Scaffolding
-
-```bash
-npm run generate:module <nome>
-```
-
-Implementação em `scripts/cli.ts` + `scripts/templates/`.
 
 ## Anti-Padrões
 

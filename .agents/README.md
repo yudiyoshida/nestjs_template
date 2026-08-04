@@ -182,4 +182,3 @@ description: >-
 | Decorators custom | `src/infra/validators/class/decorators/{trim,string-number}/...` | `dto-and-validation` |
 | Módulo CRUD simples (referência) | `src/app/_examples/faq/` | `module-structure` |
 | Módulo DDD (referência) | `src/app/_examples/tip/` | `module-structure` + `domain-modeling` + `repository-pattern` |
-| CLI gerador interno | `scripts/cli.ts` + `scripts/templates/` | `adding-new-feature` |
