@@ -7,11 +7,11 @@ import { PrismaService } from 'src/infra/database/prisma/prisma.service';
 import { AccountWithSensitiveDataDto } from '../../dtos/account.dto';
 import { FindAccountByCredential } from './find-account-by-credential.service';
 
-describe('FindAccountByCredential', () => {
+describe('FindAccountByCredential - Integration tests', () => {
   let sut: FindAccountByCredential;
   let prisma: PrismaService;
 
-  beforeEach(async() => {
+  beforeAll(async() => {
     const module = await Test.createTestingModule({
       imports: [
         AccountModule,
@@ -21,12 +21,13 @@ describe('FindAccountByCredential', () => {
 
     sut = module.get(FindAccountByCredential);
     prisma = module.get(PrismaService);
+  });
 
+  beforeEach(async() => {
     await prisma.account.deleteMany();
   });
 
-  afterEach(async() => {
-    await prisma.account.deleteMany();
+  afterAll(async() => {
     await prisma.$disconnect();
   });
 
@@ -35,60 +36,44 @@ describe('FindAccountByCredential', () => {
     expect(sut).toBeDefined();
   });
 
-  describe('unit tests', () => {
-    it('should call accountDao.findByCredential with correct values', async() => {
-      // Arrange
-      const credential = 'any-credential';
-      const findByCredentialSpy = jest.spyOn(sut['accountDao'], 'findByCredential');
+  it('should return null if account is not found', async() => {
+    // Arrange
+    const credential = 'non-existing-credential';
 
-      // Act
-      await sut.execute(credential);
+    // Act
+    const result = await sut.execute(credential);
 
-      // Assert
-      expect(findByCredentialSpy).toHaveBeenCalledWith(credential);
-    });
+    // Assert
+    expect(result).toBeNull();
   });
 
-  describe('integration tests', () => {
-    it('should return null if account is not found', async() => {
+  it('should return account if found by credential', async() => {
     // Arrange
-      const credential = 'non-existing-credential';
-
-      // Act
-      const result = await sut.execute(credential);
-
-      // Assert
-      expect(result).toBeNull();
+    const account = await prisma.account.create({
+      data: {
+        email: 'jhondoe@email.com',
+        password: 'securepassword',
+        status: AccountStatus.ACTIVE,
+        roles: {
+          create: [
+            { role: AccountRole.ADMIN },
+            { role: AccountRole.STUDENT },
+          ],
+        },
+      },
     });
 
-    it('should return account if found by credential', async() => {
-    // Arrange
-      const account = await prisma.account.create({
-        data: {
-          email: 'jhondoe@email.com',
-          password: 'securepassword',
-          status: AccountStatus.ACTIVE,
-          roles: {
-            create: [
-              { role: AccountRole.ADMIN },
-              { role: AccountRole.STUDENT },
-            ],
-          },
-        },
-      });
+    // Act
+    const result = await sut.execute(account.email);
 
-      // Act
-      const result = await sut.execute(account.email);
-
-      // Assert
-      expect(result).toEqual<AccountWithSensitiveDataDto>({
-        id: account.id,
-        email: account.email,
-        password: account.password,
-        passwordResetToken: null,
-        roles: [AccountRole.ADMIN, AccountRole.STUDENT],
-        status: AccountStatus.ACTIVE,
-      });
+    // Assert
+    expect(result).toEqual<AccountWithSensitiveDataDto>({
+      id: account.id,
+      email: account.email,
+      password: account.password,
+      passwordResetToken: null,
+      roles: [AccountRole.ADMIN, AccountRole.STUDENT],
+      status: AccountStatus.ACTIVE,
     });
   });
 });

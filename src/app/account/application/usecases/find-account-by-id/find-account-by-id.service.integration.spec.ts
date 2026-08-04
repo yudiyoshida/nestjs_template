@@ -7,11 +7,11 @@ import { PrismaService } from 'src/infra/database/prisma/prisma.service';
 import { AccountDto } from '../../dtos/account.dto';
 import { FindAccountById } from './find-account-by-id.service';
 
-describe('FindAccountById', () => {
+describe('FindAccountById - Integration tests', () => {
   let sut: FindAccountById;
   let prisma: PrismaService;
 
-  beforeEach(async() => {
+  beforeAll(async() => {
     const module = await Test.createTestingModule({
       imports: [
         AccountModule,
@@ -21,12 +21,13 @@ describe('FindAccountById', () => {
 
     sut = module.get(FindAccountById);
     prisma = module.get(PrismaService);
+  });
 
+  beforeEach(async() => {
     await prisma.account.deleteMany();
   });
 
-  afterEach(async() => {
-    await prisma.account.deleteMany();
+  afterAll(async() => {
     await prisma.$disconnect();
   });
 
@@ -35,57 +36,41 @@ describe('FindAccountById', () => {
     expect(sut).toBeDefined();
   });
 
-  describe('unit tests', () => {
-    it('should call accountDao.findById with correct values', async() => {
-      // Arrange
-      const id = 'any-id';
-      const findByIdSpy = jest.spyOn(sut['accountDao'], 'findById');
+  it('should return null if account is not found', async() => {
+    // Arrange
+    const id = 'non-existing-id';
 
-      // Act
-      await sut.execute(id);
+    // Act
+    const result = await sut.execute(id);
 
-      // Assert
-      expect(findByIdSpy).toHaveBeenCalledWith(id);
-    });
+    // Assert
+    expect(result).toBeNull();
   });
 
-  describe('integration tests', () => {
-    it('should return null if account is not found', async() => {
-      // Arrange
-      const id = 'non-existing-id';
-
-      // Act
-      const result = await sut.execute(id);
-
-      // Assert
-      expect(result).toBeNull();
-    });
-
-    it('should return account if found by id', async() => {
-      // Arrange
-      const account = await prisma.account.create({
-        data: {
-          email: 'jhondoe@email.com',
-          password: 'securepassword',
-          status: AccountStatus.ACTIVE,
-          roles: {
-            create: {
-              role: AccountRole.ADMIN,
-            },
+  it('should return account if found by id', async() => {
+    // Arrange
+    const account = await prisma.account.create({
+      data: {
+        email: 'jhondoe@email.com',
+        password: 'securepassword',
+        status: AccountStatus.ACTIVE,
+        roles: {
+          create: {
+            role: AccountRole.ADMIN,
           },
         },
-      });
+      },
+    });
 
-      // Act
-      const result = await sut.execute(account.id);
+    // Act
+    const result = await sut.execute(account.id);
 
-      // Assert
-      expect(result).toEqual<AccountDto>({
-        id: account.id,
-        email: account.email,
-        roles: [AccountRole.ADMIN],
-        status: AccountStatus.ACTIVE,
-      });
+    // Assert
+    expect(result).toEqual<AccountDto>({
+      id: account.id,
+      email: account.email,
+      roles: [AccountRole.ADMIN],
+      status: AccountStatus.ACTIVE,
     });
   });
 });

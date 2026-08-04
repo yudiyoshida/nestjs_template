@@ -65,4 +65,44 @@ describe('FindAllTip - Unit tests', () => {
       data: tips,
     });
   });
+
+  it('should return an empty paginated dto when the dao returns no rows', async() => {
+    // Arrange
+    jest.spyOn(tipDao, 'findAll').mockResolvedValue([[], 0]);
+    const query: FindAllTipQueryDto = { page: 1, size: 10 };
+
+    // Act
+    const result = await sut.execute(query);
+
+    // Assert
+    expect(tipDao.findAll).toHaveBeenCalledWith(query);
+    expect(result).toEqual({
+      currentPage: 1,
+      itemsPerPage: 10,
+      totalItems: 0,
+      totalPages: 0,
+      data: [],
+    });
+  });
+
+  it('should build pagination metadata for a non-first page', async() => {
+    // Arrange
+    const tips = Array.from({ length: 10 }, (_, index) =>
+      makeTip({ id: `tip-${index}` }),
+    );
+    jest.spyOn(tipDao, 'findAll').mockResolvedValue([tips, 25]);
+    const query: FindAllTipQueryDto = { page: 2, size: 10 };
+
+    // Act
+    const result = await sut.execute(query);
+
+    // Assert
+    expect(tipDao.findAll).toHaveBeenCalledWith(query);
+    expect(result.currentPage).toBe(2);
+    expect(result.itemsPerPage).toBe(10);
+    expect(result.totalItems).toBe(25);
+    expect(result.totalPages).toBe(3);
+    expect(result.data).toEqual(tips);
+    expect(result.data).toHaveLength(10);
+  });
 });

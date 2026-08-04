@@ -23,7 +23,9 @@
  * evitando que o mock fique desatualizado quando o tipo original muda.
  */
 import { createMock } from '@golevelup/ts-jest';
+import { ExecutionContext } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import { AccountRole } from 'src/app/account/domain/enums/account-role.enum';
 import { FaqDto } from 'src/app/_examples/faq/application/dtos/faq.dto';
 import { CreateFaq } from 'src/app/_examples/faq/application/usecases/create-faq/create-faq.service';
 import { CreateFaqInputDto, CreateFaqOutputDto } from 'src/app/_examples/faq/application/usecases/create-faq/dtos/create-faq.dto';
@@ -33,7 +35,9 @@ import { EditFaq } from 'src/app/_examples/faq/application/usecases/edit-faq/edi
 import { FindAllFaqQueryDto } from 'src/app/_examples/faq/application/usecases/find-all-faq/dtos/find-all-faq.dto';
 import { FindAllFaq } from 'src/app/_examples/faq/application/usecases/find-all-faq/find-all-faq.service';
 import { FindFaqById } from 'src/app/_examples/faq/application/usecases/find-faq-by-id/find-faq-by-id.service';
+import { AuthorizationGuard } from 'src/app/authentication/application/guards/authorization/authorization.guard';
 import { AuthenticationGuardsModule } from 'src/app/authentication/application/guards/guards.module';
+import { Payload } from 'src/app/authentication/domain/types/payload.type';
 import { SuccessMessage } from 'src/core/dtos/success-message.dto';
 import { Params } from 'src/infra/validators/class/dtos/params/params.dto';
 import { IPagination } from 'src/shared/value-objects/pagination/pagination.vo';
@@ -199,6 +203,58 @@ describe('FaqAdminController - Unit tests', () => {
       // Assert
       expect(result).toEqual(output);
       expect(removeSpy).toHaveBeenCalledWith(params.id);
+    });
+  });
+
+  describe('authorization', () => {
+    let authorizationGuard: AuthorizationGuard;
+
+    function contextWithUser(user: Payload | null): ExecutionContext {
+      return createMock<ExecutionContext>({
+        switchToHttp: () => ({
+          getRequest: () => ({ user }),
+        }),
+        getHandler: () => FaqAdminController.prototype.create,
+        getClass: () => FaqAdminController,
+      });
+    }
+
+    beforeEach(async() => {
+      const module = await Test.createTestingModule({
+        imports: [AuthenticationGuardsModule],
+      }).compile();
+
+      authorizationGuard = module.get(AuthorizationGuard);
+    });
+
+    it('should deny access when request user is not defined', async() => {
+      // Act
+      const result = await authorizationGuard.canActivate(contextWithUser(null));
+
+      // Assert
+      expect(result).toBe(false);
+    });
+
+    it('should deny access when user does not have ADMIN role', async() => {
+      // Arrange
+      const user = createMock<Payload>({ roles: [AccountRole.STUDENT] });
+
+      // Act
+      const result = await authorizationGuard.canActivate(contextWithUser(user));
+
+      // Assert
+      expect(result).toBe(false);
+    });
+
+    it('should allow access when user has ADMIN role', async() => {
+      // Arrange
+      const user = createMock<Payload>({ roles: [AccountRole.ADMIN] });
+
+      // Act
+      const result = await authorizationGuard.canActivate(contextWithUser(user));
+
+      // Assert
+      expect(result).toBe(true);
     });
   });
 });

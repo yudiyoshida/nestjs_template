@@ -1,5 +1,7 @@
 import { createMock } from '@golevelup/ts-jest';
+import { ExecutionContext } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import { AccountRole } from 'src/app/account/domain/enums/account-role.enum';
 import { TipDto } from 'src/app/_examples/tip/application/dtos/tip.dto';
 import { CreateLocalTip } from 'src/app/_examples/tip/application/usecases/create-local-tip/create-local-tip.service';
 import { CreateLocalTipInputDto, CreateLocalTipOutputDto } from 'src/app/_examples/tip/application/usecases/create-local-tip/dtos/create-local-tip.dto';
@@ -12,6 +14,7 @@ import { FindAllTipQueryDto } from 'src/app/_examples/tip/application/usecases/f
 import { FindAllTip } from 'src/app/_examples/tip/application/usecases/find-all-tip/find-all-tip.service';
 import { FindTipById } from 'src/app/_examples/tip/application/usecases/find-tip-by-id/find-tip-by-id.service';
 import { TipStatus } from 'src/app/_examples/tip/domain/enums/tip-status.enum';
+import { AuthorizationGuard } from 'src/app/authentication/application/guards/authorization/authorization.guard';
 import { AuthenticationGuardsModule } from 'src/app/authentication/application/guards/guards.module';
 import { Payload } from 'src/app/authentication/domain/types/payload.type';
 import { SuccessMessage } from 'src/core/dtos/success-message.dto';
@@ -172,6 +175,58 @@ describe('TipUserController - Unit tests', () => {
       // Assert
       expect(result).toEqual(output);
       expect(deleteSpy).toHaveBeenCalledWith(params.id, user.sub);
+    });
+  });
+
+  describe('authorization', () => {
+    let authorizationGuard: AuthorizationGuard;
+
+    function contextWithUser(user: Payload | null): ExecutionContext {
+      return createMock<ExecutionContext>({
+        switchToHttp: () => ({
+          getRequest: () => ({ user }),
+        }),
+        getHandler: () => TipUserController.prototype.createWeather,
+        getClass: () => TipUserController,
+      });
+    }
+
+    beforeEach(async() => {
+      const module = await Test.createTestingModule({
+        imports: [AuthenticationGuardsModule],
+      }).compile();
+
+      authorizationGuard = module.get(AuthorizationGuard);
+    });
+
+    it('should deny access when request user is not defined', async() => {
+      // Act
+      const result = await authorizationGuard.canActivate(contextWithUser(null));
+
+      // Assert
+      expect(result).toBe(false);
+    });
+
+    it('should deny access when user does not have STUDENT role', async() => {
+      // Arrange
+      const user = createMock<Payload>({ roles: [AccountRole.ADMIN] });
+
+      // Act
+      const result = await authorizationGuard.canActivate(contextWithUser(user));
+
+      // Assert
+      expect(result).toBe(false);
+    });
+
+    it('should allow access when user has STUDENT role', async() => {
+      // Arrange
+      const user = createMock<Payload>({ roles: [AccountRole.STUDENT] });
+
+      // Act
+      const result = await authorizationGuard.canActivate(contextWithUser(user));
+
+      // Assert
+      expect(result).toBe(true);
     });
   });
 });

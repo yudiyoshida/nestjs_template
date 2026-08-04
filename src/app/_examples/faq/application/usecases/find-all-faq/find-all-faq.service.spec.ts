@@ -58,4 +58,44 @@ describe('FindAllFaq - Unit tests', () => {
       data: faqs,
     });
   });
+
+  it('should return an empty paginated dto when the dao returns no rows', async() => {
+    // Arrange
+    jest.spyOn(faqDao, 'findAll').mockResolvedValue([[], 0]);
+    const query: FindAllFaqQueryDto = { page: 1, size: 10 };
+
+    // Act
+    const result = await sut.execute(query);
+
+    // Assert
+    expect(faqDao.findAll).toHaveBeenCalledWith(query);
+    expect(result).toEqual({
+      currentPage: 1,
+      itemsPerPage: 10,
+      totalItems: 0,
+      totalPages: 0,
+      data: [],
+    });
+  });
+
+  it('should build pagination metadata for a non-first page', async() => {
+    // Arrange
+    const faqs = Array.from({ length: 10 }, (_, index) =>
+      makeFaq({ id: `faq-${index}` }),
+    );
+    jest.spyOn(faqDao, 'findAll').mockResolvedValue([faqs, 25]);
+    const query: FindAllFaqQueryDto = { page: 2, size: 10 };
+
+    // Act
+    const result = await sut.execute(query);
+
+    // Assert
+    expect(faqDao.findAll).toHaveBeenCalledWith(query);
+    expect(result.currentPage).toBe(2);
+    expect(result.itemsPerPage).toBe(10);
+    expect(result.totalItems).toBe(25);
+    expect(result.totalPages).toBe(3);
+    expect(result.data).toEqual(faqs);
+    expect(result.data).toHaveLength(10);
+  });
 });
