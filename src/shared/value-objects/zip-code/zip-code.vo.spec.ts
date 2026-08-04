@@ -8,6 +8,8 @@ describe('ZipCode - Unit tests', () => {
   });
 
   it.each([
+    null,
+    undefined,
     '',
     '           ',
     '123',

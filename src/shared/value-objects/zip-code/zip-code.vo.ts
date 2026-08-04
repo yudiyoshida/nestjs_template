@@ -6,7 +6,7 @@ export class ZipCode {
   private readonly _value: string;
 
   constructor(raw: string) {
-    const normalized = raw.replace(/\D/g, '');
+    const normalized = raw?.replace(/\D/g, '') ?? '';
 
     if (normalized.length !== ZIP_CODE_LENGTH) {
       throw new InvalidZipCodeError(raw);
