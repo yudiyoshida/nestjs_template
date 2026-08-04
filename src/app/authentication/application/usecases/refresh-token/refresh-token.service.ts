@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { FindAccountById } from 'src/app/account/application/usecases/find-account-by-id/find-account-by-id.service';
 import { Account } from 'src/app/account/domain/value-objects/account.vo';
-import { RefreshTokenSession } from 'src/app/authentication/application/services/refresh-token-session/refresh-token-session.service';
+import { RefreshTokenSession } from 'src/app/authentication/application/usecases/refresh-token-session/refresh-token-session.service';
 import { Payload } from 'src/app/authentication/domain/types/payload.type';
 import { ForbiddenAccountError } from '../../errors/forbidden-account.error';
 import { InactiveAccountError } from '../../errors/inactive-account.error';

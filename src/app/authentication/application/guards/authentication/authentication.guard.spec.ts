@@ -20,7 +20,7 @@ function contextMockFactory(user: Payload | null, type: 'http' | 'ws'): Executio
   });
 };
 
-describe('AuthenticationGuard', () => {
+describe('AuthenticationGuard - Unit tests', () => {
   let guard: AuthenticationGuard;
 
   beforeEach(async() => {

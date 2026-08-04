@@ -14,7 +14,7 @@ function contextMockFactory(user: Payload | null) {
   });
 };
 
-describe('AuthorizationGuard', () => {
+describe('AuthorizationGuard - Unit tests', () => {
   let guard: AuthorizationGuard;
 
   beforeEach(async() => {

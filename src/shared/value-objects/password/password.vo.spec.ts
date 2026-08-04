@@ -1,16 +1,16 @@
 import { Password } from './password.vo';
 
-describe('Password Value Object', () => {
+describe('Password - Unit tests', () => {
   it('should create a new hashed password', () => {
     // Arrange
     const rawPassword = 'T0I2%kBmZez7';
 
     // Act
-    const newPassword = new Password(rawPassword);
+    const sut = new Password(rawPassword);
 
     // Assert
-    expect(newPassword).toBeDefined();
-    expect(newPassword.value).not.toBe(rawPassword);
+    expect(sut).toBeDefined();
+    expect(sut.value).not.toBe(rawPassword);
   });
 
   it('should return true when comparing same password', () => {
@@ -18,10 +18,10 @@ describe('Password Value Object', () => {
     const rawPassword = '123456789';
 
     // Act
-    const newPassword = new Password(rawPassword);
+    const sut = new Password(rawPassword);
 
     // Assert
-    expect(Password.compare(rawPassword, newPassword.value)).toBe(true);
+    expect(Password.compare(rawPassword, sut.value)).toBe(true);
   });
 
   it('should return false when comparing different password', () => {
@@ -30,17 +30,17 @@ describe('Password Value Object', () => {
     const anotherRawPassword = '987654321';
 
     // Act
-    const newPassword = new Password(rawPassword);
+    const sut = new Password(rawPassword);
 
     // Assert
-    expect(Password.compare(anotherRawPassword, newPassword.value)).toBe(false);
+    expect(Password.compare(anotherRawPassword, sut.value)).toBe(false);
   });
 
   it('should generate a random password with 16 characters', () => {
     // Act
-    const randomPassword = Password.generateRandom();
+    const sut = Password.generateRandom();
 
     // Assert
-    expect(randomPassword).toHaveLength(16);
+    expect(sut).toHaveLength(16);
   });
 });

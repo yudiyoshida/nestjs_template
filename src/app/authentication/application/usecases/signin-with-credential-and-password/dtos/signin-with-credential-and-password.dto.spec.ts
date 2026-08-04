@@ -27,7 +27,7 @@ describe('SigninWithCredentialAndPasswordInputDto', () => {
         '',
         '  ',
       ]
-    )(`should throw an error if ${field} is empty (%s)`, async(value: any) => {
+    )(`should throw an error if ${field} is empty (%s)`, async(value: unknown) => {
       // Arrange
       const data = { [field]: value };
 
@@ -46,7 +46,7 @@ describe('SigninWithCredentialAndPasswordInputDto', () => {
         {},
         [],
       ]
-    )(`should throw an error if ${field} is not a string (%s)`, async(value: any) => {
+    )(`should throw an error if ${field} is not a string (%s)`, async(value: unknown) => {
       // Arrange
       const data = { [field]: value };
 

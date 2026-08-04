@@ -1,15 +1,15 @@
 import { Pagination } from './pagination.vo';
 
-describe('Pagination value object', () => {
+describe('Pagination - Unit tests', () => {
   it('should create a pagination object with default values', () => {
     // Arrange
     const data = ['foo', 'bar'];
 
     // Act
-    const pagination = new Pagination<string>(data, data.length);
+    const sut = new Pagination<string>(data, data.length);
 
     // Assert
-    expect(pagination.getDto()).toEqual({
+    expect(sut.getDto()).toEqual({
       currentPage: 1,
       itemsPerPage: 2,
       totalItems: 2,
@@ -25,10 +25,10 @@ describe('Pagination value object', () => {
     const size = 1;
 
     // Act
-    const pagination = new Pagination<string>(data, data.length, page, size);
+    const sut = new Pagination<string>(data, data.length, page, size);
 
     // Assert
-    expect(pagination.getDto()).toEqual({
+    expect(sut.getDto()).toEqual({
       currentPage: page,
       itemsPerPage: size,
       totalItems: data.length,
@@ -42,10 +42,10 @@ describe('Pagination value object', () => {
     const data: any[] = [];
 
     // Act
-    const pagination = new Pagination<string>(data, data.length);
+    const sut = new Pagination<string>(data, data.length);
 
     // Assert
-    expect(pagination.getDto()).toEqual({
+    expect(sut.getDto()).toEqual({
       currentPage: 1,
       itemsPerPage: 0,
       totalItems: 0,

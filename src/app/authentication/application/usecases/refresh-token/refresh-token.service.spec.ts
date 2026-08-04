@@ -1,60 +1,49 @@
+import { createMock } from '@golevelup/ts-jest';
+import { JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
-import { createHash } from 'crypto';
 import { AccountRole } from 'src/app/account/domain/enums/account-role.enum';
 import { AccountStatus } from 'src/app/account/domain/enums/account-status.enum';
-import { RefreshTokenSession } from 'src/app/authentication/application/services/refresh-token-session/refresh-token-session.service';
-import { AuthenticationModule } from 'src/app/authentication/authentication.module';
+import { AccountDto } from 'src/app/account/application/dtos/account.dto';
+import { FindAccountById } from 'src/app/account/application/usecases/find-account-by-id/find-account-by-id.service';
+import { RefreshTokenSession } from 'src/app/authentication/application/usecases/refresh-token-session/refresh-token-session.service';
 import { Payload } from 'src/app/authentication/domain/types/payload.type';
-import { ConfigModule } from 'src/core/config/config.module';
-import { PrismaService } from 'src/infra/database/prisma/prisma.service';
 import { ForbiddenAccountError } from '../../errors/forbidden-account.error';
 import { InactiveAccountError } from '../../errors/inactive-account.error';
 import { InvalidRefreshTokenError } from '../../errors/invalid-refresh-token.error';
 import { RefreshTokenInputDto } from './dtos/refresh-token.dto';
 import { RefreshToken } from './refresh-token.service';
 
-describe('RefreshToken - Integration tests', () => {
+function makeAccount(overrides: Partial<AccountDto> = {}): AccountDto {
+  return {
+    id: 'account-id',
+    email: 'jhondoe@email.com',
+    status: AccountStatus.ACTIVE,
+    roles: [AccountRole.STUDENT],
+    ...overrides,
+  };
+}
+
+describe('RefreshToken - Unit tests', () => {
   let sut: RefreshToken;
+  let jwtService: JwtService;
+  let findAccountById: FindAccountById;
   let refreshTokenSession: RefreshTokenSession;
-  let prisma: PrismaService;
 
-  function hash(token: string): string {
-    return createHash('sha256').update(token).digest('hex');
-  }
+  beforeEach(async() => {
+    jwtService = createMock<JwtService>();
+    findAccountById = createMock<FindAccountById>();
+    refreshTokenSession = createMock<RefreshTokenSession>();
 
-  function signRefreshToken(
-    payload: Payload,
-    secret = refreshTokenSession['configService'].refreshTokenSecret,
-  ): string {
-    return refreshTokenSession['jwtService'].sign(payload, {
-      secret,
-      expiresIn: refreshTokenSession['configService'].refreshTokenExpiresIn,
-    });
-  }
-
-  beforeAll(async() => {
     const module = await Test.createTestingModule({
-      imports: [
-        AuthenticationModule,
-        ConfigModule,
+      providers: [
+        RefreshToken,
+        { provide: JwtService, useValue: jwtService },
+        { provide: FindAccountById, useValue: findAccountById },
+        { provide: RefreshTokenSession, useValue: refreshTokenSession },
       ],
     }).compile();
 
     sut = module.get(RefreshToken);
-    refreshTokenSession = module.get(RefreshTokenSession);
-    prisma = module.get(PrismaService);
-  });
-
-  beforeEach(async() => {
-    await prisma.account.deleteMany();
-  });
-
-  afterEach(() => {
-    jest.restoreAllMocks();
-  });
-
-  afterAll(async() => {
-    await prisma.$disconnect();
   });
 
   it('should be defined', () => {
@@ -62,69 +51,12 @@ describe('RefreshToken - Integration tests', () => {
     expect(sut).toBeDefined();
   });
 
-  it('should throw an error if the refresh token signature is invalid', async() => {
-    // Arrange
-    const payload: Payload = { sub: 'any-id', roles: [AccountRole.STUDENT] };
-    const refreshToken = signRefreshToken(payload, 'wrong-secret');
-    const data: RefreshTokenInputDto = { refreshToken };
-
-    // Act & Assert
-    expect.assertions(1);
-    return sut.execute(data).catch((error) => {
-      expect(error).toBeInstanceOf(InvalidRefreshTokenError);
-    });
-  });
-
-  it('should throw an error if there is no cached hash for the account', async() => {
-    // Arrange
-    const account = await prisma.account.create({
-      data: {
-        roles: { create: { role: AccountRole.STUDENT } },
-        email: 'jhondoe@email.com',
-        password: 'hashed',
-        status: AccountStatus.ACTIVE,
-      },
-    });
-    const payload: Payload = { sub: account.id, roles: [AccountRole.STUDENT] };
-    const refreshToken = signRefreshToken(payload);
-    jest.spyOn(refreshTokenSession['cacheGateway'], 'get').mockResolvedValue(null);
-    const data: RefreshTokenInputDto = { refreshToken };
-
-    // Act & Assert
-    expect.assertions(1);
-    return sut.execute(data).catch((error) => {
-      expect(error).toBeInstanceOf(InvalidRefreshTokenError);
-    });
-  });
-
-  it('should throw an error if the cached hash does not match the provided token (revoked/rotated)', async() => {
-    // Arrange
-    const account = await prisma.account.create({
-      data: {
-        roles: { create: { role: AccountRole.STUDENT } },
-        email: 'jhondoe@email.com',
-        password: 'hashed',
-        status: AccountStatus.ACTIVE,
-      },
-    });
-    const payload: Payload = { sub: account.id, roles: [AccountRole.STUDENT] };
-    const refreshToken = signRefreshToken(payload);
-    jest.spyOn(refreshTokenSession['cacheGateway'], 'get').mockResolvedValue(hash('some-other-token'));
-    const data: RefreshTokenInputDto = { refreshToken };
-
-    // Act & Assert
-    expect.assertions(1);
-    return sut.execute(data).catch((error) => {
-      expect(error).toBeInstanceOf(InvalidRefreshTokenError);
-    });
-  });
-
-  it('should throw an error if the account no longer exists', async() => {
+  it('should throw InvalidRefreshTokenError when the account no longer exists', async() => {
     // Arrange
     const payload: Payload = { sub: 'ghost-id', roles: [AccountRole.STUDENT] };
-    const refreshToken = signRefreshToken(payload);
-    jest.spyOn(refreshTokenSession['cacheGateway'], 'get').mockResolvedValue(hash(refreshToken));
-    const data: RefreshTokenInputDto = { refreshToken };
+    jest.spyOn(refreshTokenSession, 'validate').mockResolvedValue(payload);
+    jest.spyOn(findAccountById, 'execute').mockResolvedValue(null);
+    const data: RefreshTokenInputDto = { refreshToken: 'some-refresh-token' };
 
     // Act & Assert
     expect.assertions(1);
@@ -133,20 +65,12 @@ describe('RefreshToken - Integration tests', () => {
     });
   });
 
-  it('should throw an error if the account is inactive', async() => {
+  it('should throw InactiveAccountError when the account is inactive', async() => {
     // Arrange
-    const account = await prisma.account.create({
-      data: {
-        roles: { create: { role: AccountRole.STUDENT } },
-        email: 'jhondoe@email.com',
-        password: 'hashed',
-        status: AccountStatus.INACTIVE,
-      },
-    });
-    const payload: Payload = { sub: account.id, roles: [AccountRole.STUDENT] };
-    const refreshToken = signRefreshToken(payload);
-    jest.spyOn(refreshTokenSession['cacheGateway'], 'get').mockResolvedValue(hash(refreshToken));
-    const data: RefreshTokenInputDto = { refreshToken };
+    const account = makeAccount({ status: AccountStatus.INACTIVE });
+    jest.spyOn(refreshTokenSession, 'validate').mockResolvedValue({ sub: account.id, roles: account.roles });
+    jest.spyOn(findAccountById, 'execute').mockResolvedValue(account);
+    const data: RefreshTokenInputDto = { refreshToken: 'some-refresh-token' };
 
     // Act & Assert
     expect.assertions(1);
@@ -155,20 +79,12 @@ describe('RefreshToken - Integration tests', () => {
     });
   });
 
-  it('should throw an error if the account is pending', async() => {
+  it('should throw ForbiddenAccountError when the account is pending', async() => {
     // Arrange
-    const account = await prisma.account.create({
-      data: {
-        roles: { create: { role: AccountRole.STUDENT } },
-        email: 'jhondoe@email.com',
-        password: 'hashed',
-        status: AccountStatus.PENDING,
-      },
-    });
-    const payload: Payload = { sub: account.id, roles: [AccountRole.STUDENT] };
-    const refreshToken = signRefreshToken(payload);
-    jest.spyOn(refreshTokenSession['cacheGateway'], 'get').mockResolvedValue(hash(refreshToken));
-    const data: RefreshTokenInputDto = { refreshToken };
+    const account = makeAccount({ status: AccountStatus.PENDING });
+    jest.spyOn(refreshTokenSession, 'validate').mockResolvedValue({ sub: account.id, roles: account.roles });
+    jest.spyOn(findAccountById, 'execute').mockResolvedValue(account);
+    const data: RefreshTokenInputDto = { refreshToken: 'some-refresh-token' };
 
     // Act & Assert
     expect.assertions(1);
@@ -177,33 +93,21 @@ describe('RefreshToken - Integration tests', () => {
     });
   });
 
-  it('should return a new access/refresh token pair and rotate the cached hash', async() => {
+  it('should return a new access/refresh token pair for an active account', async() => {
     // Arrange
-    const account = await prisma.account.create({
-      data: {
-        roles: { create: { role: AccountRole.STUDENT } },
-        email: 'jhondoe@email.com',
-        password: 'hashed',
-        status: AccountStatus.ACTIVE,
-      },
-    });
-    const payload: Payload = { sub: account.id, roles: [AccountRole.STUDENT] };
-    const refreshToken = signRefreshToken(payload);
-    jest.spyOn(refreshTokenSession['cacheGateway'], 'get').mockResolvedValue(hash(refreshToken));
-    const cacheSetSpy = jest.spyOn(refreshTokenSession['cacheGateway'], 'set');
-    const data: RefreshTokenInputDto = { refreshToken };
+    const account = makeAccount();
+    jest.spyOn(refreshTokenSession, 'validate').mockResolvedValue({ sub: account.id, roles: account.roles });
+    jest.spyOn(findAccountById, 'execute').mockResolvedValue(account);
+    jest.spyOn(jwtService, 'sign').mockReturnValue('new-access-token');
+    jest.spyOn(refreshTokenSession, 'issue').mockResolvedValue('new-refresh-token');
+    const data: RefreshTokenInputDto = { refreshToken: 'some-refresh-token' };
 
     // Act
     const result = await sut.execute(data);
 
     // Assert
-    expect(result.accessToken).toBeDefined();
-    expect(result.refreshToken).toBeDefined();
-    expect(result.refreshToken).not.toBe(refreshToken);
-    expect(cacheSetSpy).toHaveBeenCalledWith(
-      `cache:global:refresh-token:detail:${account.id}`,
-      hash(result.refreshToken),
-      expect.any(Number),
-    );
+    expect(jwtService.sign).toHaveBeenCalledWith({ sub: account.id, roles: account.roles });
+    expect(refreshTokenSession.issue).toHaveBeenCalledWith({ sub: account.id, roles: account.roles });
+    expect(result).toEqual({ accessToken: 'new-access-token', refreshToken: 'new-refresh-token' });
   });
 });

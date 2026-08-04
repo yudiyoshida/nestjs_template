@@ -1,7 +1,7 @@
 import { InvalidCnpjError } from './cnpj.error';
 import { CNPJ } from './cnpj.vo';
 
-describe('CNPJ Value Object', () => {
+describe('CNPJ - Unit tests', () => {
   it.each(
     [
       null,
@@ -21,7 +21,7 @@ describe('CNPJ Value Object', () => {
       'PC3D315K00019@',
       '21.SKY.2A5/0001-00',
     ]
-  )('should throw an error when providing invalid cnpj (%s)', (cnpj: string) => {
+  )('should throw an error when providing invalid cnpj (%s)', (cnpj: any) => {
     // Act & Assert
     expect(() => new CNPJ(cnpj)).toThrow('CNPJ inválido');
     expect(() => new CNPJ(cnpj)).toThrow(InvalidCnpjError);
@@ -69,10 +69,10 @@ describe('CNPJ Value Object', () => {
     ]
   )('should create a cnpj value object when providing valid cnpj (%s)', (cnpj: string) => {
     // Act
-    const cnpjVo = new CNPJ(cnpj);
+    const sut = new CNPJ(cnpj);
 
     // Assert
-    expect(cnpjVo).toBeInstanceOf(CNPJ);
-    expect(cnpjVo.value).toBe(cnpj.replace(/[/.-]/g, '').toUpperCase());
+    expect(sut).toBeInstanceOf(CNPJ);
+    expect(sut.value).toBe(cnpj.replace(/[/.-]/g, '').toUpperCase());
   });
 });

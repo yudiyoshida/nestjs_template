@@ -1,19 +1,19 @@
 import { InvalidDocumentError } from './document.error';
 import { Document } from './document.vo';
 
-describe('Document Value Object', () => {
+describe('Document - Unit tests', () => {
   it('should not throw an error when providing a valid cpf', () => {
     // Act
-    const document = new Document('820.670.530-94');
+    const sut = new Document('820.670.530-94');
     // Assert
-    expect(document.value).toBe('82067053094');
+    expect(sut.value).toBe('82067053094');
   });
 
   it('should not throw an error when providing a valid cnpj', () => {
     // Act
-    const document = new Document('28.695.096/0001-79');
+    const sut = new Document('28.695.096/0001-79');
     // Assert
-    expect(document.value).toBe('28695096000179');
+    expect(sut.value).toBe('28695096000179');
   });
 
   it('should throw an error when providing an invalid document', () => {

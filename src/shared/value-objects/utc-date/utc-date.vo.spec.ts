@@ -1,7 +1,7 @@
 import { InvalidDateError, InvalidDaysQuantityError, InvalidMonthsQuantityError } from './utc-date.error';
 import { UTCDate } from './utc-date.vo';
 
-describe('UTCDate Value Object', () => {
+describe('UTCDate - Unit tests', () => {
   let mockDate: Date;
 
   beforeEach(() => {
@@ -18,11 +18,11 @@ describe('UTCDate Value Object', () => {
   describe('static create', () => {
     it('should create a UTCDate instance with the current date', () => {
       // Arrange
-      const utcDate = UTCDate.create();
+      const sut = UTCDate.create();
       // Act & Assert
-      expect(utcDate).toBeInstanceOf(UTCDate);
-      expect(utcDate.value).toBeInstanceOf(Date);
-      expect(utcDate.value).toEqual(mockDate);
+      expect(sut).toBeInstanceOf(UTCDate);
+      expect(sut.value).toBeInstanceOf(Date);
+      expect(sut.value).toEqual(mockDate);
     });
 
     it('should throw an error when provided an invalid date', () => {
@@ -47,33 +47,33 @@ describe('UTCDate Value Object', () => {
     )('should create a UTCDate instance from a Date object', (dateString) => {
       // Act
       const date = new Date(dateString);
-      const utcDate = UTCDate.from(date);
+      const sut = UTCDate.from(date);
       // Assert
-      expect(utcDate).toBeInstanceOf(UTCDate);
-      expect(utcDate.value).toEqual(date);
-      expect(utcDate.value.getTime()).toEqual(date.getTime());
-      expect(utcDate.value.getDay()).toEqual(date.getDay());
-      expect(utcDate.value.getMonth()).toEqual(date.getMonth());
-      expect(utcDate.value.getFullYear()).toEqual(date.getFullYear());
+      expect(sut).toBeInstanceOf(UTCDate);
+      expect(sut.value).toEqual(date);
+      expect(sut.value.getTime()).toEqual(date.getTime());
+      expect(sut.value.getDay()).toEqual(date.getDay());
+      expect(sut.value.getMonth()).toEqual(date.getMonth());
+      expect(sut.value.getFullYear()).toEqual(date.getFullYear());
     });
   });
 
   describe('get value', () => {
     it('should return the date as a Date object', () => {
       // Arrange
-      const utcDate = UTCDate.create();
+      const sut = UTCDate.create();
       // Act & Assert
-      expect(utcDate.value).toBeInstanceOf(Date);
-      expect(utcDate.value).toEqual(mockDate);
+      expect(sut.value).toBeInstanceOf(Date);
+      expect(sut.value).toEqual(mockDate);
     });
   });
 
   describe('get isoString', () => {
     it('should return the date as an ISO string', () => {
       // Arrange
-      const utcDate = UTCDate.create();
+      const sut = UTCDate.create();
       // Act & Assert
-      expect(utcDate.isoString).toEqual(mockDate.toISOString().split('T')[0]);
+      expect(sut.isoString).toEqual(mockDate.toISOString().split('T')[0]);
     });
   });
 
@@ -85,8 +85,8 @@ describe('UTCDate Value Object', () => {
       { days: 45, expectedDate: '2023-02-15T00:00:00Z' },
     ])('should add days to the current date', (data: any) => {
       // Arrange
-      const utcDate = UTCDate.create();
-      const newDate = utcDate.addDays(data.days);
+      const sut = UTCDate.create();
+      const newDate = sut.addDays(data.days);
       // Act & Assert
       expect(newDate).toBeInstanceOf(UTCDate);
       expect(newDate.value).toEqual(new Date(data.expectedDate));
@@ -101,12 +101,12 @@ describe('UTCDate Value Object', () => {
       null,
       1.5,
       '2.5',
-    ])('should throw an error when adding invalid days', (days: number) => {
+    ])('should throw an error when adding invalid days', (days: any) => {
       // Arrange
-      const utcDate = UTCDate.create();
+      const sut = UTCDate.create();
       // Act & Assert
-      expect(() => utcDate.addDays(days)).toThrow('Quantidade de dias inválida');
-      expect(() => utcDate.addDays(days)).toThrow(InvalidDaysQuantityError);
+      expect(() => sut.addDays(days)).toThrow('Quantidade de dias inválida');
+      expect(() => sut.addDays(days)).toThrow(InvalidDaysQuantityError);
     });
 
     it('should not mutate the original date when adding days', () => {
@@ -127,8 +127,8 @@ describe('UTCDate Value Object', () => {
       { days: 37, expectedDate: '2026-02-01T00:00:00Z' },
     ])('should add days to the current date', (data: any) => {
       // Arrange
-      const utcDate = UTCDate.create();
-      const newDate = utcDate.addMonths(data.days);
+      const sut = UTCDate.create();
+      const newDate = sut.addMonths(data.days);
       // Act & Assert
       expect(newDate).toBeInstanceOf(UTCDate);
       expect(newDate.value).toEqual(new Date(data.expectedDate));
@@ -142,12 +142,12 @@ describe('UTCDate Value Object', () => {
       'abc',
       undefined,
       null,
-    ])('should throw an error when adding invalid months', (months: number) => {
+    ])('should throw an error when adding invalid months', (months: any) => {
       // Arrange
-      const utcDate = UTCDate.create();
+      const sut = UTCDate.create();
       // Act & Assert
-      expect(() => utcDate.addMonths(months)).toThrow('Quantidade de meses inválida');
-      expect(() => utcDate.addMonths(months)).toThrow(InvalidMonthsQuantityError);
+      expect(() => sut.addMonths(months)).toThrow('Quantidade de meses inválida');
+      expect(() => sut.addMonths(months)).toThrow(InvalidMonthsQuantityError);
     });
 
     it('should not mutate the original date when adding months', () => {
@@ -163,100 +163,100 @@ describe('UTCDate Value Object', () => {
   describe('isBefore', () => {
     it('should throw an error if the date is invalid', () => {
       // Arrange
-      const utcDate = UTCDate.create();
+      const sut = UTCDate.create();
       // Act & Assert
-      expect(() => utcDate.isBefore(null as any)).toThrow('Data inválida');
-      expect(() => utcDate.isBefore(null as any)).toThrow(InvalidDateError);
+      expect(() => sut.isBefore(null as any)).toThrow('Data inválida');
+      expect(() => sut.isBefore(null as any)).toThrow(InvalidDateError);
     });
 
     it('should throw an error if the date is not a UTCDate instance', () => {
       // Arrange
-      const utcDate = UTCDate.create();
+      const sut = UTCDate.create();
       // Act & Assert
-      expect(() => utcDate.isBefore(new Date() as any)).toThrow('Data inválida');
-      expect(() => utcDate.isBefore(new Date() as any)).toThrow(InvalidDateError);
+      expect(() => sut.isBefore(new Date() as any)).toThrow('Data inválida');
+      expect(() => sut.isBefore(new Date() as any)).toThrow(InvalidDateError);
     });
 
     it('should return true if the date is before the given date', () => {
       // Arrange
-      const utcDate = UTCDate.create();
-      const futureDate = UTCDate.from(utcDate.addDays(1).value);
+      const sut = UTCDate.create();
+      const futureDate = UTCDate.from(sut.addDays(1).value);
       // Act & Assert
-      expect(utcDate.isBefore(futureDate)).toBe(true);
+      expect(sut.isBefore(futureDate)).toBe(true);
     });
 
     it('should return false if the date is after the given date', () => {
       // Arrange
-      const utcDate = UTCDate.create();
+      const sut = UTCDate.create();
       const pastDate = UTCDate.from(new Date('2022-12-31T00:00:00Z'));
       // Act & Assert
-      expect(utcDate.isBefore(pastDate)).toBe(false);
+      expect(sut.isBefore(pastDate)).toBe(false);
     });
 
     it('should return true if the date is equal to the given date and inclusive is true', () => {
       // Arrange
-      const utcDate = UTCDate.create();
+      const sut = UTCDate.create();
       const sameDate = UTCDate.from(mockDate);
       // Act & Assert
-      expect(utcDate.isBefore(sameDate, true)).toBe(true);
+      expect(sut.isBefore(sameDate, true)).toBe(true);
     });
 
     it('should return false if the date is equal to the given date and inclusive is false', () => {
       // Arrange
-      const utcDate = UTCDate.create();
+      const sut = UTCDate.create();
       const sameDate = UTCDate.from(mockDate);
       // Act & Assert
-      expect(utcDate.isBefore(sameDate)).toBe(false);
+      expect(sut.isBefore(sameDate)).toBe(false);
     });
   });
 
   describe('isAfter', () => {
     it('should throw an error if the date is invalid', () => {
       // Arrange
-      const utcDate = UTCDate.create();
+      const sut = UTCDate.create();
       // Act & Assert
-      expect(() => utcDate.isAfter(null as any)).toThrow('Data inválida');
-      expect(() => utcDate.isAfter(null as any)).toThrow(InvalidDateError);
+      expect(() => sut.isAfter(null as any)).toThrow('Data inválida');
+      expect(() => sut.isAfter(null as any)).toThrow(InvalidDateError);
     });
 
     it('should throw an error if the date is not a UTCDate instance', () => {
       // Arrange
-      const utcDate = UTCDate.create();
+      const sut = UTCDate.create();
       // Act & Assert
-      expect(() => utcDate.isAfter(new Date() as any)).toThrow('Data inválida');
-      expect(() => utcDate.isAfter(new Date() as any)).toThrow(InvalidDateError);
+      expect(() => sut.isAfter(new Date() as any)).toThrow('Data inválida');
+      expect(() => sut.isAfter(new Date() as any)).toThrow(InvalidDateError);
     });
 
     it('should return true if the date is after the given date', () => {
       // Arrange
-      const utcDate = UTCDate.create();
+      const sut = UTCDate.create();
       const pastDate = UTCDate.from(new Date('2022-12-31T00:00:00Z'));
       // Act & Assert
-      expect(utcDate.isAfter(pastDate)).toBe(true);
+      expect(sut.isAfter(pastDate)).toBe(true);
     });
 
     it('should return false if the date is before the given date', () => {
       // Arrange
-      const utcDate = UTCDate.create();
-      const futureDate = UTCDate.from(utcDate.addDays(1).value);
+      const sut = UTCDate.create();
+      const futureDate = UTCDate.from(sut.addDays(1).value);
       // Act & Assert
-      expect(utcDate.isAfter(futureDate)).toBe(false);
+      expect(sut.isAfter(futureDate)).toBe(false);
     });
 
     it('should return true if the date is equal to the given date and inclusive is true', () => {
       // Arrange
-      const utcDate = UTCDate.create();
+      const sut = UTCDate.create();
       const sameDate = UTCDate.from(mockDate);
       // Act & Assert
-      expect(utcDate.isAfter(sameDate, true)).toBe(true);
+      expect(sut.isAfter(sameDate, true)).toBe(true);
     });
 
     it('should return false if the date is equal to the given date and inclusive is false', () => {
       // Arrange
-      const utcDate = UTCDate.create();
+      const sut = UTCDate.create();
       const sameDate = UTCDate.from(mockDate);
       // Act & Assert
-      expect(utcDate.isAfter(sameDate)).toBe(false);
+      expect(sut.isAfter(sameDate)).toBe(false);
     });
   });
 });

@@ -25,7 +25,7 @@ describe('Queries DTO', () => {
         undefined,
         null,
       ]
-    )(`should not throw an error if ${field} is empty (%s)`, async(value: any) => {
+    )(`should not throw an error if ${field} is empty (%s)`, async(value: unknown) => {
       // Arrange
       const data = { [field]: value };
 
@@ -60,7 +60,7 @@ describe('Queries DTO', () => {
         -1,
         -10,
       ]
-    )(`should throw an error if ${field} is not positive (%s)`, async(value: string) => {
+    )(`should throw an error if ${field} is not positive (%s)`, async(value: unknown) => {
       // Arrange
       const data = { [field]: value };
 
@@ -82,7 +82,7 @@ describe('Queries DTO', () => {
         {},
         [],
       ]
-    )(`should throw an error if ${field} is not an integer (%s)`, async(value: string) => {
+    )(`should throw an error if ${field} is not an integer (%s)`, async(value: unknown) => {
       // Arrange
       const data = { [field]: value };
 
@@ -102,7 +102,7 @@ describe('Queries DTO', () => {
         '',
         '  ',
       ]
-    )('should not throw an error if search is empty (%s)', async(value: any) => {
+    )('should not throw an error if search is empty (%s)', async(value: unknown) => {
       // Arrange
       const data = { search: value };
 
@@ -141,7 +141,7 @@ describe('Queries DTO', () => {
         BigInt(123),
         new Date(),
       ]
-    )('should throw an error if search is not a string (%s)', async(value: any) => {
+    )('should throw an error if search is not a string (%s)', async(value: unknown) => {
       // Arrange
       const data = { search: value };
 

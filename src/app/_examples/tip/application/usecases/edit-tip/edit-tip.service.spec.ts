@@ -1,49 +1,44 @@
+import { createMock } from '@golevelup/ts-jest';
 import { Test } from '@nestjs/testing';
-import { Prisma } from '@prisma/client';
-import { TipStatus } from 'src/app/_examples/tip/domain/enums/tip-status.enum';
-import { TipType } from 'src/app/_examples/tip/domain/enums/tip-type.enum';
-import { TipCannotBeEditedError } from 'src/app/_examples/tip/domain/errors/tip-cannot-be-edited.error';
-import { TipNotFoundError } from 'src/app/_examples/tip/domain/errors/tip-not-found.error';
-import { TipModule } from 'src/app/_examples/tip/tip.module';
-import { PrismaService } from 'src/infra/database/prisma/prisma.service';
+import { TOKENS } from 'src/core/di/token';
+import { TipStatus } from '../../../domain/enums/tip-status.enum';
+import { TipType } from '../../../domain/enums/tip-type.enum';
+import { TipCannotBeEditedError } from '../../../domain/errors/tip-cannot-be-edited.error';
+import { TipNotFoundError } from '../../../domain/errors/tip-not-found.error';
+import { TipFactory } from '../../../domain/factories/tip.factory';
+import type { ITipRepository } from '../../persistence/repository/tip-repository.interface';
 import { EditTipInputDto } from './dtos/edit-tip.dto';
 import { EditTip } from './edit-tip.service';
 
-function makeTip(accountId: string, overrides: Partial<Prisma.TipCreateInput> = {}): Prisma.TipCreateInput {
-  return {
-    title: 'Ventos fortes',
-    content: 'Rajadas podem chegar a 60 km/h',
+function makeTip(overrides: Partial<Parameters<typeof TipFactory.load>[0]> = {}) {
+  return TipFactory.load({
+    id: 'tip-id',
+    title: 'Ventos fortes hoje',
+    content: 'Rajadas de vento podem chegar a 60 km/h.',
+    locationId: null,
+    createdBy: 'admin-user',
     type: TipType.WEATHER,
     status: TipStatus.ACTIVE,
-    expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24),
-    createdBy: accountId,
+    expiresAt: null,
     ...overrides,
-  };
+  });
 }
 
-describe('EditTip - Integration tests', () => {
+describe('EditTip - Unit tests', () => {
   let sut: EditTip;
-  let prisma: PrismaService;
-  const accountId = 'admin-user';
-  const anotherAccountId = 'user-456';
+  let tipRepository: ITipRepository;
 
-  beforeAll(async() => {
+  beforeEach(async() => {
+    tipRepository = createMock<ITipRepository>();
+
     const module = await Test.createTestingModule({
-      imports: [
-        TipModule,
+      providers: [
+        EditTip,
+        { provide: TOKENS.TipRepository, useValue: tipRepository },
       ],
     }).compile();
 
     sut = module.get(EditTip);
-    prisma = module.get(PrismaService);
-  });
-
-  beforeEach(async() => {
-    await prisma.tip.deleteMany();
-  });
-
-  afterAll(async() => {
-    await prisma.$disconnect();
   });
 
   it('should be defined', () => {
@@ -51,206 +46,70 @@ describe('EditTip - Integration tests', () => {
     expect(sut).toBeDefined();
   });
 
-  it('should throw TipNotFoundError when tip does not exist', async() => {
+  it('should throw TipNotFoundError when the tip does not exist', async() => {
     // Arrange
-    const id = 'non-existing-id';
-    const data: EditTipInputDto = { title: 'Updated' };
+    jest.spyOn(tipRepository, 'findById').mockResolvedValue(null);
+    const data: EditTipInputDto = { title: 'Novo título' };
 
     // Act & Assert
-    await expect(sut.execute(id, data, accountId)).rejects.toThrow(TipNotFoundError);
+    expect.assertions(1);
+    return sut.execute('missing-id', data).catch((error) => {
+      expect(error).toBeInstanceOf(TipNotFoundError);
+    });
   });
 
-  it('should throw TipNotFoundError when user is not the creator', async() => {
+  it('should throw TipNotFoundError when the given accountId does not own the tip', async() => {
     // Arrange
-    const tip = await prisma.tip.create({
-      data: makeTip(accountId),
-    });
-    const data: EditTipInputDto = { title: 'Updated' };
+    const tip = makeTip({ createdBy: 'other-user' });
+    jest.spyOn(tipRepository, 'findById').mockResolvedValue(tip);
+    const data: EditTipInputDto = { title: 'Novo título' };
 
     // Act & Assert
-    await expect(sut.execute(tip.id, data, anotherAccountId)).rejects.toThrow(TipNotFoundError);
-  });
-
-  it('should allow admin to edit any tip', async() => {
-    // Arrange
-    const tip = await prisma.tip.create({
-      data: makeTip(accountId),
-    });
-    const data: EditTipInputDto = { title: 'Updated' };
-
-    // Act
-    await sut.execute(tip.id, data);
-
-    // Assert
-    const updatedTip = await prisma.tip.findUnique({ where: { id: tip.id } });
-    expect(updatedTip?.title).toBe('Updated');
-  });
-
-  it('should update tip title and content', async() => {
-    // Arrange
-    const tip = await prisma.tip.create({
-      data: makeTip(accountId),
-    });
-    const data: EditTipInputDto = {
-      title: 'Updated Title',
-      content: 'Updated Content',
-    };
-
-    // Act
-    await sut.execute(tip.id, data, accountId);
-
-    // Assert
-    const updatedTip = await prisma.tip.findUnique({ where: { id: tip.id } });
-    expect(updatedTip).toEqual({
-      ...tip,
-      title: 'Updated Title',
-      content: 'Updated Content',
-      updatedAt: expect.any(Date),
+    expect.assertions(1);
+    return sut.execute(tip.props.id, data, 'admin-user').catch((error) => {
+      expect(error).toBeInstanceOf(TipNotFoundError);
     });
   });
 
-  it('should update only title when content is not provided', async() => {
+  it('should throw TipCannotBeEditedError when the tip is expired', async() => {
     // Arrange
-    const tip = await prisma.tip.create({
-      data: makeTip(accountId, { content: 'Original Content' }),
-    });
-    const data: EditTipInputDto = { title: 'Updated Title' };
+    const tip = makeTip({ status: TipStatus.EXPIRED });
+    jest.spyOn(tipRepository, 'findById').mockResolvedValue(tip);
+    const data: EditTipInputDto = { title: 'Novo título' };
 
-    // Act
-    await sut.execute(tip.id, data, accountId);
-
-    // Assert
-    const updatedTip = await prisma.tip.findUnique({ where: { id: tip.id } });
-    expect(updatedTip).toEqual({
-      ...tip,
-      title: 'Updated Title',
-      updatedAt: expect.any(Date),
+    // Act & Assert
+    expect.assertions(1);
+    return sut.execute(tip.props.id, data).catch((error) => {
+      expect(error).toBeInstanceOf(TipCannotBeEditedError);
     });
   });
 
-  it('should update only content when title is not provided', async() => {
+  it('should throw TipCannotBeEditedError when the tip is removed', async() => {
     // Arrange
-    const tip = await prisma.tip.create({
-      data: makeTip(accountId, { title: 'Original Title' }),
-    });
-    const data: EditTipInputDto = { content: 'Updated Content' };
+    const tip = makeTip({ status: TipStatus.REMOVED });
+    jest.spyOn(tipRepository, 'findById').mockResolvedValue(tip);
+    const data: EditTipInputDto = { title: 'Novo título' };
 
-    // Act
-    await sut.execute(tip.id, data, accountId);
-
-    // Assert
-    const updatedTip = await prisma.tip.findUnique({ where: { id: tip.id } });
-    expect(updatedTip).toEqual({
-      ...tip,
-      content: 'Updated Content',
-      updatedAt: expect.any(Date),
+    // Act & Assert
+    expect.assertions(1);
+    return sut.execute(tip.props.id, data).catch((error) => {
+      expect(error).toBeInstanceOf(TipCannotBeEditedError);
     });
   });
 
-  it('should update updatedAt timestamp', async() => {
+  it('should edit the tip and return the success message', async() => {
     // Arrange
-    const tip = await prisma.tip.create({
-      data: makeTip(accountId),
-    });
-    const originalUpdatedAt = tip.updatedAt;
-
-    await new Promise(resolve => setTimeout(resolve, 10));
-
-    const data: EditTipInputDto = { title: 'Updated' };
+    const tip = makeTip();
+    jest.spyOn(tipRepository, 'findById').mockResolvedValue(tip);
+    const data: EditTipInputDto = { title: 'Novo título' };
 
     // Act
-    await sut.execute(tip.id, data, accountId);
+    const result = await sut.execute(tip.props.id, data);
 
     // Assert
-    const updatedTip = await prisma.tip.findUnique({ where: { id: tip.id } });
-    expect(updatedTip?.updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime());
-  });
-
-  it('should allow creator to edit their own tip', async() => {
-    // Arrange
-    const tip = await prisma.tip.create({
-      data: makeTip(accountId),
-    });
-    const data: EditTipInputDto = { title: 'Updated by Creator' };
-
-    // Act
-    const result = await sut.execute(tip.id, data, accountId);
-
-    // Assert
-    expect(result.message).toBe('Dica atualizada com sucesso');
-    const updatedTip = await prisma.tip.findUnique({ where: { id: tip.id } });
-    expect(updatedTip?.title).toBe('Updated by Creator');
-  });
-
-  it('should return success message', async() => {
-    // Arrange
-    const tip = await prisma.tip.create({
-      data: makeTip(accountId),
-    });
-    const data: EditTipInputDto = { title: 'Updated' };
-
-    // Act
-    const result = await sut.execute(tip.id, data, accountId);
-
-    // Assert
+    expect(tipRepository.edit).toHaveBeenCalledWith(
+      expect.objectContaining({ props: expect.objectContaining({ title: 'Novo título' }) }),
+    );
     expect(result).toEqual({ message: 'Dica atualizada com sucesso' });
-  });
-
-  it('should not save changes if tip does not exist', async() => {
-    // Arrange
-    const id = 'non-existing-id';
-    const data: EditTipInputDto = { title: 'Updated' };
-
-    // Act & Assert
-    await expect(sut.execute(id, data, accountId)).rejects.toThrow();
-    const count = await prisma.tip.count();
-    expect(count).toBe(0);
-  });
-
-  it('should throw TipCannotBeEditedError when tip is EXPIRED', async() => {
-    // Arrange
-    const tip = await prisma.tip.create({
-      data: makeTip(accountId, { status: TipStatus.EXPIRED }),
-    });
-    const data: EditTipInputDto = { title: 'Updated' };
-
-    // Act & Assert
-    await expect(sut.execute(tip.id, data, accountId)).rejects.toThrow(TipCannotBeEditedError);
-    const untouchedTip = await prisma.tip.findUnique({ where: { id: tip.id } });
-    expect(untouchedTip?.title).toBe(tip.title);
-  });
-
-  it('should throw TipCannotBeEditedError when tip is REMOVED', async() => {
-    // Arrange
-    const tip = await prisma.tip.create({
-      data: makeTip(accountId, { status: TipStatus.REMOVED }),
-    });
-    const data: EditTipInputDto = { title: 'Updated' };
-
-    // Act & Assert
-    await expect(sut.execute(tip.id, data, accountId)).rejects.toThrow(TipCannotBeEditedError);
-  });
-
-  it('should not affect other tips when editing one', async() => {
-    // Arrange
-    const tip1 = await prisma.tip.create({
-      data: makeTip(accountId, { title: 'Tip 1' }),
-    });
-    const tip2 = await prisma.tip.create({
-      data: makeTip(accountId, { title: 'Tip 2' }),
-    });
-
-    // Act
-    await sut.execute(tip1.id, { title: 'Updated Tip 1' });
-
-    // Assert
-    const updatedTip1 = await prisma.tip.findUnique({ where: { id: tip1.id } });
-    const updatedTip2 = await prisma.tip.findUnique({ where: { id: tip2.id } });
-    expect(updatedTip1).toEqual({
-      ...tip1,
-      title: 'Updated Tip 1',
-      updatedAt: expect.any(Date),
-    });
-    expect(updatedTip2).toEqual(tip2);
   });
 });

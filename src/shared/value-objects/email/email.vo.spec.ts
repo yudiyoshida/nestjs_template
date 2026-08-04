@@ -1,7 +1,7 @@
 import { InvalidEmailError } from './email.error';
 import { Email } from './email.vo';
 
-describe('Email Value Object', () => {
+describe('Email - Unit tests', () => {
   it.each(
     [
       null,
@@ -17,7 +17,7 @@ describe('Email Value Object', () => {
       'invalid-email@invalid-domain.',
       'invalid-email@invalid-domain.c',
     ]
-  )('should throw an error when providing invalid email (%s)', (email: string) => {
+  )('should throw an error when providing invalid email (%s)', (email: any) => {
     // Act & Assert
     expect(() => new Email(email)).toThrow('E-mail inválido');
     expect(() => new Email(email)).toThrow(InvalidEmailError);
@@ -32,10 +32,10 @@ describe('Email Value Object', () => {
     ]
   )('should create a email value object when providing valid email (%s)', (email: string) => {
     // Act
-    const emailVo = new Email(email);
+    const sut = new Email(email);
 
     // Assert
-    expect(emailVo).toBeInstanceOf(Email);
-    expect(emailVo.value).toBe(email);
+    expect(sut).toBeInstanceOf(Email);
+    expect(sut.value).toBe(email);
   });
 });

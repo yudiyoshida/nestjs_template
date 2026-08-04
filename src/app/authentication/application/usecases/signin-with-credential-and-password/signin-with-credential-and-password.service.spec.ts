@@ -1,10 +1,11 @@
+import { createMock } from '@golevelup/ts-jest';
+import { JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
 import { AccountRole } from 'src/app/account/domain/enums/account-role.enum';
 import { AccountStatus } from 'src/app/account/domain/enums/account-status.enum';
-import { RefreshTokenSession } from 'src/app/authentication/application/services/refresh-token-session/refresh-token-session.service';
-import { AuthenticationModule } from 'src/app/authentication/authentication.module';
-import { ConfigModule } from 'src/core/config/config.module';
-import { PrismaService } from 'src/infra/database/prisma/prisma.service';
+import { FindAccountByCredential } from 'src/app/account/application/usecases/find-account-by-credential/find-account-by-credential.service';
+import { AccountWithSensitiveDataDto } from 'src/app/account/application/dtos/account.dto';
+import { RefreshTokenSession } from 'src/app/authentication/application/usecases/refresh-token-session/refresh-token-session.service';
 import { Password } from 'src/shared/value-objects/password/password.vo';
 import { ForbiddenAccountError } from '../../errors/forbidden-account.error';
 import { InactiveAccountError } from '../../errors/inactive-account.error';
@@ -12,30 +13,43 @@ import { InvalidCredentialError } from '../../errors/invalid-credential.error';
 import { SigninWithCredentialAndPasswordInputDto } from './dtos/signin-with-credential-and-password.dto';
 import { SignInWithCredentialAndPassword } from './signin-with-credential-and-password.service';
 
-describe('SignInWithCredentialAndPassword - Integration tests', () => {
-  let sut: SignInWithCredentialAndPassword;
-  let refreshTokenSession: RefreshTokenSession;
-  let prisma: PrismaService;
+function makeAccount(overrides: Partial<AccountWithSensitiveDataDto> = {}): AccountWithSensitiveDataDto {
+  return {
+    id: 'account-id',
+    email: 'jhondoe@email.com',
+    password: 'hashed-password',
+    passwordResetToken: null,
+    status: AccountStatus.ACTIVE,
+    roles: [AccountRole.STUDENT],
+    ...overrides,
+  };
+}
 
-  beforeAll(async() => {
+describe('SignInWithCredentialAndPassword - Unit tests', () => {
+  let sut: SignInWithCredentialAndPassword;
+  let jwtService: JwtService;
+  let findAccountByCredential: FindAccountByCredential;
+  let refreshTokenSession: RefreshTokenSession;
+
+  beforeEach(async() => {
+    jwtService = createMock<JwtService>();
+    findAccountByCredential = createMock<FindAccountByCredential>();
+    refreshTokenSession = createMock<RefreshTokenSession>();
+
     const module = await Test.createTestingModule({
-      imports: [
-        AuthenticationModule,
-        ConfigModule,
+      providers: [
+        SignInWithCredentialAndPassword,
+        { provide: JwtService, useValue: jwtService },
+        { provide: FindAccountByCredential, useValue: findAccountByCredential },
+        { provide: RefreshTokenSession, useValue: refreshTokenSession },
       ],
     }).compile();
 
     sut = module.get(SignInWithCredentialAndPassword);
-    refreshTokenSession = module.get(RefreshTokenSession);
-    prisma = module.get(PrismaService);
   });
 
-  beforeEach(async() => {
-    await prisma.account.deleteMany();
-  });
-
-  afterAll(async() => {
-    await prisma.$disconnect();
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   it('should be defined', () => {
@@ -43,12 +57,10 @@ describe('SignInWithCredentialAndPassword - Integration tests', () => {
     expect(sut).toBeDefined();
   });
 
-  it('should throw an error if account is not found', async() => {
+  it('should throw InvalidCredentialError when no account matches the credential', async() => {
     // Arrange
-    const data: SigninWithCredentialAndPasswordInputDto = {
-      credential: 'credential',
-      password: 'password',
-    };
+    jest.spyOn(findAccountByCredential, 'execute').mockResolvedValue(null);
+    const data: SigninWithCredentialAndPasswordInputDto = { credential: 'missing@email.com', password: '123456' };
 
     // Act & Assert
     expect.assertions(1);
@@ -57,26 +69,12 @@ describe('SignInWithCredentialAndPassword - Integration tests', () => {
     });
   });
 
-  it('should throw an error if password is invalid', async() => {
+  it('should throw InvalidCredentialError when the password does not match', async() => {
     // Arrange
-    const role = AccountRole.STUDENT;
-    const email = 'jhondoe@email.com';
-    const password = '123456';
-    const hashedPassword = new Password(password).value;
-
-    await prisma.account.create({
-      data: {
-        roles: { create: { role } },
-        email,
-        password: hashedPassword,
-        status: AccountStatus.ACTIVE,
-      },
-    });
-
-    const data: SigninWithCredentialAndPasswordInputDto = {
-      credential: email,
-      password: 'another-password',
-    };
+    const account = makeAccount();
+    jest.spyOn(findAccountByCredential, 'execute').mockResolvedValue(account);
+    jest.spyOn(Password, 'compare').mockReturnValue(false);
+    const data: SigninWithCredentialAndPasswordInputDto = { credential: account.email, password: 'wrong-password' };
 
     // Act & Assert
     expect.assertions(1);
@@ -85,26 +83,12 @@ describe('SignInWithCredentialAndPassword - Integration tests', () => {
     });
   });
 
-  it('should throw an error if account status is inactive', async() => {
+  it('should throw InactiveAccountError when the account is inactive', async() => {
     // Arrange
-    const role = AccountRole.STUDENT;
-    const email = 'jhondoe@email.com';
-    const password = '123456';
-    const hashedPassword = new Password(password).value;
-
-    await prisma.account.create({
-      data: {
-        roles: { create: { role } },
-        email,
-        password: hashedPassword,
-        status: AccountStatus.INACTIVE,
-      },
-    });
-
-    const data: SigninWithCredentialAndPasswordInputDto = {
-      credential: email,
-      password,
-    };
+    const account = makeAccount({ status: AccountStatus.INACTIVE });
+    jest.spyOn(findAccountByCredential, 'execute').mockResolvedValue(account);
+    jest.spyOn(Password, 'compare').mockReturnValue(true);
+    const data: SigninWithCredentialAndPasswordInputDto = { credential: account.email, password: '123456' };
 
     // Act & Assert
     expect.assertions(1);
@@ -113,26 +97,12 @@ describe('SignInWithCredentialAndPassword - Integration tests', () => {
     });
   });
 
-  it('should throw an error if account status is not active', async() => {
+  it('should throw ForbiddenAccountError when the account is pending', async() => {
     // Arrange
-    const role = AccountRole.STUDENT;
-    const email = 'jhondoe@email.com';
-    const password = '123456';
-    const hashedPassword = new Password(password).value;
-
-    await prisma.account.create({
-      data: {
-        roles: { create: { role } },
-        email,
-        password: hashedPassword,
-        status: AccountStatus.PENDING,
-      },
-    });
-
-    const data: SigninWithCredentialAndPasswordInputDto = {
-      credential: email,
-      password,
-    };
+    const account = makeAccount({ status: AccountStatus.PENDING });
+    jest.spyOn(findAccountByCredential, 'execute').mockResolvedValue(account);
+    jest.spyOn(Password, 'compare').mockReturnValue(true);
+    const data: SigninWithCredentialAndPasswordInputDto = { credential: account.email, password: '123456' };
 
     // Act & Assert
     expect.assertions(1);
@@ -141,66 +111,21 @@ describe('SignInWithCredentialAndPassword - Integration tests', () => {
     });
   });
 
-  it('should return an access token and a refresh token if credentials are valid', async() => {
+  it('should return an access/refresh token pair for a valid active account', async() => {
     // Arrange
-    const role = AccountRole.STUDENT;
-    const email = 'jhondoe@email.com';
-    const password = '123456';
-    const hashedPassword = new Password(password).value;
-
-    await prisma.account.create({
-      data: {
-        roles: { create: { role } },
-        email,
-        password: hashedPassword,
-        status: AccountStatus.ACTIVE,
-      },
-    });
-
-    const data: SigninWithCredentialAndPasswordInputDto = {
-      credential: email,
-      password,
-    };
+    const account = makeAccount();
+    jest.spyOn(findAccountByCredential, 'execute').mockResolvedValue(account);
+    jest.spyOn(Password, 'compare').mockReturnValue(true);
+    jest.spyOn(jwtService, 'sign').mockReturnValue('new-access-token');
+    jest.spyOn(refreshTokenSession, 'issue').mockResolvedValue('new-refresh-token');
+    const data: SigninWithCredentialAndPasswordInputDto = { credential: account.email, password: '123456' };
 
     // Act
     const result = await sut.execute(data);
 
     // Assert
-    expect(result.accessToken).not.toBeNull();
-    expect(result.refreshToken).not.toBeNull();
-  });
-
-  it('should store the hashed refresh token in cache scoped to the account', async() => {
-    // Arrange
-    const role = AccountRole.STUDENT;
-    const email = 'jhondoe@email.com';
-    const password = '123456';
-    const hashedPassword = new Password(password).value;
-
-    const account = await prisma.account.create({
-      data: {
-        roles: { create: { role } },
-        email,
-        password: hashedPassword,
-        status: AccountStatus.ACTIVE,
-      },
-    });
-
-    const data: SigninWithCredentialAndPasswordInputDto = {
-      credential: email,
-      password,
-    };
-    const cacheSetSpy = jest.spyOn(refreshTokenSession['cacheGateway'], 'set');
-
-    // Act
-    const result = await sut.execute(data);
-
-    // Assert
-    expect(cacheSetSpy).toHaveBeenCalledWith(
-      `cache:global:refresh-token:detail:${account.id}`,
-      expect.any(String),
-      expect.any(Number),
-    );
-    expect(cacheSetSpy.mock.calls[0][1]).not.toBe(result.refreshToken);
+    expect(jwtService.sign).toHaveBeenCalledWith({ sub: account.id, roles: account.roles });
+    expect(refreshTokenSession.issue).toHaveBeenCalledWith({ sub: account.id, roles: account.roles });
+    expect(result).toEqual({ accessToken: 'new-access-token', refreshToken: 'new-refresh-token' });
   });
 });

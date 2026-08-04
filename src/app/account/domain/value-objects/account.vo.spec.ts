@@ -3,7 +3,7 @@ import { AccountStatus } from '../enums/account-status.enum';
 import { InvalidAccountRolesError, InvalidAccountStatusError } from './account.error';
 import { Account } from './account.vo';
 
-describe('Account Value Object', () => {
+describe('Account - Unit tests', () => {
   it('should throw an error if status is invalid', () => {
     // Arrange
     const invalidStatus = 'INVALID_STATUS';

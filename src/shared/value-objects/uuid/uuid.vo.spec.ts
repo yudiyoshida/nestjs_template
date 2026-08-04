@@ -1,25 +1,23 @@
 import { UUID } from './uuid.vo';
 
-describe('UUID Value Object', () => {
+describe('UUID - Unit tests', () => {
   describe('constructor', () => {
     it('should generate a UUID if no value is provided', () => {
       // Act
-      const uuidVo = new UUID();
+      const sut = new UUID();
 
       // Assert
-      expect(uuidVo).toBeInstanceOf(UUID);
-      expect(uuidVo.value).toMatch(
-        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
-      );
+      expect(sut).toBeInstanceOf(UUID);
+      expect(sut.value).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
     });
 
     it('should generate a valid v4 UUID format', () => {
       // Act
-      const uuidVo = new UUID();
+      const sut = new UUID();
 
       // Assert
-      expect(uuidVo.value).toHaveLength(36);
-      expect(uuidVo.value.split('-')).toHaveLength(5);
+      expect(sut.value).toHaveLength(36);
+      expect(sut.value.split('-')).toHaveLength(5);
     });
 
     it('should generate different UUIDs for multiple instances', () => {
@@ -38,11 +36,11 @@ describe('UUID Value Object', () => {
   describe('value getter', () => {
     it('should return the generated UUID value', () => {
       // Arrange
-      const uuidVo = new UUID();
+      const sut = new UUID();
 
       // Act
-      const value1 = uuidVo.value;
-      const value2 = uuidVo.value;
+      const value1 = sut.value;
+      const value2 = sut.value;
 
       // Assert
       expect(value1).toBe(value2);
@@ -51,12 +49,12 @@ describe('UUID Value Object', () => {
 
     it('should return the same value on multiple calls', () => {
       // Arrange
-      const uuidVo = new UUID();
+      const sut = new UUID();
 
       // Act & Assert
-      const firstCall = uuidVo.value;
-      const secondCall = uuidVo.value;
-      const thirdCall = uuidVo.value;
+      const firstCall = sut.value;
+      const secondCall = sut.value;
+      const thirdCall = sut.value;
 
       expect(firstCall).toBe(secondCall);
       expect(secondCall).toBe(thirdCall);
@@ -64,23 +62,23 @@ describe('UUID Value Object', () => {
 
     it('should not allow modification of the value', () => {
       // Arrange
-      const uuidVo = new UUID();
-      const originalValue = uuidVo.value;
+      const sut = new UUID();
+      const originalValue = sut.value;
 
       // Act & Assert
       expect(() => {
         // @ts-expect-error - trying to modify readonly property
-        uuidVo.value = 'new-value';
+        sut.value = 'new-value';
       }).toThrow();
-      expect(uuidVo.value).toBe(originalValue);
+      expect(sut.value).toBe(originalValue);
     });
   });
 
   describe('UUID format validation', () => {
     it('should have correct segment lengths', () => {
       // Act
-      const uuidVo = new UUID();
-      const segments = uuidVo.value.split('-');
+      const sut = new UUID();
+      const segments = sut.value.split('-');
 
       // Assert
       expect(segments[0]).toHaveLength(8);
@@ -92,8 +90,8 @@ describe('UUID Value Object', () => {
 
     it('should have version 4 indicator', () => {
       // Act
-      const uuidVo = new UUID();
-      const segments = uuidVo.value.split('-');
+      const sut = new UUID();
+      const segments = sut.value.split('-');
       const versionDigit = segments[2][0];
 
       // Assert
@@ -102,8 +100,8 @@ describe('UUID Value Object', () => {
 
     it('should have correct variant bits', () => {
       // Act
-      const uuidVo = new UUID();
-      const segments = uuidVo.value.split('-');
+      const sut = new UUID();
+      const segments = sut.value.split('-');
       const variantDigit = segments[3][0].toLowerCase();
 
       // Assert
@@ -112,10 +110,10 @@ describe('UUID Value Object', () => {
 
     it('should only contain hexadecimal characters and hyphens', () => {
       // Act
-      const uuidVo = new UUID();
+      const sut = new UUID();
 
       // Assert
-      expect(uuidVo.value).toMatch(/^[0-9a-f-]+$/i);
+      expect(sut.value).toMatch(/^[0-9a-f-]+$/i);
     });
   });
 
@@ -143,16 +141,16 @@ describe('UUID Value Object', () => {
   describe('immutability', () => {
     it('should not allow direct access to private field', () => {
       // Arrange
-      const uuidVo = new UUID();
+      const sut = new UUID();
 
       // Act & Assert
       expect(() => {
         // @ts-expect-error - accessing private property
-        return uuidVo._value;
+        return sut._value;
       }).not.toThrow();
 
       // But it should still be defined internally
-      const value = uuidVo.value;
+      const value = sut.value;
       expect(value).toBeDefined();
       expect(typeof value).toBe('string');
     });
@@ -173,21 +171,21 @@ describe('UUID Value Object', () => {
 
     it('should be serializable to JSON', () => {
       // Arrange
-      const uuidVo = new UUID();
+      const sut = new UUID();
 
       // Act
-      const json = JSON.stringify({ id: uuidVo.value });
+      const json = JSON.stringify({ id: sut.value });
       const parsed = JSON.parse(json);
 
       // Assert
-      expect(parsed.id).toBe(uuidVo.value);
+      expect(parsed.id).toBe(sut.value);
     });
 
     it('should work correctly in object property', () => {
       // Arrange
-      const uuidVo = new UUID();
+      const sut = new UUID();
       const obj = {
-        id: uuidVo.value,
+        id: sut.value,
         name: 'Test',
       };
 
@@ -201,19 +199,19 @@ describe('UUID Value Object', () => {
   describe('type checking', () => {
     it('should be instance of UUID class', () => {
       // Act
-      const uuidVo = new UUID();
+      const sut = new UUID();
 
       // Assert
-      expect(uuidVo).toBeInstanceOf(UUID);
-      expect(uuidVo.constructor.name).toBe('UUID');
+      expect(sut).toBeInstanceOf(UUID);
+      expect(sut.constructor.name).toBe('UUID');
     });
 
     it('should have value property of type string', () => {
       // Act
-      const uuidVo = new UUID();
+      const sut = new UUID();
 
       // Assert
-      expect(typeof uuidVo.value).toBe('string');
+      expect(typeof sut.value).toBe('string');
     });
   });
 });

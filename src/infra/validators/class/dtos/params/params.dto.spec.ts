@@ -26,7 +26,7 @@ describe('Params', () => {
         '',
         '  ',
       ]
-    )(`should throw an error if ${field} is empty (%s)`, async(value: any) => {
+    )(`should throw an error if ${field} is empty (%s)`, async(value: unknown) => {
       // Arrange
       const data = { [field]: value };
 
@@ -56,7 +56,7 @@ describe('Params', () => {
         new ArrayBuffer(8),
         new Int32Array(8),
       ]
-    )(`should throw an error if ${field} is not a string (%s)`, async(value: any) => {
+    )(`should throw an error if ${field} is not a string (%s)`, async(value: unknown) => {
       // Arrange
       const data = { [field]: value };
 

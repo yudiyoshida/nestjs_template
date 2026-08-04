@@ -29,7 +29,7 @@ describe('CreateWeatherTipInputDto', () => {
       null,
       '',
       '  ',
-    ])('should throw an error if title is empty (%s)', async(value: any) => {
+    ])('should throw an error if title is empty (%s)', async(value: unknown) => {
       // Arrange
       const data = makeValidInputDto({ title: value });
 
@@ -46,7 +46,7 @@ describe('CreateWeatherTipInputDto', () => {
       false,
       {},
       [],
-    ])('should throw an error if title is not a string (%s)', async(value: any) => {
+    ])('should throw an error if title is not a string (%s)', async(value: unknown) => {
       // Arrange
       const data = makeValidInputDto({ title: value });
 
@@ -85,7 +85,7 @@ describe('CreateWeatherTipInputDto', () => {
       null,
       '',
       '  ',
-    ])('should throw an error if content is empty (%s)', async(value: any) => {
+    ])('should throw an error if content is empty (%s)', async(value: unknown) => {
       // Arrange
       const data = makeValidInputDto({ content: value });
 
@@ -102,7 +102,7 @@ describe('CreateWeatherTipInputDto', () => {
       false,
       {},
       [],
-    ])('should throw an error if content is not a string (%s)', async(value: any) => {
+    ])('should throw an error if content is not a string (%s)', async(value: unknown) => {
       // Arrange
       const data = makeValidInputDto({ content: value });
 
@@ -161,7 +161,7 @@ describe('CreateWeatherTipInputDto', () => {
       false,
       {},
       [],
-    ])('should throw an error if locationId is not a string (%s)', async(value: any) => {
+    ])('should throw an error if locationId is not a string (%s)', async(value: unknown) => {
       // Arrange
       const data = makeValidInputDto({ locationId: value });
 

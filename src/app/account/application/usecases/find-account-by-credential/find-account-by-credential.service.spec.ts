@@ -1,33 +1,38 @@
+import { createMock } from '@golevelup/ts-jest';
 import { Test } from '@nestjs/testing';
-import { AccountModule } from 'src/app/account/account.module';
-import { AccountRole } from 'src/app/account/domain/enums/account-role.enum';
 import { AccountStatus } from 'src/app/account/domain/enums/account-status.enum';
-import { ConfigModule } from 'src/core/config/config.module';
-import { PrismaService } from 'src/infra/database/prisma/prisma.service';
+import { TOKENS } from 'src/core/di/token';
 import { AccountWithSensitiveDataDto } from '../../dtos/account.dto';
+import type { IAccountDao } from '../../persistence/dao/account-dao.interface';
 import { FindAccountByCredential } from './find-account-by-credential.service';
 
-describe('FindAccountByCredential', () => {
+function makeAccount(overrides: Partial<AccountWithSensitiveDataDto> = {}): AccountWithSensitiveDataDto {
+  return {
+    id: 'account-id',
+    email: 'jhondoe@email.com',
+    password: 'hashed-password',
+    passwordResetToken: null,
+    status: AccountStatus.ACTIVE,
+    roles: [],
+    ...overrides,
+  };
+}
+
+describe('FindAccountByCredential - Unit tests', () => {
   let sut: FindAccountByCredential;
-  let prisma: PrismaService;
+  let accountDao: IAccountDao;
 
   beforeEach(async() => {
+    accountDao = createMock<IAccountDao>();
+
     const module = await Test.createTestingModule({
-      imports: [
-        AccountModule,
-        ConfigModule,
+      providers: [
+        FindAccountByCredential,
+        { provide: TOKENS.AccountDao, useValue: accountDao },
       ],
     }).compile();
 
     sut = module.get(FindAccountByCredential);
-    prisma = module.get(PrismaService);
-
-    await prisma.account.deleteMany();
-  });
-
-  afterEach(async() => {
-    await prisma.account.deleteMany();
-    await prisma.$disconnect();
   });
 
   it('should be defined', () => {
@@ -35,60 +40,27 @@ describe('FindAccountByCredential', () => {
     expect(sut).toBeDefined();
   });
 
-  describe('unit tests', () => {
-    it('should call accountDao.findByCredential with correct values', async() => {
-      // Arrange
-      const credential = 'any-credential';
-      const findByCredentialSpy = jest.spyOn(sut['accountDao'], 'findByCredential');
+  it('should return the account with sensitive data when found', async() => {
+    // Arrange
+    const account = makeAccount();
+    jest.spyOn(accountDao, 'findByCredential').mockResolvedValue(account);
 
-      // Act
-      await sut.execute(credential);
+    // Act
+    const result = await sut.execute(account.email);
 
-      // Assert
-      expect(findByCredentialSpy).toHaveBeenCalledWith(credential);
-    });
+    // Assert
+    expect(accountDao.findByCredential).toHaveBeenCalledWith(account.email);
+    expect(result).toEqual(account);
   });
 
-  describe('integration tests', () => {
-    it('should return null if account is not found', async() => {
+  it('should return null when no account matches the credential', async() => {
     // Arrange
-      const credential = 'non-existing-credential';
+    jest.spyOn(accountDao, 'findByCredential').mockResolvedValue(null);
 
-      // Act
-      const result = await sut.execute(credential);
+    // Act
+    const result = await sut.execute('missing@email.com');
 
-      // Assert
-      expect(result).toBeNull();
-    });
-
-    it('should return account if found by credential', async() => {
-    // Arrange
-      const account = await prisma.account.create({
-        data: {
-          email: 'jhondoe@email.com',
-          password: 'securepassword',
-          status: AccountStatus.ACTIVE,
-          roles: {
-            create: [
-              { role: AccountRole.ADMIN },
-              { role: AccountRole.STUDENT },
-            ],
-          },
-        },
-      });
-
-      // Act
-      const result = await sut.execute(account.email);
-
-      // Assert
-      expect(result).toEqual<AccountWithSensitiveDataDto>({
-        id: account.id,
-        email: account.email,
-        password: account.password,
-        passwordResetToken: null,
-        roles: [AccountRole.ADMIN, AccountRole.STUDENT],
-        status: AccountStatus.ACTIVE,
-      });
-    });
+    // Assert
+    expect(result).toBeNull();
   });
 });

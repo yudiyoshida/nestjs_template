@@ -1,7 +1,7 @@
 import { InvalidPhoneError } from './phone.error';
 import { Phone } from './phone.vo';
 
-describe('Phone Value Object', () => {
+describe('Phone - Unit tests', () => {
   it.each(
     [
       null,
@@ -16,7 +16,7 @@ describe('Phone Value Object', () => {
       '123456789',
       '123456789123456',
     ]
-  )('should throw an error when providing invalid phone (%s)', (phone: string) => {
+  )('should throw an error when providing invalid phone (%s)', (phone: any) => {
     // Act & Assert
     expect(() => new Phone(phone)).toThrow('Telefone inválido');
     expect(() => new Phone(phone)).toThrow(InvalidPhoneError);
@@ -32,10 +32,10 @@ describe('Phone Value Object', () => {
     ]
   )('should create a phone value object when providing valid phone (%s)', (phone: string) => {
     // Act
-    const phoneVo = new Phone(phone);
+    const sut = new Phone(phone);
 
     // Assert
-    expect(phoneVo).toBeInstanceOf(Phone);
-    expect(phoneVo.value).toBe(phone.replace(/\D/g, ''));
+    expect(sut).toBeInstanceOf(Phone);
+    expect(sut.value).toBe(phone.replace(/\D/g, ''));
   });
 });

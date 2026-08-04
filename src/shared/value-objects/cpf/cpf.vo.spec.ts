@@ -1,7 +1,7 @@
 import { InvalidCpfError } from './cpf.error';
 import { CPF } from './cpf.vo';
 
-describe('CPF Value Object', () => {
+describe('CPF - Unit tests', () => {
   it.each(
     [
       null,
@@ -15,7 +15,7 @@ describe('CPF Value Object', () => {
       '012.345.678-00',
       '374.852.529-07',
     ]
-  )('should throw an error when providing invalid cpf (%s)', (cpf: string) => {
+  )('should throw an error when providing invalid cpf (%s)', (cpf: any) => {
     // Act & Assert
     expect(() => new CPF(cpf)).toThrow('CPF inválido');
     expect(() => new CPF(cpf)).toThrow(InvalidCpfError);
@@ -30,10 +30,10 @@ describe('CPF Value Object', () => {
     ]
   )('should create a cpf value object when providing valid cpf (%s)', (cpf: string) => {
     // Act
-    const cpfVo = new CPF(cpf);
+    const sut = new CPF(cpf);
 
     // Assert
-    expect(cpfVo).toBeInstanceOf(CPF);
-    expect(cpfVo.value).toBe(cpf.replace(/[.-]/g, ''));
+    expect(sut).toBeInstanceOf(CPF);
+    expect(sut.value).toBe(cpf.replace(/[.-]/g, ''));
   });
 });

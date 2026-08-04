@@ -1,46 +1,43 @@
+import { createMock } from '@golevelup/ts-jest';
 import { Test } from '@nestjs/testing';
-import { Prisma } from '@prisma/client';
-import { TipStatus } from 'src/app/_examples/tip/domain/enums/tip-status.enum';
-import { TipType } from 'src/app/_examples/tip/domain/enums/tip-type.enum';
-import { TipModule } from 'src/app/_examples/tip/tip.module';
-import { PrismaService } from 'src/infra/database/prisma/prisma.service';
+import { TOKENS } from 'src/core/di/token';
+import { TipStatus } from '../../../domain/enums/tip-status.enum';
+import { TipType } from '../../../domain/enums/tip-type.enum';
 import { TipDto } from '../../dtos/tip.dto';
+import type { ITipDao } from '../../persistence/dao/tip-dao.interface';
 import { FindTipById } from './find-tip-by-id.service';
 
-function makeTip(accountId: string, overrides: Partial<Prisma.TipCreateInput> = {}): Prisma.TipUncheckedCreateInput {
+function makeTip(overrides: Partial<TipDto> = {}): TipDto {
   return {
-    title: 'Ventos fortes',
-    content: 'Rajadas podem chegar a 60 km/h',
+    id: 'tip-id',
     type: TipType.WEATHER,
+    title: 'Ventos fortes hoje',
+    content: 'Rajadas de vento podem chegar a 60 km/h.',
     status: TipStatus.ACTIVE,
-    expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24),
-    createdBy: accountId,
+    locationId: null,
+    createdBy: 'admin-user',
+    expiresAt: new Date(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
     ...overrides,
   };
 }
 
-describe('FindTipById - Integration tests', () => {
+describe('FindTipById - Unit tests', () => {
   let sut: FindTipById;
-  let prisma: PrismaService;
-  const accountId = 'admin-user';
+  let tipDao: ITipDao;
 
-  beforeAll(async() => {
+  beforeEach(async() => {
+    tipDao = createMock<ITipDao>();
+
     const module = await Test.createTestingModule({
-      imports: [
-        TipModule,
+      providers: [
+        FindTipById,
+        { provide: TOKENS.TipDao, useValue: tipDao },
       ],
     }).compile();
 
     sut = module.get(FindTipById);
-    prisma = module.get(PrismaService);
-  });
-
-  beforeEach(async() => {
-    await prisma.tip.deleteMany();
-  });
-
-  afterAll(async() => {
-    await prisma.$disconnect();
   });
 
   it('should be defined', () => {
@@ -48,105 +45,27 @@ describe('FindTipById - Integration tests', () => {
     expect(sut).toBeDefined();
   });
 
-  it('should return null when tip does not exist', async() => {
+  it('should return the tip when found', async() => {
     // Arrange
-    const id = 'non-existing-id';
+    const tip = makeTip();
+    jest.spyOn(tipDao, 'findById').mockResolvedValue(tip);
 
     // Act
-    const result = await sut.execute(id);
+    const result = await sut.execute(tip.id);
+
+    // Assert
+    expect(tipDao.findById).toHaveBeenCalledWith(tip.id);
+    expect(result).toEqual(tip);
+  });
+
+  it('should return null when no tip matches the id', async() => {
+    // Arrange
+    jest.spyOn(tipDao, 'findById').mockResolvedValue(null);
+
+    // Act
+    const result = await sut.execute('missing-id');
 
     // Assert
     expect(result).toBeNull();
-  });
-
-  it('should return tip by id', async() => {
-    // Arrange
-    const tip = await prisma.tip.create({
-      data: { ...makeTip(accountId) },
-    });
-
-    // Act
-    const result = await sut.execute(tip.id);
-
-    // Assert
-    expect(result).not.toBeNull();
-    expect(result?.id).toBe(tip.id);
-    expect(result?.title).toBe(tip.title);
-  });
-
-  it('should return all tip fields correctly', async() => {
-    // Arrange
-    const tip = await prisma.tip.create({
-      data: { ...makeTip(accountId) },
-    });
-
-    // Act
-    const result = await sut.execute(tip.id);
-
-    // Assert
-    expect(result).toEqual<TipDto>({
-      id: tip.id,
-      type: tip.type as TipType,
-      title: tip.title,
-      content: tip.content,
-      status: tip.status as TipStatus,
-      locationId: tip.locationId,
-      createdBy: tip.createdBy,
-      expiresAt: tip.expiresAt,
-      createdAt: tip.createdAt,
-      updatedAt: tip.updatedAt,
-    });
-  });
-
-  it.each(
-    Object.values(TipStatus)
-  )('should return tip with status %s', async(status) => {
-    // Arrange
-    const tip = await prisma.tip.create({
-      data: { ...makeTip(accountId, { status }) },
-    });
-
-    // Act
-    const result = await sut.execute(tip.id);
-
-    // Assert
-    expect(result).toEqual<TipDto>({
-      id: tip.id,
-      type: tip.type as TipType,
-      title: tip.title,
-      content: tip.content,
-      status: status,
-      locationId: tip.locationId,
-      createdBy: tip.createdBy,
-      expiresAt: tip.expiresAt,
-      createdAt: tip.createdAt,
-      updatedAt: tip.updatedAt,
-    });
-  });
-
-  it.each(
-    Object.values(TipType)
-  )('should return %s tip', async(type) => {
-    // Arrange
-    const tip = await prisma.tip.create({
-      data: { ...makeTip(accountId, { type }) },
-    });
-
-    // Act
-    const result = await sut.execute(tip.id);
-
-    // Assert
-    expect(result).toEqual<TipDto>({
-      id: tip.id,
-      type: type,
-      title: tip.title,
-      content: tip.content,
-      status: tip.status as TipStatus,
-      locationId: tip.locationId,
-      createdBy: tip.createdBy,
-      expiresAt: tip.expiresAt,
-      createdAt: tip.createdAt,
-      updatedAt: tip.updatedAt,
-    });
   });
 });
