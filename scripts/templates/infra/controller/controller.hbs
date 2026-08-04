@@ -1,9 +1,12 @@
 import { Body, Controller, Post } from '@nestjs/common';
+import { AccountRole } from 'src/app/account/domain/enums/account-role.enum';
 import { Create{{moduleNamePascal}} } from 'src/app/{{moduleName}}/application/usecases/create-{{moduleName}}/create-{{moduleName}}.service';
 import { Create{{moduleNamePascal}}InputDto, Create{{moduleNamePascal}}OutputDto } from 'src/app/{{moduleName}}/application/usecases/create-{{moduleName}}/dtos/create-{{moduleName}}.dto';
+import { RequiredRoles } from 'src/app/authentication/infra/decorators/required-role.decorator';
 import { Swagger } from 'src/infra/openapi/swagger';
 
 @Controller('{{moduleName}}')
+@RequiredRoles(AccountRole.ADMIN)
 export class {{moduleNamePascal}}Controller {
   constructor(
     private readonly create{{moduleNamePascal}}Service: Create{{moduleNamePascal}},

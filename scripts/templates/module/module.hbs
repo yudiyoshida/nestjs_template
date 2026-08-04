@@ -1,16 +1,19 @@
 import { Module } from '@nestjs/common';
+import { AuthenticationGuardsModule } from 'src/app/authentication/application/guards/guards.module';
 import { {{moduleNamePascal}}PersistenceModule } from './application/persistence/{{moduleName}}-persistence.module';
+import { Create{{moduleNamePascal}} } from './application/usecases/create-{{moduleName}}/create-{{moduleName}}.service';
 import { {{moduleNamePascal}}Controller } from './infra/drivers/http/{{moduleName}}.controller';
 
 @Module({
   imports: [
     {{moduleNamePascal}}PersistenceModule,
+    AuthenticationGuardsModule,
   ],
   controllers: [
     {{moduleNamePascal}}Controller,
   ],
   providers: [
-    // Create{{moduleNamePascal}},
+    Create{{moduleNamePascal}},
     // Delete{{moduleNamePascal}},
     // Edit{{moduleNamePascal}},
     // FindAll{{moduleNamePascal}},

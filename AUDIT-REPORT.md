@@ -900,9 +900,17 @@ Trivial (duas funções), e a janela era **agora**: hoje nenhum dos dois tem con
 **A-5** (registrar `Smtp`/`UploadFile`/`CepLookup` no `InfraModule`) e **B-1** (tirar `--fix` do script de lint) foram deliberadamente **não aplicados** nesta rodada — decisão do responsável pelo repo de manter como está. Seguem `⏳ Pendente` caso a decisão mude depois.
 
 ### 5º (último) — C-4: consertar o gerador
-**Status: ⏳ Pendente**
+**Status: 🔄 Em andamento — (b) e (c) concluídos, (a) pendente por decisão de escopo.**
 
-Movido para o fim de propósito, apesar do maior multiplicador do repositório. Motivo: o gerador deve ensinar o padrão *já corrigido*, não o atual. Os templates (`service.hbs`, `module.hbs`, `controller.hbs`, `factory.hbs`) precisam refletir `TipFactory.edit` (item 3º), a checagem de invariante na entidade, e o guard de autorização coerente com A-3/A-5 — mexer no gerador antes disso significa reescrever os mesmos templates duas vezes. Ao chegar aqui: item (c) primeiro — `@RequiredRoles` no template, menor custo e maior consequência —, depois (b) módulo/controller/`service.hbs` de `create` (achado adicional durante investigação: o body do `create/service.hbs` é um placeholder sem `return`, quebra `tsc` mesmo sem mexer em nada de Prisma), depois (a) o placeholder `field`.
+**(c) ✅** `controller.hbs` — `@RequiredRoles(AccountRole.ADMIN)` adicionado na classe, com imports de `AccountRole` e `RequiredRoles`. Rota de escrita gerada deixa de ser pública por default.
+
+**(b) ✅** Dois bugs corrigidos juntos:
+- `module.hbs` — import de `AuthenticationGuardsModule` (necessário para o DI resolver os guards de `@RequiredRoles`, confirmado contra `faq.module.ts`) adicionado a `imports`; `Create{{moduleNamePascal}}` importado e descomentado em `providers` (os outros 4 use cases permanecem comentados — seus arquivos `service.hbs` estão inteiramente comentados, então continuam corretos como estão).
+- `create/service.hbs` — corpo do `execute()` era só um comentário sem `return`, quebrava `tsc` mesmo sem Prisma. Agora: `const id = await this.xDao.save(data); return { id };`, igual ao `create-faq.service.ts` real.
+
+Validado gerando um módulo de teste (`test-c4-check`) via `npm run generate:module` e inspecionando `module.ts`/`controller.ts`/`service.ts` gerados — estrutura correta, depois removido.
+
+**(a) ⏳ pendente** — investigação encontrou que `field` **não é placeholder quebrado por acidente**: `cli.ts:42` já instrui o dev a "adicionar o model no Prisma schema (id, **field**, status, createdAt, updatedAt)". Se a instrução for seguida ao pé da letra, `Prisma.XWhereInput.field` existe e compila — não é o bug de compilação garantido que o achado original descreve, é uma convenção feia (nome de propriedade de negócio genérico "field"), mas consistente. Corrigir isso direito (prompt de nome de campo real no CLI, propagado via `Props` por todos os templates que hoje usam `field`: `dao.hbs`, `factory.hbs`, `entity.hbs`, `repository.hbs`) é mudança de escopo maior — decisão explícita de manter como está por ora.
 
 ---
 

@@ -10,6 +10,8 @@ export class Create{{moduleNamePascal}} {
   ) {}
 
   public async execute(data: Create{{moduleNamePascal}}InputDto): Promise<Create{{moduleNamePascal}}OutputDto> {
-    // Lógica para criar um {{moduleNameCamel}}.
+    const id = await this.{{moduleNameCamel}}Dao.save(data);
+
+    return { id };
   }
 }
