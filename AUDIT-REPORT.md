@@ -914,12 +914,7 @@ Validado gerando um módulo de teste (`test-c4-check`) via `npm run generate:mod
 
 ---
 
-### 6º — M-3: default de paginação
-**Status: ⏳ Pendente**
-
-`src/infra/database/prisma/prisma.service.ts:14-19` (`paginationFactory`) sem `page`/`size` devolve `skip`/`take` undefined — qualquer listagem sem query params traz a tabela inteira. Fix: `size ?? 20`, teto 100. Um arquivo só, corrige toda listagem do projeto de uma vez — inclui `GET /user/faq`, rota pública que hoje despeja a tabela inteira sem autenticação. Mesma categoria de risco do A-3 já corrigido. Primeiro do bloco por ser risco ativo + maior alavancagem por linha alterada.
-
-### 7º — M-2 + M-4 + M-7 + M-5: fechar o módulo Tip
+### 6º — M-2 + M-4 + M-7 + M-5: fechar o módulo Tip
 **Status: ⏳ Pendente**
 
 Continuação do que já foi mexido no 3º passo (C-2/A-1/M-6) — agrupado por localidade para minimizar troca de contexto. Ordem interna:
@@ -930,7 +925,7 @@ Continuação do que já foi mexido no 3º passo (C-2/A-1/M-6) — agrupado por 
 
 Ao final deste bloco, o módulo de referência DDD (Tip) fica coerente com todas as rules do `architecture.mdc`.
 
-### 8º (último) — M-8 + M-9: módulo separado / estrutural
+### 7º (último) — M-8 + M-9: módulo separado / estrutural
 **Status: ⏳ Pendente**
 
 - **M-8** — `Account` mora em `domain/value-objects/` mas não é VO (setters privados sem imutabilidade real, sem `equals()`, array `_roles` mutável por referência). Mover para `domain/policies/account.policy.ts`, `account.error.ts` para `domain/errors/`, `readonly` + cópia defensiva do array. Checar consumidores (`authentication.guard.ts` e outros) antes de mover.
