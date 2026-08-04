@@ -36,11 +36,11 @@ describe('Password Value Object', () => {
     expect(Password.compare(anotherRawPassword, newPassword.value)).toBe(false);
   });
 
-  it('should generate a random password with 8 characters', () => {
+  it('should generate a random password with 16 characters', () => {
     // Act
     const randomPassword = Password.generateRandom();
 
     // Assert
-    expect(randomPassword).toHaveLength(8);
+    expect(randomPassword).toHaveLength(16);
   });
 });

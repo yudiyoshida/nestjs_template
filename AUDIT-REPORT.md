@@ -887,12 +887,12 @@ Legenda de status: ✅ Concluído · 🔄 Em andamento · ⏳ Pendente
 Trivial (4 linhas + 1 env var), e é a única falha aqui que já vale contra o sistema como ele está hoje, sem depender de nenhuma feature futura. Token vazado = acesso permanente, sem logout possível. Enquanto isso não estiver corrigido, nenhuma outra medida de autenticação importa. Faça junto o **A-4** (guard aceitando `PENDING`) — mesma área, mesma sessão de trabalho, e os dois juntos são o que fecha o ciclo de vida da sessão.
 
 ### 2º — C-3: `Math.random()` → `crypto`
-**Status: ⏳ Pendente** — próximo passo.
+**Status: ✅ Concluído** — `Password.generateRandom` usa `randomBytes(12).toString('base64url')` (16 chars); `Code.generateCode` usa `randomInt(0, 10)`. Spec de senha ajustado para o novo comprimento. `tsc --noEmit` limpo.
 
-Trivial (duas funções), e a janela é **agora**: hoje nenhum dos dois tem consumidor, então a correção é uma troca isolada com zero risco de regressão. No momento em que a recuperação de senha (**B-6**) for ligada — e a infraestrutura dela já está toda pronta, faltando só o use case — isso vira uma tomada de contas explorável e a correção passa a exigir invalidar códigos em trânsito. Corrigir antes de precisar custa dez minutos; depois custa um incidente.
+Trivial (duas funções), e a janela era **agora**: hoje nenhum dos dois tem consumidor, então a correção foi uma troca isolada com zero risco de regressão. No momento em que a recuperação de senha (**B-6**) for ligada — e a infraestrutura dela já está toda pronta, faltando só o use case — isso viraria uma tomada de contas explorável e a correção passaria a exigir invalidar códigos em trânsito. Corrigido antes de precisar.
 
 ### 3º — C-4: consertar o gerador
-**Status: ⏳ Pendente**
+**Status: ⏳ Pendente** — próximo passo.
 
 Localizado, mas com o maior multiplicador do repositório. Cada módulo gerado hoje nasce sem compilar, sem subir e com uma rota de escrita sem guard — e o desenvolvedor conserta na mão, do jeito dele, o que é exatamente o que o `.agents/` foi escrito para impedir. Todo dia que isso fica no ar produz mais divergência entre módulos. Priorize o item (c) — `@RequiredRoles` no template — que é o de menor custo e maior consequência.
 

@@ -1,3 +1,5 @@
+import { randomInt } from 'crypto';
+
 import { InvalidExpirationTimeError } from './code.error';
 
 export class Code {
@@ -27,12 +29,6 @@ export class Code {
   }
 
   private generateCode(): string {
-    const characters = '0123456789';
-    const charactersLength = characters.length;
-    let result = '';
-    for (let i = 0; i < 6; i++) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    }
-    return result;
+    return Array.from({ length: 6 }, () => randomInt(0, 10)).join('');
   }
 }

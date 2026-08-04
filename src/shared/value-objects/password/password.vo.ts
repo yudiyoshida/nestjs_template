@@ -1,4 +1,5 @@
 import * as bcrypt from 'bcrypt';
+import { randomBytes } from 'crypto';
 
 export class Password {
   private readonly saltRounds = 10;
@@ -9,7 +10,7 @@ export class Password {
   }
 
   public static generateRandom(): string {
-    return Math.random().toString(36).slice(-8);
+    return randomBytes(12).toString('base64url');
   }
 
   constructor(password: string) {
