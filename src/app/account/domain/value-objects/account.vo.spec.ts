@@ -39,6 +39,16 @@ describe('Account - Unit tests', () => {
     expect(inactiveAccount.isInactive).toBe(true);
   });
 
+  it('should allow authentication only when active', () => {
+    // Arrange
+    const activeAccount = new Account(AccountStatus.ACTIVE, []);
+    const inactiveAccount = new Account(AccountStatus.INACTIVE, []);
+
+    // Act & Assert
+    expect(activeAccount.canAuthenticate).toBe(true);
+    expect(inactiveAccount.canAuthenticate).toBe(false);
+  });
+
   it('should correctly identify admin role', () => {
     // Arrange
     const adminAccount = new Account(AccountStatus.ACTIVE, [AccountRole.ADMIN, AccountRole.STUDENT]);
