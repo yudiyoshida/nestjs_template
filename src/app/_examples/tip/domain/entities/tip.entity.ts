@@ -1,6 +1,8 @@
 import { UTCDate } from 'src/shared/value-objects/utc-date/utc-date.vo';
 import { TipStatus } from '../enums/tip-status.enum';
 import { TipType } from '../enums/tip-type.enum';
+import { TipCannotBeExpiredError } from '../errors/tip-cannot-be-expired.error';
+import { TipCannotBeRemovedError } from '../errors/tip-cannot-be-removed.error';
 
 export type TipProps = TipCreateProps & {
   id: string;
@@ -60,11 +62,21 @@ export class Tip {
     return now.isAfter(expirationDate);
   }
 
+  public canBeEdited(): boolean {
+    return this.isActive();
+  }
+
   public expire(): void {
+    if (!this.isActive()) {
+      throw new TipCannotBeExpiredError();
+    }
     this._props.status = TipStatus.EXPIRED;
   }
 
   public remove(): void {
+    if (!this.isActive()) {
+      throw new TipCannotBeRemovedError();
+    }
     this._props.status = TipStatus.REMOVED;
   }
 }

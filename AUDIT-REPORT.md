@@ -892,12 +892,10 @@ Trivial (4 linhas + 1 env var), e é a única falha aqui que já vale contra o s
 Trivial (duas funções), e a janela era **agora**: hoje nenhum dos dois tem consumidor, então a correção foi uma troca isolada com zero risco de regressão. No momento em que a recuperação de senha (**B-6**) for ligada — e a infraestrutura dela já está toda pronta, faltando só o use case — isso viraria uma tomada de contas explorável e a correção passaria a exigir invalidar códigos em trânsito. Corrigido antes de precisar.
 
 ### 3º — C-2 + A-1 + M-6: fechar o modelo de domínio do Tip
-**Status: ⏳ Pendente** — próximo passo.
-
-Localizado, e são três sintomas do mesmo buraco, então trate como uma unidade: implementar `TipFactory.edit` (A-1) cria o lugar onde a checagem de `TipCannotBeEditedError` (C-2) naturalmente mora, e mover a guarda de transição para `expire()` (M-6) completa o padrão. Fazer separado significa mexer nos mesmos quatro arquivos três vezes. Vem depois dos itens de segurança porque o impacto é corrupção de dados de negócio, não comprometimento de conta — mas vem antes de tudo o mais porque `tip` é o módulo que ensina DDD neste repositório, e hoje ele ensina a versão sem invariantes. **A-2** (mistura DAO/Repository) cai fora quase de graça no mesmo refactor.
+**Status: ✅ Concluído** — `TipFactory.edit(entity, props)` implementado (revalida `title`/`content` via `validateCreateProps`, retorna nova instância, não muta a original). `Tip.canBeEdited()` adicionado à entidade e chamado em `edit-tip.service.ts` antes de editar, lançando `TipCannotBeEditedError` (C-2) para dica `Expired`/`Removed`. `Tip.expire()`/`Tip.remove()` agora guardam a transição — só saem de `ACTIVE`, lançando `TipCannotBeExpiredError`/`TipCannotBeRemovedError` caso contrário (M-6). `EditTip` passou a depender só de `ITipRepository` — `ITipDao` removido do construtor (A-2 caiu junto, como previsto). Specs novos cobrindo os três em `tip.entity.spec.ts`, `tip.factory.spec.ts`, `edit-tip.service.spec.ts`; suíte completa do módulo Tip: 302/302 passando, `tsc --noEmit` e `eslint` sem `--fix` limpos.
 
 ### 4º — A-3 + A-5: ligar o que já está construído
-**Status: ⏳ Pendente**
+**Status: ⏳ Pendente** — próximo passo.
 
 Trivial os dois, e agrupo por serem o mesmo tipo de defeito: infraestrutura correta e completa que ninguém plugou. `enableCors()` com a origem configurada é uma linha e fecha a API para o navegador; registrar `Smtp`/`UploadFile`/`CepLookup` no `InfraModule` são três linhas e desbloqueia B-6 e qualquer feature que dependa deles. Alto retorno por linha alterada, e nenhum risco de regressão — hoje esses caminhos simplesmente não executam.
 

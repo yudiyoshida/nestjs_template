@@ -2,6 +2,7 @@ import { Test } from '@nestjs/testing';
 import { Prisma } from '@prisma/client';
 import { TipStatus } from 'src/app/_examples/tip/domain/enums/tip-status.enum';
 import { TipType } from 'src/app/_examples/tip/domain/enums/tip-type.enum';
+import { TipCannotBeEditedError } from 'src/app/_examples/tip/domain/errors/tip-cannot-be-edited.error';
 import { TipNotFoundError } from 'src/app/_examples/tip/domain/errors/tip-not-found.error';
 import { TipModule } from 'src/app/_examples/tip/tip.module';
 import { PrismaService } from 'src/infra/database/prisma/prisma.service';
@@ -204,6 +205,30 @@ describe('EditTip - Integration tests', () => {
     await expect(sut.execute(id, data, accountId)).rejects.toThrow();
     const count = await prisma.tip.count();
     expect(count).toBe(0);
+  });
+
+  it('should throw TipCannotBeEditedError when tip is EXPIRED', async() => {
+    // Arrange
+    const tip = await prisma.tip.create({
+      data: makeTip(accountId, { status: TipStatus.EXPIRED }),
+    });
+    const data: EditTipInputDto = { title: 'Updated' };
+
+    // Act & Assert
+    await expect(sut.execute(tip.id, data, accountId)).rejects.toThrow(TipCannotBeEditedError);
+    const untouchedTip = await prisma.tip.findUnique({ where: { id: tip.id } });
+    expect(untouchedTip?.title).toBe(tip.title);
+  });
+
+  it('should throw TipCannotBeEditedError when tip is REMOVED', async() => {
+    // Arrange
+    const tip = await prisma.tip.create({
+      data: makeTip(accountId, { status: TipStatus.REMOVED }),
+    });
+    const data: EditTipInputDto = { title: 'Updated' };
+
+    // Act & Assert
+    await expect(sut.execute(tip.id, data, accountId)).rejects.toThrow(TipCannotBeEditedError);
   });
 
   it('should not affect other tips when editing one', async() => {

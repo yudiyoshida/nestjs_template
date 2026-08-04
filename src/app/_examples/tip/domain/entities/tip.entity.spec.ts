@@ -26,6 +26,8 @@
  */
 import { TipStatus } from '../enums/tip-status.enum';
 import { TipType } from '../enums/tip-type.enum';
+import { TipCannotBeExpiredError } from '../errors/tip-cannot-be-expired.error';
+import { TipCannotBeRemovedError } from '../errors/tip-cannot-be-removed.error';
 import { TipFactory } from '../factories/tip.factory';
 import { TipCreateProps, TipProps } from './tip.entity';
 
@@ -166,6 +168,23 @@ describe('Tip Entity', () => {
       expect(tip.isActive()).toBe(false);
       expect(tip.isRemoved()).toBe(false);
     });
+
+    it('should throw TipCannotBeExpiredError when tip is already EXPIRED', () => {
+      // Arrange
+      const tip = TipFactory.load(makeTipLoadProps({ status: TipStatus.EXPIRED }));
+
+      // Act & Assert
+      expect(() => tip.expire()).toThrow(TipCannotBeExpiredError);
+    });
+
+    it('should throw TipCannotBeExpiredError when tip is REMOVED', () => {
+      // Arrange
+      const tip = TipFactory.load(makeTipLoadProps({ status: TipStatus.REMOVED }));
+
+      // Act & Assert
+      expect(() => tip.expire()).toThrow(TipCannotBeExpiredError);
+      expect(tip.isRemoved()).toBe(true);
+    });
   });
 
   describe('remove', () => {
@@ -181,6 +200,49 @@ describe('Tip Entity', () => {
       expect(tip.isRemoved()).toBe(true);
       expect(tip.isActive()).toBe(false);
       expect(tip.isExpired()).toBe(false);
+    });
+
+    it('should throw TipCannotBeRemovedError when tip is already REMOVED', () => {
+      // Arrange
+      const tip = TipFactory.load(makeTipLoadProps({ status: TipStatus.REMOVED }));
+
+      // Act & Assert
+      expect(() => tip.remove()).toThrow(TipCannotBeRemovedError);
+    });
+
+    it('should throw TipCannotBeRemovedError when tip is EXPIRED', () => {
+      // Arrange
+      const tip = TipFactory.load(makeTipLoadProps({ status: TipStatus.EXPIRED }));
+
+      // Act & Assert
+      expect(() => tip.remove()).toThrow(TipCannotBeRemovedError);
+      expect(tip.isExpired()).toBe(true);
+    });
+  });
+
+  describe('canBeEdited', () => {
+    it('should return true when tip is ACTIVE', () => {
+      // Arrange
+      const tip = TipFactory.createWeather(makeTipCreateProps());
+
+      // Act & Assert
+      expect(tip.canBeEdited()).toBe(true);
+    });
+
+    it('should return false when tip is EXPIRED', () => {
+      // Arrange
+      const tip = TipFactory.load(makeTipLoadProps({ status: TipStatus.EXPIRED }));
+
+      // Act & Assert
+      expect(tip.canBeEdited()).toBe(false);
+    });
+
+    it('should return false when tip is REMOVED', () => {
+      // Arrange
+      const tip = TipFactory.load(makeTipLoadProps({ status: TipStatus.REMOVED }));
+
+      // Act & Assert
+      expect(tip.canBeEdited()).toBe(false);
     });
   });
 

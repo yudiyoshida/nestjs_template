@@ -431,4 +431,78 @@ describe('TipFactory', () => {
       expect(tip.props.content).toBe(props.content);
     });
   });
+
+  // ---------------------------------------------------------------------------
+  // edit
+  // ---------------------------------------------------------------------------
+  describe('edit', () => {
+    it('should update title and content', () => {
+      // Arrange
+      const tip = TipFactory.createWeather(makeTipCreateProps());
+
+      // Act
+      const edited = TipFactory.edit(tip, { title: 'New Title', content: 'New Content' });
+
+      // Assert
+      expect(edited.props.title).toBe('New Title');
+      expect(edited.props.content).toBe('New Content');
+    });
+
+    it('should preserve id, type, status and other props not passed', () => {
+      // Arrange
+      const tip = TipFactory.createLocal(makeTipCreateProps({ locationId: 'loc-id' }));
+
+      // Act
+      const edited = TipFactory.edit(tip, { title: 'New Title' });
+
+      // Assert
+      expect(edited.props.id).toBe(tip.props.id);
+      expect(edited.props.type).toBe(tip.props.type);
+      expect(edited.props.status).toBe(tip.props.status);
+      expect(edited.props.locationId).toBe(tip.props.locationId);
+      expect(edited.props.createdBy).toBe(tip.props.createdBy);
+      expect(edited.props.content).toBe(tip.props.content);
+    });
+
+    it('should keep original title when only content is passed', () => {
+      // Arrange
+      const tip = TipFactory.createWeather(makeTipCreateProps({ title: 'Original Title' }));
+
+      // Act
+      const edited = TipFactory.edit(tip, { content: 'New Content' });
+
+      // Assert
+      expect(edited.props.title).toBe('Original Title');
+      expect(edited.props.content).toBe('New Content');
+    });
+
+    it('should throw AppException when title is set to an empty string', () => {
+      // Arrange
+      const tip = TipFactory.createWeather(makeTipCreateProps());
+
+      // Act & Assert
+      expect(() => TipFactory.edit(tip, { title: '' })).toThrow(AppException);
+    });
+
+    it('should throw AppException when content is set to a whitespace-only string', () => {
+      // Arrange
+      const tip = TipFactory.createWeather(makeTipCreateProps());
+
+      // Act & Assert
+      expect(() => TipFactory.edit(tip, { content: '   ' })).toThrow(AppException);
+    });
+
+    it('should return a new instance without mutating the original entity', () => {
+      // Arrange
+      const tip = TipFactory.createWeather(makeTipCreateProps({ title: 'Original Title' }));
+
+      // Act
+      const edited = TipFactory.edit(tip, { title: 'New Title' });
+
+      // Assert
+      expect(tip.props.title).toBe('Original Title');
+      expect(edited.props.title).toBe('New Title');
+      expect(edited).not.toBe(tip);
+    });
+  });
 });

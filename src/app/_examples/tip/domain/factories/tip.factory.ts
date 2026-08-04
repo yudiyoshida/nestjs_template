@@ -49,4 +49,20 @@ export class TipFactory {
   static load(props: TipProps): Tip {
     return Tip._instantiate(props);
   }
+
+  static edit(entity: Tip, props: TipEditProps): Tip {
+    const merged: TipProps = {
+      ...entity.props,
+      ...props,
+    };
+
+    this.validateCreateProps(merged);
+
+    return Tip._instantiate(merged);
+  }
 }
+
+export type TipEditProps = {
+  title?: string;
+  content?: string;
+};
