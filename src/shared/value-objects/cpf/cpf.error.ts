@@ -1,4 +1,4 @@
-import { AppException } from "src/core/filters/app.exception";
+import { AppException } from 'src/core/filters/app.exception';
 
 export class InvalidCpfError extends AppException {
   constructor() {
