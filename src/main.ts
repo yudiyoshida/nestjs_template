@@ -6,6 +6,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { ConfigService } from './core/config/config.service';
 import { Environment } from './core/config/environment.enum';
 import { pipeOptions } from './infra/validators/class/config';
 
@@ -33,7 +34,9 @@ async function bootstrap() {
 
   app.use(helmet());
   app.use(compression());
-  app.enableCors();
+
+  const configService = app.get(ConfigService);
+  app.enableCors({ origin: configService.corsOrigin });
 
   await app.listen(process.env.PORT as string);
 }

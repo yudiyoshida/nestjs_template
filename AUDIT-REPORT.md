@@ -894,12 +894,10 @@ Trivial (duas funções), e a janela era **agora**: hoje nenhum dos dois tem con
 ### 3º — C-2 + A-1 + M-6: fechar o modelo de domínio do Tip
 **Status: ✅ Concluído** — `TipFactory.edit(entity, props)` implementado (revalida `title`/`content` via `validateCreateProps`, retorna nova instância, não muta a original). `Tip.canBeEdited()` adicionado à entidade e chamado em `edit-tip.service.ts` antes de editar, lançando `TipCannotBeEditedError` (C-2) para dica `Expired`/`Removed`. `Tip.expire()`/`Tip.remove()` agora guardam a transição — só saem de `ACTIVE`, lançando `TipCannotBeExpiredError`/`TipCannotBeRemovedError` caso contrário (M-6). `EditTip` passou a depender só de `ITipRepository` — `ITipDao` removido do construtor (A-2 caiu junto, como previsto). Specs novos cobrindo os três em `tip.entity.spec.ts`, `tip.factory.spec.ts`, `edit-tip.service.spec.ts`; suíte completa do módulo Tip: 302/302 passando, `tsc --noEmit` e `eslint` sem `--fix` limpos.
 
-### 4º — A-3 + A-5: ligar o que já está construído
-**Status: ⏳ Pendente** — próximo passo.
+### 4º — A-3: ligar o que já está construído
+**Status: ✅ Concluído (parcial, por escolha)** — `src/main.ts` agora chama `app.get(ConfigService)` e `app.enableCors({ origin: configService.corsOrigin })` no lugar de `enableCors()` sem argumento. `CORS_ORIGIN` já estava `required()` no Joi de `config.module.ts` e o getter `ConfigService.corsOrigin` já existia — faltava só o consumidor. `tsc --noEmit` limpo.
 
-Trivial os dois, e agrupo por serem o mesmo tipo de defeito: infraestrutura correta e completa que ninguém plugou. `enableCors()` com a origem configurada é uma linha e fecha a API para o navegador; registrar `Smtp`/`UploadFile`/`CepLookup` no `InfraModule` são três linhas e desbloqueia B-6 e qualquer feature que dependa deles. Alto retorno por linha alterada, e nenhum risco de regressão — hoje esses caminhos simplesmente não executam.
-
-**Fora do top 5, mas barato:** **B-1** (tirar `--fix` do script de lint) é uma linha e é o que impede o CI de mascarar os próximos problemas. Faça junto com qualquer um dos itens acima. **Status: ⏳ Pendente**
+**A-5** (registrar `Smtp`/`UploadFile`/`CepLookup` no `InfraModule`) e **B-1** (tirar `--fix` do script de lint) foram deliberadamente **não aplicados** nesta rodada — decisão do responsável pelo repo de manter como está. Seguem `⏳ Pendente` caso a decisão mude depois.
 
 ### 5º (último) — C-4: consertar o gerador
 **Status: ⏳ Pendente**
