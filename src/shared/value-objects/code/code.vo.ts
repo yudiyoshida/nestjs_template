@@ -1,5 +1,4 @@
 import { randomInt } from 'crypto';
-
 import { InvalidExpirationTimeError } from './code.error';
 
 export class Code {

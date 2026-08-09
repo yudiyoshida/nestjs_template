@@ -2,58 +2,83 @@ import { InvalidZipCodeError } from './zip-code.error';
 import { ZipCode } from './zip-code.vo';
 
 describe('ZipCode - Unit tests', () => {
-  it('should be defined', () => {
-    // Act & Assert
-    expect(ZipCode).toBeDefined();
+  describe('Happy path', () => {
+    it('should create a zip code value object when providing a valid zip code', () => {
+      // Arrange
+      const input = '01310100';
+
+      // Act
+      const sut = new ZipCode(input);
+
+      // Assert
+      expect(sut.value).toBe('01310100');
+    });
+
+    it.each([
+      ['01310-100', '01310100'],
+      ['01310.100', '01310100'],
+      ['01310 100', '01310100'],
+      [' 01310100 ', '01310100'],
+      ['0 1.3 1 0-1 0 0', '01310100'],
+      ['\t01310\n100', '01310100'],
+    ])('should normalize %s to %s', (input: string, expected: string) => {
+      // Act
+      const sut = new ZipCode(input);
+
+      // Assert
+      expect(sut.value).toBe(expected);
+    });
   });
 
-  it.each([
-    null,
-    undefined,
-    '',
-    '           ',
-    '123',
-    '1234567',
-    '123456789',
-    '12-34-56',
-    'abcd',
-    '12ab34cd',
-    '12345-67',
-  ])('should throw when zip code is invalid (%s)', (zipCode: string) => {
-    // Act & Assert
-    expect(() => new ZipCode(zipCode)).toThrow(`CEP inválido: ${zipCode}`);
-    expect(() => new ZipCode(zipCode)).toThrow(InvalidZipCodeError);
+  describe('Error path', () => {
+    it.each([
+      null,
+      undefined,
+      '',
+      '           ',
+      '-.-',
+      '0131010',
+      '013101000',
+      'abcdefgh',
+      '0131O100',
+      '01310+100',
+      '01310/100',
+      1310100,
+      {},
+      [],
+    ])(
+      'should throw InvalidZipCodeError when providing an invalid zip code (%s)',
+      (zipCode: any) => {
+        // Act & Assert
+        expect(() => new ZipCode(zipCode)).toThrow(InvalidZipCodeError);
+      },
+    );
+
+    it('should throw an error with the raw zip code in the message', () => {
+      // Act & Assert
+      expect(() => new ZipCode('01310-10')).toThrow('CEP inválido: 01310-10');
+    });
   });
 
-  it.each([
-    ['22270-010', '22270010'],
-    ['01310100', '01310100'],
-    ['01.310-100', '01310100'],
-    ['01310 100', '01310100'],
-    ['00000-000', '00000000'],
-    ['99999-999', '99999999'],
-  ])('should create zip code value object when providing valid zip code (%s)', (zipCode: string, expected: string) => {
-    // Act
-    const sut = new ZipCode(zipCode);
+  describe('Edge cases', () => {
+    it('should create a zip code value object when providing only zeros', () => {
+      // Act
+      const sut = new ZipCode('00000000');
 
-    // Assert
-    expect(sut).toBeInstanceOf(ZipCode);
-    expect(sut.value).toBe(expected);
-  });
+      // Assert
+      expect(sut.value).toBe('00000000');
+    });
 
-  it('should sanitize zip code removing non digits', () => {
-    // Act
-    const sut = new ZipCode('22270-010');
+    it('should keep the value immutable after creation', () => {
+      // Arrange
+      const sut = new ZipCode('01310-100');
 
-    // Assert
-    expect(sut.value).toBe('22270010');
-  });
+      // Act
+      const result = sut.value;
 
-  it('should preserve leading zeros after sanitization', () => {
-    // Act
-    const sut = new ZipCode('01.310-100');
-
-    // Assert
-    expect(sut.value).toBe('01310100');
+      // Assert
+      expect(result).toBe('01310100');
+      expect(sut.value).toBe('01310100');
+    });
   });
 });

@@ -1,8 +1,8 @@
 import { AppException } from 'src/core/filters/app.exception';
 
 export class InvalidCnpjError extends AppException {
-  constructor() {
-    super('CNPJ inválido');
+  constructor(cnpj: string) {
+    super(`CNPJ inválido: ${cnpj}`);
     this.name = 'InvalidCnpjError';
   }
 }

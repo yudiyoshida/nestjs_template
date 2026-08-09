@@ -21,11 +21,11 @@ export class Document {
       this._value = new CNPJ(document).value;
     }
     else {
-      throw new InvalidDocumentError();
+      throw new InvalidDocumentError(raw);
     }
   }
 
-  private sanitize(cnpj: string): string {
-    return cnpj?.replace(/[\s./-]*/gim, '');
+  private sanitize(document: string): string {
+    return document?.replace(/[\s./-]*/gim, '')?.toUpperCase();
   }
 }

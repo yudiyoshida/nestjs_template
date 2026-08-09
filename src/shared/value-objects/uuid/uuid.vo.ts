@@ -5,7 +5,7 @@ export class UUID {
     this._value = this.generateUUID();
   }
 
-  get value(): string {
+  public get value(): string {
     return this._value;
   }
 

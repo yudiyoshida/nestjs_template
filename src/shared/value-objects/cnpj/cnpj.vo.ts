@@ -17,13 +17,13 @@ export class CNPJ {
     const cnpj = this.sanitize(rawCnpj);
 
     if (!this.validate(cnpj)) {
-      throw new InvalidCnpjError();
+      throw new InvalidCnpjError(rawCnpj);
     }
     this._value = cnpj;
   }
 
   private sanitize(cnpj: string): string {
-    return cnpj?.replace(/[\s./-]/gim, '').toUpperCase();
+    return cnpj?.replace(/[\s./-]/gim, '')?.toUpperCase();
   }
 
   private validate(cnpj: string): boolean {
@@ -41,7 +41,7 @@ export class CNPJ {
   }
 
   private allCharsAreEqual(cnpj: string): boolean {
-    return cnpj.split('').every((char) => char === cnpj[0]);
+    return cnpj?.split('')?.every((char) => char === cnpj[0]);
   }
 
   private calculateDigit(cnpj: string, length: number, multipliers: number[]): number {

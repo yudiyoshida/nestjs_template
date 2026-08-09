@@ -1,46 +1,88 @@
+import * as bcrypt from 'bcrypt';
+import { randomBytes } from 'crypto';
 import { Password } from './password.vo';
 
+jest.mock('bcrypt');
+jest.mock('crypto');
+
 describe('Password - Unit tests', () => {
-  it('should create a new hashed password', () => {
-    // Arrange
-    const rawPassword = 'T0I2%kBmZez7';
-
-    // Act
-    const sut = new Password(rawPassword);
-
-    // Assert
-    expect(sut).toBeDefined();
-    expect(sut.value).not.toBe(rawPassword);
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
-  it('should return true when comparing same password', () => {
-    // Arrange
-    const rawPassword = '123456789';
+  describe('compare', () => {
+    describe('Happy path', () => {
+      it.each([
+        [true],
+        [false],
+      ])('should return %s when bcrypt.compareSync returns %s', (result: boolean) => {
+        // Arrange
+        (bcrypt.compareSync as jest.Mock).mockReturnValue(result);
 
-    // Act
-    const sut = new Password(rawPassword);
+        // Act
+        const sut = Password.compare('plain-password', 'hashed-password');
 
-    // Assert
-    expect(Password.compare(rawPassword, sut.value)).toBe(true);
+        // Assert
+        expect(sut).toBe(result);
+        expect(bcrypt.compareSync).toHaveBeenCalledWith('plain-password', 'hashed-password');
+      });
+    });
   });
 
-  it('should return false when comparing different password', () => {
-    // Arrange
-    const rawPassword = '123456789';
-    const anotherRawPassword = '987654321';
+  describe('generateRandom', () => {
+    describe('Happy path', () => {
+      it('should return a base64url-encoded random string', () => {
+        // Arrange
+        const toString = jest.fn().mockReturnValue('random-base64url-value');
+        (randomBytes as jest.Mock).mockReturnValue({ toString });
 
-    // Act
-    const sut = new Password(rawPassword);
+        // Act
+        const sut = Password.generateRandom();
 
-    // Assert
-    expect(Password.compare(anotherRawPassword, sut.value)).toBe(false);
+        // Assert
+        expect(sut).toBe('random-base64url-value');
+        expect(randomBytes).toHaveBeenCalledWith(12);
+        expect(toString).toHaveBeenCalledWith('base64url');
+      });
+    });
   });
 
-  it('should generate a random password with 16 characters', () => {
-    // Act
-    const sut = Password.generateRandom();
+  describe('constructor', () => {
+    beforeEach(() => {
+      (bcrypt.genSaltSync as jest.Mock).mockReturnValue('generated-salt');
+      (bcrypt.hashSync as jest.Mock).mockReturnValue('hashed-password');
+    });
 
-    // Assert
-    expect(sut).toHaveLength(16);
+    describe('Happy path', () => {
+      it('should hash the password and expose it via the value getter', () => {
+        // Act
+        const sut = new Password('my-password');
+
+        // Assert
+        expect(sut.value).toBe('hashed-password');
+        expect(bcrypt.genSaltSync).toHaveBeenCalledWith(10);
+        expect(bcrypt.hashSync).toHaveBeenCalledWith('my-password', 'generated-salt');
+      });
+    });
+
+    describe('Edge cases', () => {
+      it('should hash an empty string password', () => {
+        // Act
+        const sut = new Password('');
+
+        // Assert
+        expect(sut.value).toBe('hashed-password');
+        expect(bcrypt.hashSync).toHaveBeenCalledWith('', 'generated-salt');
+      });
+
+      it('should hash a whitespace-only password', () => {
+        // Act
+        const sut = new Password('   ');
+
+        // Assert
+        expect(sut.value).toBe('hashed-password');
+        expect(bcrypt.hashSync).toHaveBeenCalledWith('   ', 'generated-salt');
+      });
+    });
   });
 });

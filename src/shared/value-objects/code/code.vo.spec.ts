@@ -1,57 +1,69 @@
-import { isNumber } from 'class-validator';
-import { InvalidExpirationTimeError } from './code.error';
+import { randomInt } from 'crypto';
 import { Code } from './code.vo';
+import { InvalidExpirationTimeError } from './code.error';
+
+jest.mock('crypto');
 
 describe('Code - Unit tests', () => {
-  it('should create a code with a value and expiration time', () => {
-    // Arrange
-    const expirationTimeInMinutes = 5;
-    // Act
-    const sut = new Code(expirationTimeInMinutes);
+  const fixedNow = new Date('2026-01-01T00:00:00.000Z');
 
-    // Assert
-    expect(sut.value.code).toBeDefined();
-    expect(sut.value.expiresIn).toBeDefined();
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(fixedNow);
   });
 
-  it('should generate a code with 6 digits', () => {
-    // Arrange
-    const expirationTimeInMinutes = 5;
-    // Act
-    const sut = new Code(expirationTimeInMinutes);
-
-    // Assert
-    expect(sut.value.code.length).toBe(6);
+  afterEach(() => {
+    jest.useRealTimers();
+    jest.clearAllMocks();
   });
 
-  it('should generate a code with only numbers', () => {
-    // Arrange
-    const expirationTimeInMinutes = 5;
-    // Act
-    const sut = new Code(expirationTimeInMinutes);
+  describe('Happy path', () => {
+    it('should create a 6-digit numeric code when expirationTimeInMinutes is valid', () => {
+      // Arrange
+      (randomInt as unknown as jest.Mock)
+        .mockReturnValueOnce(1)
+        .mockReturnValueOnce(2)
+        .mockReturnValueOnce(3)
+        .mockReturnValueOnce(4)
+        .mockReturnValueOnce(5)
+        .mockReturnValueOnce(6);
 
-    const isOnlyNumber = isNumber(+sut.value.code);
-    // Assert
-    expect(isOnlyNumber).toBe(true);
+      // Act
+      const sut = new Code(5);
+
+      // Assert
+      expect(sut.value.code).toBe('123456');
+      expect(randomInt).toHaveBeenCalledTimes(6);
+      expect(randomInt).toHaveBeenCalledWith(0, 10);
+    });
+
+    it('should calculate expiresIn as current time plus expiration time in milliseconds', () => {
+      // Act
+      const sut = new Code(5);
+
+      // Assert
+      expect(sut.value.expiresIn).toBe(fixedNow.getTime() + 5 * 60 * 1000);
+    });
   });
 
-  it.each([1, 5, 10, 250, 10999])('should generate a code that expires in %s minutes', (minutes: number) => {
-    // Act
-    const sut = new Code(minutes);
-    const expirationTime = Date.now() + (minutes * 60 * 1000);
-    // Assert
-    expect(sut.value.expiresIn).toBe(expirationTime);
+  describe('Error path', () => {
+    it.each([
+      0,
+      -1,
+      -100,
+    ])('should throw InvalidExpirationTimeError when expirationTimeInMinutes is %s', (expirationTimeInMinutes: number) => {
+      // Act & Assert
+      expect(() => new Code(expirationTimeInMinutes)).toThrow(InvalidExpirationTimeError);
+    });
   });
 
-  it('should throw an error when providing a negative expiration time', () => {
-    // Act & Assert
-    expect(() => new Code(-1)).toThrow('Tempo de expiração inválido');
-    expect(() => new Code(-1)).toThrow(InvalidExpirationTimeError);
-  });
+  describe('Edge cases', () => {
+    it('should accept a fractional expirationTimeInMinutes and calculate expiresIn correctly', () => {
+      // Act
+      const sut = new Code(0.5);
 
-  it('should throw an error when providing a zero expiration time', () => {
-    // Act & Assert
-    expect(() => new Code(0)).toThrow('Tempo de expiração inválido');
-    expect(() => new Code(0)).toThrow(InvalidExpirationTimeError);
+      // Assert
+      expect(sut.value.expiresIn).toBe(fixedNow.getTime() + 0.5 * 60 * 1000);
+    });
   });
 });

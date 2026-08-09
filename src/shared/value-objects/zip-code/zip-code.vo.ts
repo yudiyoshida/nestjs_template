@@ -1,21 +1,30 @@
 import { InvalidZipCodeError } from './zip-code.error';
 
-const ZIP_CODE_LENGTH = 8;
-
 export class ZipCode {
+  private readonly FORMAT = /^\d{8}$/;
   private readonly _value: string;
 
   constructor(raw: string) {
-    const normalized = raw?.replace(/\D/g, '') ?? '';
+    const zipCode = this.sanitize(raw);
 
-    if (normalized.length !== ZIP_CODE_LENGTH) {
+    if (!this.validate(zipCode)) {
       throw new InvalidZipCodeError(raw);
     }
 
-    this._value = normalized;
+    this._value = zipCode;
   }
 
   public get value(): string {
     return this._value;
+  }
+
+  private sanitize(zipCode: string): string {
+    return typeof zipCode === 'string' ? zipCode.replace(/[\s.-]/g, '') : '';
+  }
+
+  private validate(zipCode: string): boolean {
+    if (!zipCode) return false;
+
+    return this.FORMAT.test(zipCode);
   }
 }
