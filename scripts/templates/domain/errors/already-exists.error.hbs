@@ -1,8 +1,0 @@
-import { AppException } from 'src/core/filters/app.exception';
-
-export class {{moduleNamePascal}}AlreadyExistsError extends AppException {
-  constructor() {
-    super('{{moduleNamePascal}} já existe.', 409);
-    this.name = '{{moduleNamePascal}}AlreadyExistsError';
-  }
-}
