@@ -1,5 +1,5 @@
-import { Prisma, PrismaClient } from '@prisma/client';
 import crypto from 'crypto';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { AccountRole } from '../../src/app/account/domain/enums/account-role.enum';
 import { AccountStatus } from '../../src/app/account/domain/enums/account-status.enum';
 import { Password } from '../../src/shared/value-objects/password/password.vo';

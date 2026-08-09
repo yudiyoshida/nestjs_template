@@ -50,6 +50,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    env_file:
+      - .env.development
     environment:
       NODE_ENV: development
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-template}?schema=public
@@ -114,8 +116,6 @@ services:
       - ./logs:/logs:ro
     command: ["tail", "-n", "50", "-F", "/logs/upload-file.log"]
 
-  # Dozzle - Web UI para logs em tempo real (containers + log watchers)
-  # Acesse http://localhost:9999
   dozzle:
     image: amir20/dozzle:latest
     container_name: template-dozzle-dev

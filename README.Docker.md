@@ -89,10 +89,12 @@ Certifique-se de que `.env.development` existe com as demais variáveis (JWT, AW
 
 1. **Configure as variáveis de ambiente:**
    ```bash
-   cp .env.example .env
-   # Edite o arquivo .env com suas configurações de produção
+   cp .env.example .env.production
+   # Edite o arquivo .env.production com suas configurações de produção
    # IMPORTANTE: Altere JWT_SECRET, senhas do banco e credenciais AWS/SMTP
    ```
+
+   O serviço `api` do `docker-compose.yml` carrega esse arquivo via `env_file`. `DATABASE_URL` e `REDIS_URL` são sempre sobrescritos pelo compose para apontar aos hosts Docker (`postgres` e `redis`), independentemente do que estiver em `.env.production`.
 
 2. **Configure os certificados SSL:**
    O `main.ts` exige HTTPS em produção (`NODE_ENV=production`). Defina `SSL_KEY`, `SSL_CERT` e `SSL_CA` apontando para arquivos dentro de `/etc/letsencrypt` (montado via volume no compose).

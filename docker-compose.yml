@@ -50,43 +50,13 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    env_file:
+      - .env.production
     environment:
-      NODE_ENV: ${NODE_ENV:-production}
-      PORT: ${PORT:-3000}
-
-      # Database
+      # Overrides de rede Docker — sempre sobrescrevem o que estiver em .env.production
+      NODE_ENV: production
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-template}?schema=public
-
-      # Redis
       REDIS_URL: redis://redis:6379
-
-      # JWT
-      JWT_SECRET: ${JWT_SECRET}
-
-      # CORS
-      CORS_ORIGIN: ${CORS_ORIGIN}
-
-      # AWS S3
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
-      AWS_REGION: ${AWS_REGION:-}
-      AWS_BUCKET_NAME: ${AWS_BUCKET_NAME:-}
-
-      # SMTP
-      SMTP_HOST: ${SMTP_HOST}
-      SMTP_PORT: ${SMTP_PORT}
-      SMTP_TO: ${SMTP_TO}
-      SMTP_FROM: ${SMTP_FROM}
-      SMTP_USERNAME: ${SMTP_USERNAME}
-      SMTP_PASSWORD: ${SMTP_PASSWORD}
-
-      # ViaCEP
-      VIACEP_API_URL: ${VIACEP_API_URL:-https://viacep.com.br/ws}
-
-      # SSL (montados via volume /etc/letsencrypt)
-      SSL_KEY: ${SSL_KEY}
-      SSL_CERT: ${SSL_CERT}
-      SSL_CA: ${SSL_CA}
     ports:
       - "${PORT:-3000}:3000"
     networks:

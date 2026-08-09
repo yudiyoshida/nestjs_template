@@ -20,7 +20,11 @@
     "db:seed": "dotenv -e .env.development -- prisma db seed",
     "db:reset": "dotenv -e .env.development -- prisma db push --force-reset && prisma db seed",
     "db:studio": "dotenv -e .env.development -- prisma studio",
-    "generate:postman": "ts-node postman/swagger-to-postman.ts"
+    "generate:postman": "ts-node postman/swagger-to-postman.ts",
+    "docker:dev": "docker compose -f docker-compose.dev.yml up -d --build",
+    "docker:dev:down": "docker compose -f docker-compose.dev.yml down",
+    "docker:prod": "docker compose -f docker-compose.yml up -d --build",
+    "docker:prod:down": "docker compose -f docker-compose.yml down"
   },
   "prisma": {
     "seed": "dotenv -e .env.development -- ts-node prisma/seeds/index.ts"

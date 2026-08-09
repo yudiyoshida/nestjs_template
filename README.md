@@ -51,73 +51,9 @@ $ npm run start:prod
 # unit tests
 $ npm run test
 
-# e2e tests
-$ npm run test:e2e
-
 # test coverage
 $ npm run test:cov
 ```
-
-## Code Generation
-
-This project includes a CLI for generating modules from Handlebars templates. The generated files follow the project's architecture and eliminate the manual work of writing boilerplate.
-
-### Command
-
-```bash
-# simple mode
-$ npm run generate:module <module-name>
-
-# DDD mode (with entities, factory and repository)
-$ npm run generate:module <module-name> -- --ddd
-```
-
-> The module name must be in **kebab-case** (e.g. `product-review`).
-
-### Generation modes
-
-| Artifact | Simple | DDD |
-|---|:---:|:---:|
-| `module.ts` | ✅ | ✅ |
-| Response DTO | ✅ | ✅ |
-| DAO interfaces + persistence module | ✅ | ✅ |
-| Use cases (create, edit, delete, find-all, find-by-id) + specs | ✅ | ✅ |
-| HTTP controller + spec | ✅ | ✅ |
-| Prisma DAO + spec | ✅ | ✅ |
-| Domain errors (not-found, already-exists) | ✅ | ✅ |
-| Domain entity + spec | ❌ | ✅ |
-| Domain factory + spec | ❌ | ✅ |
-| Repository interface | ❌ | ✅ |
-| Prisma repository + spec | ❌ | ✅ |
-
-### Example
-
-```bash
-$ npm run generate:module order -- --ddd
-```
-
-Creates the full structure under `src/app/order/`.
-
-### Post-generation steps
-
-After running the script, complete the following steps:
-
-1. **Dependency injection tokens** — add the entries to `src/core/di/token.ts`:
-
-```typescript
-OrderDao: Symbol.for('OrderDao'),
-OrderRepository: Symbol.for('OrderRepository'), // DDD mode only
-```
-
-2. **Prisma model** — add the model to `prisma/schema/<module>.prisma` (generator and datasource live in `prisma/schema/schema.prisma`) with the base fields (`id`, `status`, `createdAt`, `updatedAt`) and run the migration:
-
-```bash
-$ npm run db:migration
-```
-
-3. **AppModule registration** — import the generated module in `src/app.module.ts`.
-
----
 
 ## Support
 
@@ -131,4 +67,4 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 
 ## License
 
-Nest is [MIT licensed](LICENSE).
+UNLICENSED — private project.

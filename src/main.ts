@@ -36,7 +36,11 @@ async function bootstrap() {
   app.use(compression());
 
   const configService = app.get(ConfigService);
-  app.enableCors({ origin: configService.corsOrigin });
+  app.enableCors({
+    origin: configService.corsOrigin.split(',').map((origin) => origin.trim()),
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  });
 
   await app.listen(process.env.PORT as string);
 }
