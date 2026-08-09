@@ -56,7 +56,7 @@ describe('ZipCode - Unit tests', () => {
 
     it('should throw an error with the raw zip code in the message', () => {
       // Act & Assert
-      expect(() => new ZipCode('01310-10')).toThrow('CEP inválido: 01310-10');
+      expect(() => new ZipCode('01310-10')).toThrow('CEP inválido: 01310-10.');
     });
   });
 
