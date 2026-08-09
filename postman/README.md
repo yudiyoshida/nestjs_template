@@ -11,17 +11,8 @@ Coleção Postman gerada a partir da documentação Swagger/OpenAPI.
 
 ## Configuração
 
-### Variáveis da coleção
-
 - **baseUrl**: URL base da API (padrão: `http://localhost:3000`)
 - **accessToken**: Token JWT para autenticação (preenchido automaticamente após login)
-
-### Fluxo recomendado
-
-1. Ajuste a variável `baseUrl` se sua API estiver em outro endereço
-2. Execute a requisição **Login com email e senha** (em Autenticação)
-3. O token será salvo automaticamente na variável `accessToken`
-4. As demais rotas protegidas usarão o token automaticamente
 
 ## Regenerar a coleção
 
