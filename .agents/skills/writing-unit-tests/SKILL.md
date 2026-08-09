@@ -1,6 +1,6 @@
 ---
 name: writing-unit-tests
-description: Analisa um arquivo TypeScript e gera todos os cenários de teste possíveis (happy path, error path, edge cases) em um arquivo Jest *.spec.ts com describes aninhados e padrão AAA comentado. Use quando o usuário pedir para criar, gerar, escrever, completar ou revisar testes unitários de um arquivo, função, classe, service, use case, value object ou controller.
+description: Analisa um arquivo TypeScript e gera todos os cenários de teste possíveis (happy path, error path, edge cases) em um arquivo Jest *.spec.ts com describes aninhados e padrão AAA comentado. Suporta classes Nest com Test.createTestingModule e createMock. Use quando o usuário pedir para criar, gerar, escrever, completar ou revisar testes unitários de um arquivo, função, classe, service, use case, value object, controller, guard ou filter.
 ---
 
 # Writing Unit Tests
@@ -48,7 +48,10 @@ Progresso:
 
 Leia o arquivo inteiro, mais o que ele importa e que afeta comportamento:
 classes de erro, tipos/interfaces de entrada e saída, constantes de validação,
-regex e dependências injetadas. Nada além disso — nenhum arquivo de teste.
+regex e dependências injetadas. Para classes Nest com DI (`@Injectable`, `@Controller`,
+guard, filter, etc.), identifique cada dependência do construtor e o **token de
+injeção** de cada uma (symbol em `src/core/di/token.ts`, classe concreta, ou
+string). Nada além disso — nenhum arquivo de teste.
 
 ### 2. Listar os cenários
 
@@ -270,6 +273,101 @@ describe('Error path', () => {
 });
 ```
 
+### Classes com injeção de dependência (NestJS)
+
+Use para classes Nest com DI no construtor (`@Injectable`, `@Controller`, guard,
+filter, interceptor, gateway). VOs, funções puras e mappers: `new` direto. Apenas
+**unitário** com mocks — não gere `*.integration.spec.ts` (módulo real, Prisma).
+
+**Montagem:** `let sut` + `let` por dependência; `beforeEach(async() => { ... })` com
+`createMock<T>()`, `Test.createTestingModule({ providers: [Sut, { provide: token, useValue: mock }] }).compile()`,
+`sut = module.get(Sut)`. Token symbol → `TOKENS.X` (ler `src/core/di/token.ts` ok);
+classe concreta → própria classe como token. Controller → `controllers: [X]`, use
+cases em `providers` com `createMock`. **Proibido:** módulos de infra reais, `PrismaService`, I/O.
+
+**Por cenário:** `jest.spyOn(dep, 'm').mockResolvedValue` / `mockRejectedValue` no Arrange;
+`afterEach(() => jest.restoreAllMocks())` se usar `spyOn`. **Não gere** `it('should be defined')`.
+No passo 2: `toHaveBeenCalledWith`, dependência não chamada no aborto, `mockRejectedValue` propagado.
+DTO repetido → `makeX(overrides: Partial<T> = {})` no topo do arquivo.
+
+Exemplo (use case com dao mockado):
+
+```ts
+import { createMock } from '@golevelup/ts-jest';
+import { Test } from '@nestjs/testing';
+import { TOKENS } from 'src/core/di/token';
+import type { ITipDao } from '../../persistence/dao/tip-dao.interface';
+import { FindAllTipQueryDto } from './dtos/find-all-tip-query.dto';
+import { FindAllTip } from './find-all-tip.service';
+
+describe('FindAllTip - Unit tests', () => {
+  let sut: FindAllTip;
+  let tipDao: ITipDao;
+
+  beforeEach(async() => {
+    tipDao = createMock<ITipDao>();
+
+    const module = await Test.createTestingModule({
+      providers: [
+        FindAllTip,
+        { provide: TOKENS.TipDao, useValue: tipDao },
+      ],
+    }).compile();
+
+    sut = module.get(FindAllTip);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  describe('execute', () => {
+    describe('Happy path', () => {
+      it('should return a paginated dto built from the dao result', async() => {
+        // Arrange
+        const tips = [{ id: 'tip-id' }];
+        const query: FindAllTipQueryDto = { page: 1, size: 10 };
+        jest.spyOn(tipDao, 'findAll').mockResolvedValue([tips, 1]);
+
+        // Act
+        const result = await sut.execute(query);
+
+        // Assert
+        expect(tipDao.findAll).toHaveBeenCalledWith(query);
+        expect(result.totalItems).toBe(1);
+        expect(result.data).toEqual(tips);
+      });
+    });
+
+    describe('Error path', () => {
+      it('should propagate when the dao rejects', async() => {
+        // Arrange
+        const query: FindAllTipQueryDto = { page: 1, size: 10 };
+        jest.spyOn(tipDao, 'findAll').mockRejectedValue(new Error('db down'));
+
+        // Act & Assert
+        await expect(sut.execute(query)).rejects.toThrow('db down');
+      });
+    });
+
+    describe('Edge cases', () => {
+      it('should return empty data when the dao returns no rows', async() => {
+        // Arrange
+        const query: FindAllTipQueryDto = { page: 1, size: 10 };
+        jest.spyOn(tipDao, 'findAll').mockResolvedValue([[], 0]);
+
+        // Act
+        const result = await sut.execute(query);
+
+        // Assert
+        expect(result.data).toEqual([]);
+        expect(result.totalItems).toBe(0);
+      });
+    });
+  });
+});
+```
+
 ### 4. Rodar e iterar
 
 ```bash
@@ -323,7 +421,12 @@ it.each([
   expect(sut.value).toBe(expected);
 });
 ```
-- Dependências sempre mockadas com `jest.fn()`; nada de I/O real, banco ou rede
+- Dependências mockadas: `createMock<T>()` (`@golevelup/ts-jest`) com
+  `Test.createTestingModule` (`@nestjs/testing`) para classes Nest com DI;
+  `jest.fn()` / objetos mockados manuais apenas fora do módulo de teste Nest.
+  Nada de I/O real, banco ou rede
+- ESLint `space-before-function-paren: never` — escreva `async()` e
+  `beforeEach(async() => ...)`, **sem** espaço antes do `(`
 
 ## Checklist de entrega
 
@@ -369,6 +472,18 @@ o arquivo de teste e volte ao início do checklist.
 - [ ] `afterEach` com limpeza quando há spy, mock ou fake timers
 - [ ] Hooks sem comentários AAA
 - [ ] Entrada e resultado esperado do cenário permanecem visíveis no `it`
+
+### NestJS / DI (seção "Classes com injeção de dependência")
+
+Aplicável somente quando o alvo usa injeção de dependência do Nest.
+
+- [ ] `sut` montado com `Test.createTestingModule` no `beforeEach(async() => ...)`
+- [ ] Toda dependência mockada com `createMock<T>()`; nenhuma implementação real
+- [ ] Token correto: `TOKENS.X` para interface por symbol; classe concreta como token quando aplicável
+- [ ] Controller em `controllers`, não em `providers`
+- [ ] Nenhum módulo de infra real, nenhum `PrismaService`, nenhum I/O
+- [ ] `afterEach(() => jest.restoreAllMocks())` quando há `jest.spyOn`
+- [ ] Nenhum `it('should be defined')` gerado
 
 ### Processo (topo da skill e passo 4)
 

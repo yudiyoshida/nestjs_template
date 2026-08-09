@@ -1,403 +1,366 @@
 import { ConfigService as NestConfigService } from '@nestjs/config';
-import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from './config.service';
 import { Environment } from './environment.enum';
 
-describe('ConfigService', () => {
+describe('ConfigService - Unit tests', () => {
   let sut: ConfigService;
   let nestConfigService: jest.Mocked<NestConfigService>;
 
-  beforeEach(async() => {
-    const mockNestConfigService = {
-      get: jest.fn(),
-    };
-
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        ConfigService,
-        {
-          provide: NestConfigService,
-          useValue: mockNestConfigService,
-        },
-      ],
-    }).compile();
-
-    sut = module.get<ConfigService>(ConfigService);
-    nestConfigService = module.get<jest.Mocked<NestConfigService>>(NestConfigService);
+  beforeEach(() => {
+    nestConfigService = { get: jest.fn() } as any;
+    sut = new ConfigService(nestConfigService);
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
-  describe.each(
-    [
-      ...Object.values(Environment),
-    ]
-  )('environment properties', (value: string) => {
-    it(`should return the NODE_ENV value (${value})`, () => {
+  describe('Happy path', () => {
+    it('should return nodeEnv from nestConfigService', () => {
       // Arrange
-      nestConfigService.get.mockReturnValue(value);
+      nestConfigService.get.mockReturnValue(Environment.Production);
 
+      // Act
       const result = sut.nodeEnv;
 
-      // Act & Assert
+      // Assert
+      expect(result).toBe(Environment.Production);
       expect(nestConfigService.get).toHaveBeenCalledWith('NODE_ENV');
-      expect(result).toBe(value);
     });
 
-    it(`should return true for NODE_ENV value (${value})`, () => {
+    it('should return true for isDevelopment when nodeEnv is Development', () => {
       // Arrange
-      nestConfigService.get.mockReturnValue(value);
+      nestConfigService.get.mockReturnValue(Environment.Development);
 
-      // Act & Assert
-      expect(sut.isDevelopment).toBe(value === Environment.Development);
-      expect(sut.isProduction).toBe(value === Environment.Production);
-      expect(sut.isTest).toBe(value === Environment.Test);
-    });
-  });
+      // Act
+      const result = sut.isDevelopment;
 
-  describe('server properties', () => {
-    describe('port', () => {
-      it('should return the PORT value as number', () => {
-        // Arrange
-        const mockPort = 3000;
-        nestConfigService.get.mockReturnValue(mockPort);
-
-        const result = sut.port;
-
-        // Act & Assert
-        expect(nestConfigService.get).toHaveBeenCalledWith('PORT');
-        expect(result).toBe(mockPort);
-      });
+      // Assert
+      expect(result).toBe(true);
     });
 
-    describe('sslKeyPath', () => {
-      it('should return the SSL_KEY value', () => {
-        // Arrange
-        const mockPath = '/path/to/ssl.key';
-        nestConfigService.get.mockReturnValue(mockPath);
-
-        const result = sut.sslKeyPath;
-
-        // Act & Assert
-        expect(nestConfigService.get).toHaveBeenCalledWith('SSL_KEY');
-        expect(result).toBe(mockPath);
-      });
-    });
-
-    describe('sslCertPath', () => {
-      it('should return the SSL_CERT value', () => {
-        // Arrange
-        const mockPath = '/path/to/ssl.cert';
-        nestConfigService.get.mockReturnValue(mockPath);
-
-        const result = sut.sslCertPath;
-
-        // Act & Assert
-        expect(nestConfigService.get).toHaveBeenCalledWith('SSL_CERT');
-        expect(result).toBe(mockPath);
-      });
-    });
-
-    describe('sslCaPath', () => {
-      it('should return the SSL_CA value', () => {
-        // Arrange
-        const mockPath = '/path/to/ssl.ca';
-        nestConfigService.get.mockReturnValue(mockPath);
-
-        const result = sut.sslCaPath;
-
-        // Act & Assert
-        expect(nestConfigService.get).toHaveBeenCalledWith('SSL_CA');
-        expect(result).toBe(mockPath);
-      });
-    });
-  });
-
-  describe('cors properties', () => {
-    describe('corsOrigin', () => {
-      it('should return the CORS_ORIGIN value', () => {
-        // Arrange
-        const mockOrigin = 'http://localhost:3000';
-        nestConfigService.get.mockReturnValue(mockOrigin);
-
-        const result = sut.corsOrigin;
-
-        // Act & Assert
-        expect(nestConfigService.get).toHaveBeenCalledWith('CORS_ORIGIN');
-        expect(result).toBe(mockOrigin);
-      });
-    });
-  });
-
-  describe('jwt properties', () => {
-    describe('jwtSecret', () => {
-      it('should return the JWT_SECRET value', () => {
-        // Arrange
-        const mockSecret = 'super-secret-jwt-key';
-        nestConfigService.get.mockReturnValue(mockSecret);
-
-        const result = sut.jwtSecret;
-
-        // Act & Assert
-        expect(nestConfigService.get).toHaveBeenCalledWith('JWT_SECRET');
-        expect(result).toBe(mockSecret);
-      });
-    });
-
-    describe('jwtExpiresIn', () => {
-      it('should return the JWT_EXPIRES_IN value', () => {
-        // Arrange
-        const mockExpiresIn = '15m';
-        nestConfigService.get.mockReturnValue(mockExpiresIn);
-
-        const result = sut.jwtExpiresIn;
-
-        // Act & Assert
-        expect(nestConfigService.get).toHaveBeenCalledWith('JWT_EXPIRES_IN');
-        expect(result).toBe(mockExpiresIn);
-      });
-    });
-
-    describe('refreshTokenSecret', () => {
-      it('should return the REFRESH_TOKEN_SECRET value', () => {
-        // Arrange
-        const mockSecret = 'super-secret-refresh-key';
-        nestConfigService.get.mockReturnValue(mockSecret);
-
-        const result = sut.refreshTokenSecret;
-
-        // Act & Assert
-        expect(nestConfigService.get).toHaveBeenCalledWith('REFRESH_TOKEN_SECRET');
-        expect(result).toBe(mockSecret);
-      });
-    });
-
-    describe('refreshTokenExpiresIn', () => {
-      it('should return the REFRESH_TOKEN_EXPIRES_IN value as number', () => {
-        // Arrange
-        const mockExpiresIn = 604800;
-        nestConfigService.get.mockReturnValue(mockExpiresIn);
-
-        const result = sut.refreshTokenExpiresIn;
-
-        // Act & Assert
-        expect(nestConfigService.get).toHaveBeenCalledWith('REFRESH_TOKEN_EXPIRES_IN');
-        expect(result).toBe(mockExpiresIn);
-      });
-    });
-  });
-
-  describe('database properties', () => {
-    describe('databaseUrl', () => {
-      it('should return the DATABASE_URL value', () => {
-        // Arrange
-        const mockUrl = 'postgresql://user:pass@localhost:5432/db';
-        nestConfigService.get.mockReturnValue(mockUrl);
-
-        const result = sut.databaseUrl;
-
-        // Act & Assert
-        expect(nestConfigService.get).toHaveBeenCalledWith('DATABASE_URL');
-        expect(result).toBe(mockUrl);
-      });
-    });
-  });
-
-  describe('aws properties', () => {
-    describe('awsAccessKeyId', () => {
-      it('should return the AWS_ACCESS_KEY_ID value', () => {
-        // Arrange
-        const mockKeyId = 'AKIAIOSFODNN7EXAMPLE';
-        nestConfigService.get.mockReturnValue(mockKeyId);
-
-        const result = sut.awsAccessKeyId;
-
-        // Act & Assert
-        expect(nestConfigService.get).toHaveBeenCalledWith('AWS_ACCESS_KEY_ID');
-        expect(result).toBe(mockKeyId);
-      });
-    });
-
-    describe('awsSecretAccessKey', () => {
-      it('should return the AWS_SECRET_ACCESS_KEY value', () => {
-        // Arrange
-        const mockSecret = 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY';
-        nestConfigService.get.mockReturnValue(mockSecret);
-
-        const result = sut.awsSecretAccessKey;
-
-        // Act & Assert
-        expect(nestConfigService.get).toHaveBeenCalledWith('AWS_SECRET_ACCESS_KEY');
-        expect(result).toBe(mockSecret);
-      });
-    });
-
-    describe('awsRegion', () => {
-      it('should return the AWS_REGION value', () => {
-        // Arrange
-        const mockRegion = 'us-east-1';
-        nestConfigService.get.mockReturnValue(mockRegion);
-
-        const result = sut.awsRegion;
-
-        // Act & Assert
-        expect(nestConfigService.get).toHaveBeenCalledWith('AWS_REGION');
-        expect(result).toBe(mockRegion);
-      });
-    });
-
-    describe('awsBucketName', () => {
-      it('should return the AWS_BUCKET_NAME value', () => {
-        // Arrange
-        const mockBucket = 'my-s3-bucket';
-        nestConfigService.get.mockReturnValue(mockBucket);
-
-        const result = sut.awsBucketName;
-
-        // Act & Assert
-        expect(nestConfigService.get).toHaveBeenCalledWith('AWS_BUCKET_NAME');
-        expect(result).toBe(mockBucket);
-      });
-    });
-  });
-
-  describe('smtp properties', () => {
-    describe('smtpHost', () => {
-      it('should return the SMTP_HOST value', () => {
-        // Arrange
-        const mockHost = 'smtp.gmail.com';
-        nestConfigService.get.mockReturnValue(mockHost);
-
-        const result = sut.smtpHost;
-
-        // Act & Assert
-        expect(nestConfigService.get).toHaveBeenCalledWith('SMTP_HOST');
-        expect(result).toBe(mockHost);
-      });
-    });
-
-    describe('smtpPort', () => {
-      it('should return the SMTP_PORT value as number', () => {
-        // Arrange
-        const mockPort = 587;
-        nestConfigService.get.mockReturnValue(mockPort);
-
-        const result = sut.smtpPort;
-
-        // Act & Assert
-        expect(nestConfigService.get).toHaveBeenCalledWith('SMTP_PORT');
-        expect(result).toBe(mockPort);
-      });
-    });
-
-    describe('smtpTo', () => {
-      it('should return the SMTP_TO value', () => {
-        // Arrange
-        const mockTo = 'recipient@example.com';
-        nestConfigService.get.mockReturnValue(mockTo);
-
-        const result = sut.smtpTo;
-
-        // Act & Assert
-        expect(nestConfigService.get).toHaveBeenCalledWith('SMTP_TO');
-        expect(result).toBe(mockTo);
-      });
-    });
-
-    describe('smtpFrom', () => {
-      it('should return the SMTP_FROM value', () => {
-        // Arrange
-        const mockFrom = 'sender@example.com';
-        nestConfigService.get.mockReturnValue(mockFrom);
-
-        const result = sut.smtpFrom;
-
-        // Act & Assert
-        expect(nestConfigService.get).toHaveBeenCalledWith('SMTP_FROM');
-        expect(result).toBe(mockFrom);
-      });
-    });
-
-    describe('smtpUsername', () => {
-      it('should return the SMTP_USERNAME value', () => {
-        // Arrange
-        const mockUsername = 'smtp-user';
-        nestConfigService.get.mockReturnValue(mockUsername);
-
-        const result = sut.smtpUsername;
-
-        // Act & Assert
-        expect(nestConfigService.get).toHaveBeenCalledWith('SMTP_USERNAME');
-        expect(result).toBe(mockUsername);
-      });
-    });
-
-    describe('smtpPassword', () => {
-      it('should return the SMTP_PASSWORD value', () => {
-        // Arrange
-        const mockPassword = 'smtp-password';
-        nestConfigService.get.mockReturnValue(mockPassword);
-
-        const result = sut.smtpPassword;
-
-        // Act & Assert
-        expect(nestConfigService.get).toHaveBeenCalledWith('SMTP_PASSWORD');
-        expect(result).toBe(mockPassword);
-      });
-    });
-  });
-
-  describe('redis properties', () => {
-    describe('redisUrl', () => {
-      it('should return the REDIS_URL value', () => {
-        // Arrange
-        const mockUrl = 'redis_teste://localhost:6379';
-        nestConfigService.get.mockReturnValue(mockUrl);
-
-        const result = sut.redisUrl;
-
-        // Act & Assert
-        expect(nestConfigService.get).toHaveBeenCalledWith('REDIS_URL');
-        expect(result).toBe(mockUrl);
-      });
-    });
-  });
-
-  describe('cep lookup properties', () => {
-    describe('viacepApiUrl', () => {
-      it('should return the VIACEP_API_URL value', () => {
-        // Arrange
-        const mockUrl = 'https://viacep.com.br/ws/01001000/json/';
-        nestConfigService.get.mockReturnValue(mockUrl);
-
-        const result = sut.viacepApiUrl;
-
-        // Act & Assert
-        expect(nestConfigService.get).toHaveBeenCalledWith('VIACEP_API_URL');
-        expect(result).toBe(mockUrl);
-      });
-    });
-  });
-
-  describe('integration scenarios', () => {
-    it('should call nestConfigService.get for each property access', () => {
+    it.each([
+      Environment.Production,
+      Environment.Test,
+    ])('should return false for isDevelopment when nodeEnv is %s', (env: Environment) => {
       // Arrange
-      nestConfigService.get
-        .mockReturnValueOnce(Environment.Development)
-        .mockReturnValueOnce(3000)
-        .mockReturnValueOnce('localhost');
+      nestConfigService.get.mockReturnValue(env);
 
-      sut.nodeEnv;
-      sut.port;
-      sut.corsOrigin;
+      // Act
+      const result = sut.isDevelopment;
 
-      // Act & Assert
-      expect(nestConfigService.get).toHaveBeenCalledTimes(3);
-      expect(nestConfigService.get).toHaveBeenNthCalledWith(1, 'NODE_ENV');
-      expect(nestConfigService.get).toHaveBeenNthCalledWith(2, 'PORT');
-      expect(nestConfigService.get).toHaveBeenNthCalledWith(3, 'CORS_ORIGIN');
+      // Assert
+      expect(result).toBe(false);
+    });
+
+    it('should return true for isProduction when nodeEnv is Production', () => {
+      // Arrange
+      nestConfigService.get.mockReturnValue(Environment.Production);
+
+      // Act
+      const result = sut.isProduction;
+
+      // Assert
+      expect(result).toBe(true);
+    });
+
+    it.each([
+      Environment.Development,
+      Environment.Test,
+    ])('should return false for isProduction when nodeEnv is %s', (env: Environment) => {
+      // Arrange
+      nestConfigService.get.mockReturnValue(env);
+
+      // Act
+      const result = sut.isProduction;
+
+      // Assert
+      expect(result).toBe(false);
+    });
+
+    it('should return true for isTest when nodeEnv is Test', () => {
+      // Arrange
+      nestConfigService.get.mockReturnValue(Environment.Test);
+
+      // Act
+      const result = sut.isTest;
+
+      // Assert
+      expect(result).toBe(true);
+    });
+
+    it.each([
+      Environment.Development,
+      Environment.Production,
+    ])('should return false for isTest when nodeEnv is %s', (env: Environment) => {
+      // Arrange
+      nestConfigService.get.mockReturnValue(env);
+
+      // Act
+      const result = sut.isTest;
+
+      // Assert
+      expect(result).toBe(false);
+    });
+
+    it('should return port from nestConfigService', () => {
+      // Arrange
+      nestConfigService.get.mockReturnValue(3000);
+
+      // Act
+      const result = sut.port;
+
+      // Assert
+      expect(result).toBe(3000);
+      expect(nestConfigService.get).toHaveBeenCalledWith('PORT');
+    });
+
+    it('should return sslKeyPath from nestConfigService', () => {
+      // Arrange
+      nestConfigService.get.mockReturnValue('/path/key.pem');
+
+      // Act
+      const result = sut.sslKeyPath;
+
+      // Assert
+      expect(result).toBe('/path/key.pem');
+      expect(nestConfigService.get).toHaveBeenCalledWith('SSL_KEY');
+    });
+
+    it('should return sslCertPath from nestConfigService', () => {
+      // Arrange
+      nestConfigService.get.mockReturnValue('/path/cert.pem');
+
+      // Act
+      const result = sut.sslCertPath;
+
+      // Assert
+      expect(result).toBe('/path/cert.pem');
+      expect(nestConfigService.get).toHaveBeenCalledWith('SSL_CERT');
+    });
+
+    it('should return sslCaPath from nestConfigService', () => {
+      // Arrange
+      nestConfigService.get.mockReturnValue('/path/ca.pem');
+
+      // Act
+      const result = sut.sslCaPath;
+
+      // Assert
+      expect(result).toBe('/path/ca.pem');
+      expect(nestConfigService.get).toHaveBeenCalledWith('SSL_CA');
+    });
+
+    it('should return corsOrigin from nestConfigService', () => {
+      // Arrange
+      nestConfigService.get.mockReturnValue('https://example.com');
+
+      // Act
+      const result = sut.corsOrigin;
+
+      // Assert
+      expect(result).toBe('https://example.com');
+      expect(nestConfigService.get).toHaveBeenCalledWith('CORS_ORIGIN');
+    });
+
+    it('should return jwtSecret from nestConfigService', () => {
+      // Arrange
+      nestConfigService.get.mockReturnValue('jwt-secret');
+
+      // Act
+      const result = sut.jwtSecret;
+
+      // Assert
+      expect(result).toBe('jwt-secret');
+      expect(nestConfigService.get).toHaveBeenCalledWith('JWT_SECRET');
+    });
+
+    it('should return jwtExpiresIn from nestConfigService', () => {
+      // Arrange
+      nestConfigService.get.mockReturnValue('1h');
+
+      // Act
+      const result = sut.jwtExpiresIn;
+
+      // Assert
+      expect(result).toBe('1h');
+      expect(nestConfigService.get).toHaveBeenCalledWith('JWT_EXPIRES_IN');
+    });
+
+    it('should return refreshTokenSecret from nestConfigService', () => {
+      // Arrange
+      nestConfigService.get.mockReturnValue('refresh-secret');
+
+      // Act
+      const result = sut.refreshTokenSecret;
+
+      // Assert
+      expect(result).toBe('refresh-secret');
+      expect(nestConfigService.get).toHaveBeenCalledWith('REFRESH_TOKEN_SECRET');
+    });
+
+    it('should return refreshTokenExpiresIn from nestConfigService', () => {
+      // Arrange
+      nestConfigService.get.mockReturnValue(604800);
+
+      // Act
+      const result = sut.refreshTokenExpiresIn;
+
+      // Assert
+      expect(result).toBe(604800);
+      expect(nestConfigService.get).toHaveBeenCalledWith('REFRESH_TOKEN_EXPIRES_IN');
+    });
+
+    it('should return databaseUrl from nestConfigService', () => {
+      // Arrange
+      nestConfigService.get.mockReturnValue('postgres://localhost:5432/db');
+
+      // Act
+      const result = sut.databaseUrl;
+
+      // Assert
+      expect(result).toBe('postgres://localhost:5432/db');
+      expect(nestConfigService.get).toHaveBeenCalledWith('DATABASE_URL');
+    });
+
+    it('should return awsAccessKeyId from nestConfigService', () => {
+      // Arrange
+      nestConfigService.get.mockReturnValue('access-key-id');
+
+      // Act
+      const result = sut.awsAccessKeyId;
+
+      // Assert
+      expect(result).toBe('access-key-id');
+      expect(nestConfigService.get).toHaveBeenCalledWith('AWS_ACCESS_KEY_ID');
+    });
+
+    it('should return awsSecretAccessKey from nestConfigService', () => {
+      // Arrange
+      nestConfigService.get.mockReturnValue('secret-access-key');
+
+      // Act
+      const result = sut.awsSecretAccessKey;
+
+      // Assert
+      expect(result).toBe('secret-access-key');
+      expect(nestConfigService.get).toHaveBeenCalledWith('AWS_SECRET_ACCESS_KEY');
+    });
+
+    it('should return awsRegion from nestConfigService', () => {
+      // Arrange
+      nestConfigService.get.mockReturnValue('us-east-1');
+
+      // Act
+      const result = sut.awsRegion;
+
+      // Assert
+      expect(result).toBe('us-east-1');
+      expect(nestConfigService.get).toHaveBeenCalledWith('AWS_REGION');
+    });
+
+    it('should return awsBucketName from nestConfigService', () => {
+      // Arrange
+      nestConfigService.get.mockReturnValue('my-bucket');
+
+      // Act
+      const result = sut.awsBucketName;
+
+      // Assert
+      expect(result).toBe('my-bucket');
+      expect(nestConfigService.get).toHaveBeenCalledWith('AWS_BUCKET_NAME');
+    });
+
+    it('should return smtpHost from nestConfigService', () => {
+      // Arrange
+      nestConfigService.get.mockReturnValue('smtp.example.com');
+
+      // Act
+      const result = sut.smtpHost;
+
+      // Assert
+      expect(result).toBe('smtp.example.com');
+      expect(nestConfigService.get).toHaveBeenCalledWith('SMTP_HOST');
+    });
+
+    it('should return smtpPort from nestConfigService', () => {
+      // Arrange
+      nestConfigService.get.mockReturnValue(587);
+
+      // Act
+      const result = sut.smtpPort;
+
+      // Assert
+      expect(result).toBe(587);
+      expect(nestConfigService.get).toHaveBeenCalledWith('SMTP_PORT');
+    });
+
+    it('should return smtpTo from nestConfigService', () => {
+      // Arrange
+      nestConfigService.get.mockReturnValue('to@example.com');
+
+      // Act
+      const result = sut.smtpTo;
+
+      // Assert
+      expect(result).toBe('to@example.com');
+      expect(nestConfigService.get).toHaveBeenCalledWith('SMTP_TO');
+    });
+
+    it('should return smtpFrom from nestConfigService', () => {
+      // Arrange
+      nestConfigService.get.mockReturnValue('from@example.com');
+
+      // Act
+      const result = sut.smtpFrom;
+
+      // Assert
+      expect(result).toBe('from@example.com');
+      expect(nestConfigService.get).toHaveBeenCalledWith('SMTP_FROM');
+    });
+
+    it('should return smtpUsername from nestConfigService', () => {
+      // Arrange
+      nestConfigService.get.mockReturnValue('smtp-user');
+
+      // Act
+      const result = sut.smtpUsername;
+
+      // Assert
+      expect(result).toBe('smtp-user');
+      expect(nestConfigService.get).toHaveBeenCalledWith('SMTP_USERNAME');
+    });
+
+    it('should return smtpPassword from nestConfigService', () => {
+      // Arrange
+      nestConfigService.get.mockReturnValue('smtp-password');
+
+      // Act
+      const result = sut.smtpPassword;
+
+      // Assert
+      expect(result).toBe('smtp-password');
+      expect(nestConfigService.get).toHaveBeenCalledWith('SMTP_PASSWORD');
+    });
+
+    it('should return redisUrl from nestConfigService', () => {
+      // Arrange
+      nestConfigService.get.mockReturnValue('redis://localhost:6379');
+
+      // Act
+      const result = sut.redisUrl;
+
+      // Assert
+      expect(result).toBe('redis://localhost:6379');
+      expect(nestConfigService.get).toHaveBeenCalledWith('REDIS_URL');
+    });
+
+    it('should return viacepApiUrl from nestConfigService', () => {
+      // Arrange
+      nestConfigService.get.mockReturnValue('https://viacep.com.br/ws');
+
+      // Act
+      const result = sut.viacepApiUrl;
+
+      // Assert
+      expect(result).toBe('https://viacep.com.br/ws');
+      expect(nestConfigService.get).toHaveBeenCalledWith('VIACEP_API_URL');
     });
   });
 });

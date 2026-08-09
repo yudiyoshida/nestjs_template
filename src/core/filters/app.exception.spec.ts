@@ -1,36 +1,87 @@
 import { AppException } from './app.exception';
 
 describe('AppException - Unit tests', () => {
-  it('should set the message and be an instance of Error', () => {
-    // Act
-    const sut = new AppException('Something went wrong');
+  describe('constructor', () => {
+    describe('Happy path', () => {
+      it('should create an exception with the message when code is not provided', () => {
+        // Act
+        const sut = new AppException('erro genérico');
 
-    // Assert
-    expect(sut).toBeInstanceOf(Error);
-    expect(sut).toBeInstanceOf(AppException);
-    expect(sut.message).toBe('Something went wrong');
+        // Assert
+        expect(sut.message).toBe('erro genérico');
+        expect(sut.code).toBeUndefined();
+      });
+
+      it('should create an exception with the message and code when both are provided', () => {
+        // Act
+        const sut = new AppException('erro genérico', 400);
+
+        // Assert
+        expect(sut.message).toBe('erro genérico');
+        expect(sut.code).toBe(400);
+      });
+
+      it('should be an instance of Error and AppException', () => {
+        // Act
+        const sut = new AppException('erro genérico');
+
+        // Assert
+        expect(sut).toBeInstanceOf(Error);
+        expect(sut).toBeInstanceOf(AppException);
+      });
+
+      it('should be throwable and catchable as AppException', () => {
+        // Act & Assert
+        expect(() => {
+          throw new AppException('erro genérico', 500);
+        }).toThrow(AppException);
+      });
+    });
+
+    describe('Edge cases', () => {
+      it('should set message to an empty string when message is an empty string', () => {
+        // Act
+        const sut = new AppException('');
+
+        // Assert
+        expect(sut.message).toBe('');
+      });
+
+      it('should store code 0 as-is instead of treating it as undefined', () => {
+        // Act
+        const sut = new AppException('erro genérico', 0);
+
+        // Assert
+        expect(sut.code).toBe(0);
+      });
+    });
   });
 
-  it('should set the code when provided', () => {
-    // Act
-    const sut = new AppException('Conflict', 409);
+  describe('code', () => {
+    describe('Happy path', () => {
+      it('should return the code passed to the constructor', () => {
+        // Arrange
+        const sut = new AppException('erro genérico', 500);
 
-    // Assert
-    expect(sut.code).toBe(409);
-  });
+        // Act
+        const result = sut.code;
 
-  it('should return undefined code when not provided', () => {
-    // Act
-    const sut = new AppException('Generic error');
+        // Assert
+        expect(result).toBe(500);
+      });
+    });
 
-    // Assert
-    expect(sut.code).toBeUndefined();
-  });
+    describe('Edge cases', () => {
+      it('should return undefined when code was not provided', () => {
+        // Arrange
+        const sut = new AppException('erro genérico');
 
-  it('should be throwable and catchable as AppException', () => {
-    // Act & Assert
-    expect(() => {
-      throw new AppException('Boom', 500);
-    }).toThrow(AppException);
+        // Act
+        const result = sut.code;
+
+        // Assert
+        expect(result).toBeUndefined();
+      });
+    });
   });
 });

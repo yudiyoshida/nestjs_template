@@ -9,6 +9,12 @@ import { AppException } from '../app.exception';
 export class HttpExceptionFilter extends BaseExceptionFilter implements ExceptionFilter {
   private readonly SENSITIVE_FIELDS = [
     'password',
+    'passwordResetToken',
+    'refreshToken',
+    'accessToken',
+    'credential',
+    'code',
+    'document',
   ];
 
   constructor(@Inject(TOKENS.LoggerGateway) private readonly logger: ILoggerGateway) {
@@ -59,7 +65,7 @@ export class HttpExceptionFilter extends BaseExceptionFilter implements Exceptio
   }
 
   private isSensitiveField(field: string): boolean {
-    return this.SENSITIVE_FIELDS.includes(field.toLowerCase());
+    return this.SENSITIVE_FIELDS.some((sensitiveField) => sensitiveField.toLowerCase() === field.toLowerCase());
   }
 }
 

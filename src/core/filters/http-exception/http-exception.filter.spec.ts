@@ -1,261 +1,262 @@
 import { createMock } from '@golevelup/ts-jest';
-import { ArgumentsHost } from '@nestjs/common';
+import { ArgumentsHost, HttpStatus } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { Request, Response } from 'express';
-import { LoggerModule } from 'src/infra/logger/logger.module';
+import { TOKENS } from 'src/core/di/token';
+import { LogContext, type ILoggerGateway } from 'src/infra/logger/logger.gateway';
 import { AppException } from '../app.exception';
-import { FilterModule } from '../filter.module';
 import { HttpExceptionFilter } from './http-exception.filter';
 
-describe('HttpExceptionFilter', () => {
+function makeRequest(overrides: Partial<Request> = {}): Request {
+  return {
+    method: 'POST',
+    url: '/accounts',
+    body: {},
+    params: {},
+    query: {},
+    ...overrides,
+  } as Request;
+}
+
+function makeResponse(): Response {
+  return {
+    status: jest.fn().mockReturnThis(),
+    json: jest.fn(),
+  } as unknown as Response;
+}
+
+describe('HttpExceptionFilter - Unit tests', () => {
   let sut: HttpExceptionFilter;
+  let logger: ILoggerGateway;
+  let request: Request;
+  let response: Response;
+  let host: ArgumentsHost;
 
   beforeEach(async() => {
+    logger = createMock<ILoggerGateway>();
+    request = makeRequest();
+    response = makeResponse();
+    host = {
+      switchToHttp: () => ({
+        getRequest: () => request,
+        getResponse: () => response,
+      }),
+    } as unknown as ArgumentsHost;
+
     const module = await Test.createTestingModule({
-      imports: [
-        FilterModule,
-        LoggerModule,
-      ],
       providers: [
         HttpExceptionFilter,
+        { provide: TOKENS.LoggerGateway, useValue: logger },
       ],
     }).compile();
 
     sut = module.get(HttpExceptionFilter);
   });
 
-  it('should be defined', () => {
-    // Act & Assert
-    expect(sut).toBeDefined();
+  describe('Happy path', () => {
+    it('should log the http data with the accountId extracted from the authenticated user', () => {
+      // Arrange
+      const exception = new AppException('erro de validação', HttpStatus.CONFLICT);
+      request = makeRequest({ user: { sub: 'account-id' } as any });
+
+      // Act
+      sut.catch(exception, host);
+
+      // Assert
+      expect(logger.error).toHaveBeenCalledWith(LogContext.HTTP, {
+        accountId: 'account-id',
+        method: request.method,
+        url: request.url,
+        body: {},
+        params: {},
+        query: {},
+        statusCode: HttpStatus.CONFLICT,
+        error: 'erro de validação',
+      });
+    });
+
+    it('should respond with the exception status code and message', () => {
+      // Arrange
+      const exception = new AppException('erro de validação', HttpStatus.CONFLICT);
+
+      // Act
+      sut.catch(exception, host);
+
+      // Assert
+      expect(response.status).toHaveBeenCalledWith(HttpStatus.CONFLICT);
+      expect(response.json).toHaveBeenCalledWith({ message: 'erro de validação' });
+    });
   });
 
-  describe('catch', () => {
-    it('should handle HttpException correctly', () => {
+  describe('Edge cases', () => {
+    it('should default the response and logged status code to BAD_REQUEST when the exception has no code', () => {
       // Arrange
-      const errorMessage = 'Invalid credentials';
-      const exception = new AppException(errorMessage);
-      const mockRequest = createMock<Request>();
-      const mockResponse = createMock<Response>();
-      const host = createMock<ArgumentsHost>({});
-
-      jest.spyOn(host, 'switchToHttp').mockReturnValue({
-        getRequest: () => mockRequest,
-        getResponse: () => mockResponse,
-      } as any);
+      const exception = new AppException('erro sem código');
 
       // Act
       sut.catch(exception, host);
 
       // Assert
-      expect(mockResponse.status).toHaveBeenCalledWith(400);
-      expect(mockResponse.status(400).json).toHaveBeenCalledWith({ message: errorMessage });
+      expect(response.status).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST);
+      expect(logger.error).toHaveBeenCalledWith(LogContext.HTTP, expect.objectContaining({ statusCode: HttpStatus.BAD_REQUEST }));
     });
 
-    it('should sanitize sensitive fields in the request body', () => {
+    it('should default accountId to undefined when the request has no user', () => {
       // Arrange
-      const errorMessage = 'Invalid credentials';
-      const exception = new AppException(errorMessage);
-      const mockRequest = createMock<Request>({
+      const exception = new AppException('erro de validação', HttpStatus.CONFLICT);
+
+      // Act
+      sut.catch(exception, host);
+
+      // Assert
+      expect(logger.error).toHaveBeenCalledWith(LogContext.HTTP, expect.objectContaining({ accountId: undefined }));
+    });
+
+    it('should mask the password field in the logged body', () => {
+      // Arrange
+      const exception = new AppException('erro de validação', HttpStatus.CONFLICT);
+      request = makeRequest({ body: { email: 'a@a.com', password: '123456' } });
+
+      // Act
+      sut.catch(exception, host);
+
+      // Assert
+      expect(logger.error).toHaveBeenCalledWith(LogContext.HTTP, expect.objectContaining({
+        body: { email: 'a@a.com', password: '****' },
+      }));
+    });
+
+    it.each([
+      'password',
+      'Password',
+      'PASSWORD',
+    ])('should mask the password field regardless of casing (%s)', (field: string) => {
+      // Arrange
+      const exception = new AppException('erro de validação', HttpStatus.CONFLICT);
+      request = makeRequest({ body: { [field]: 'secret' } });
+
+      // Act
+      sut.catch(exception, host);
+
+      // Assert
+      expect(logger.error).toHaveBeenCalledWith(LogContext.HTTP, expect.objectContaining({
+        body: { [field]: '****' },
+      }));
+    });
+
+    it.each([
+      'passwordResetToken',
+      'refreshToken',
+      'accessToken',
+      'credential',
+      'code',
+      'document',
+    ])('should mask the %s field in the logged body', (field: string) => {
+      // Arrange
+      const exception = new AppException('erro de validação', HttpStatus.CONFLICT);
+      request = makeRequest({ body: { email: 'a@a.com', [field]: 'valor-sensivel' } });
+
+      // Act
+      sut.catch(exception, host);
+
+      // Assert
+      expect(logger.error).toHaveBeenCalledWith(LogContext.HTTP, expect.objectContaining({
+        body: { email: 'a@a.com', [field]: '****' },
+      }));
+    });
+
+    it('should mask multiple different sensitive fields present in the same body', () => {
+      // Arrange
+      const exception = new AppException('erro de validação', HttpStatus.CONFLICT);
+      request = makeRequest({
         body: {
-          username: 'user1',
-          password: 'secret',
+          password: '123456',
+          refreshToken: 'rt-abc',
+          accessToken: 'at-abc',
+          document: '82067053094',
+          email: 'a@a.com',
         },
       });
-      const mockResponse = createMock<Response>();
-      const host = createMock<ArgumentsHost>({});
-
-      jest.spyOn(host, 'switchToHttp').mockReturnValue({
-        getRequest: () => mockRequest,
-        getResponse: () => mockResponse,
-      } as any);
 
       // Act
       sut.catch(exception, host);
 
       // Assert
-      expect(sut['sanitizeBody'](mockRequest.body)).toEqual({
-        username: 'user1',
-        password: '****',
-      });
-    });
-
-    it('should handle array bodies and sanitize sensitive fields', () => {
-      // Arrange
-      const errorMessage = 'Invalid credentials';
-      const exception = new AppException(errorMessage);
-      const mockRequest = createMock<Request>({
-        body: [
-          { username: 'user1', password: 'secret1' },
-          { username: 'user2', password: 'secret2' },
-        ],
-      });
-      const mockResponse = createMock<Response>();
-      const host = createMock<ArgumentsHost>({});
-
-      jest.spyOn(host, 'switchToHttp').mockReturnValue({
-        getRequest: () => mockRequest,
-        getResponse: () => mockResponse,
-      } as any);
-
-      // Act
-      sut.catch(exception, host);
-
-      // Assert
-      expect(sut['sanitizeBody'](mockRequest.body)).toEqual([
-        { username: 'user1', password: '****' },
-        { username: 'user2', password: '****' },
-      ]);
-    });
-
-    it('should handle nested objects and sanitize sensitive fields', () => {
-      // Arrange
-      const errorMessage = 'Invalid credentials';
-      const exception = new AppException(errorMessage);
-      const mockRequest = createMock<Request>({
+      expect(logger.error).toHaveBeenCalledWith(LogContext.HTTP, expect.objectContaining({
         body: {
-          user: {
-            username: 'user1',
-            password: 'secret',
-            profile: {
-              email: 'user1@example.com',
-              password: 'nestedSecret',
-            },
-          },
-        },
-      });
-      const mockResponse = createMock<Response>();
-      const host = createMock<ArgumentsHost>({});
-
-      jest.spyOn(host, 'switchToHttp').mockReturnValue({
-        getRequest: () => mockRequest,
-        getResponse: () => mockResponse,
-      } as any);
-
-      // Act
-      sut.catch(exception, host);
-
-      // Assert
-      expect(sut['sanitizeBody'](mockRequest.body)).toEqual({
-        user: {
-          username: 'user1',
           password: '****',
-          profile: {
-            email: 'user1@example.com',
-            password: '****',
-          },
+          refreshToken: '****',
+          accessToken: '****',
+          document: '****',
+          email: 'a@a.com',
         },
-      });
+      }));
     });
 
-    it('should return the original body if there are no sensitive fields', () => {
+    it('should not mask fields that are not sensitive', () => {
       // Arrange
-      const errorMessage = 'Invalid credentials';
-      const exception = new AppException(errorMessage);
-      const mockRequest = createMock<Request>({
-        body: {
-          username: 'user1',
-          email: 'john@example.com',
-        },
-      });
-      const mockResponse = createMock<Response>();
-      const host = createMock<ArgumentsHost>({});
-
-      jest.spyOn(host, 'switchToHttp').mockReturnValue({
-        getRequest: () => mockRequest,
-        getResponse: () => mockResponse,
-      } as any);
+      const exception = new AppException('erro de validação', HttpStatus.CONFLICT);
+      request = makeRequest({ body: { email: 'a@a.com', name: 'foo' } });
 
       // Act
       sut.catch(exception, host);
 
       // Assert
-      expect(sut['sanitizeBody'](mockRequest.body)).toEqual({
-        username: 'user1',
-        email: 'john@example.com',
-      });
+      expect(logger.error).toHaveBeenCalledWith(LogContext.HTTP, expect.objectContaining({
+        body: { email: 'a@a.com', name: 'foo' },
+      }));
     });
 
-    it('should call logger.error with correct parameters when not providing error code', () => {
+    it('should sanitize nested objects deeply', () => {
       // Arrange
-      const errorMessage = 'Invalid credentials';
-      const exception = new AppException(errorMessage);
-      const mockRequest = createMock<Request>({
-        method: 'POST',
-        url: '/login',
-        body: { username: 'user1', password: 'secret' },
-        params: {},
-        query: {},
-        user: { sub: '12345' },
-      });
-      const mockResponse = createMock<Response>();
-      const host = createMock<ArgumentsHost>({});
-
-      jest.spyOn(host, 'switchToHttp').mockReturnValue({
-        getRequest: () => mockRequest,
-        getResponse: () => mockResponse,
-      } as any);
-
-      const loggerErrorSpy = jest.spyOn(sut['logger'], 'error').mockImplementation();
+      const exception = new AppException('erro de validação', HttpStatus.CONFLICT);
+      request = makeRequest({ body: { user: { password: '123456', name: 'foo' } } });
 
       // Act
       sut.catch(exception, host);
 
       // Assert
-      expect(loggerErrorSpy).toHaveBeenCalledWith(expect.any(String), {
-        accountId: '12345',
-        method: 'POST',
-        url: '/login',
-        body: {
-          username: 'user1',
-          password: '****',
-        },
-        params: {},
-        query: {},
-        statusCode: 400,
-        error: errorMessage,
-      });
+      expect(logger.error).toHaveBeenCalledWith(LogContext.HTTP, expect.objectContaining({
+        body: { user: { password: '****', name: 'foo' } },
+      }));
     });
 
-    it('should call logger.error with correct parameters when providing error code', () => {
+    it('should sanitize arrays of objects', () => {
       // Arrange
-      const errorMessage = 'Invalid credentials';
-      const exceptionCode = 415;
-      const exception = new AppException(errorMessage, exceptionCode);
-      const mockRequest = createMock<Request>({
-        method: 'POST',
-        url: '/login',
-        body: { username: 'user1', password: 'secret' },
-        params: {},
-        query: {},
-        user: { sub: '12345' },
-      });
-      const mockResponse = createMock<Response>();
-      const host = createMock<ArgumentsHost>({});
-
-      jest.spyOn(host, 'switchToHttp').mockReturnValue({
-        getRequest: () => mockRequest,
-        getResponse: () => mockResponse,
-      } as any);
-
-      const loggerErrorSpy = jest.spyOn(sut['logger'], 'error').mockImplementation();
+      const exception = new AppException('erro de validação', HttpStatus.CONFLICT);
+      request = makeRequest({ body: [{ password: '123456' }, { password: '654321' }] });
 
       // Act
       sut.catch(exception, host);
 
       // Assert
-      expect(loggerErrorSpy).toHaveBeenCalledWith(expect.any(String), {
-        accountId: '12345',
-        method: 'POST',
-        url: '/login',
-        body: {
-          username: 'user1',
-          password: '****',
-        },
-        params: {},
-        query: {},
-        statusCode: exceptionCode,
-        error: errorMessage,
-      });
+      expect(logger.error).toHaveBeenCalledWith(LogContext.HTTP, expect.objectContaining({
+        body: [{ password: '****' }, { password: '****' }],
+      }));
+    });
+
+    it('should keep the body unchanged when it is not an object or array', () => {
+      // Arrange
+      const exception = new AppException('erro de validação', HttpStatus.CONFLICT);
+      request = makeRequest({ body: null });
+
+      // Act
+      sut.catch(exception, host);
+
+      // Assert
+      expect(logger.error).toHaveBeenCalledWith(LogContext.HTTP, expect.objectContaining({ body: null }));
+    });
+
+    it('should keep an empty body object unchanged', () => {
+      // Arrange
+      const exception = new AppException('erro de validação', HttpStatus.CONFLICT);
+      request = makeRequest({ body: {} });
+
+      // Act
+      sut.catch(exception, host);
+
+      // Assert
+      expect(logger.error).toHaveBeenCalledWith(LogContext.HTTP, expect.objectContaining({ body: {} }));
     });
   });
 });
