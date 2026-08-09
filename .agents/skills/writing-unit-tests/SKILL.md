@@ -41,6 +41,7 @@ Progresso:
 - [ ] 2. Listar os cenários por fonte de teste e por path
 - [ ] 3. Escrever o arquivo <nome>.spec.ts seguindo a estrutura obrigatória
 - [ ] 4. Rodar a suíte do arquivo e iterar até passar
+- [ ] 5. Rodar o "Checklist de entrega" antes de responder
 ```
 
 ### 1. Ler o arquivo alvo
@@ -279,12 +280,7 @@ Se falhar: leia a mensagem, corrija o teste quando a expectativa estiver errada,
 e **reporte ao usuário** quando a falha indicar um bug no código de produção — não
 altere o código de produção para o teste passar sem confirmar. Repita até verde.
 
-Antes de entregar, releia o arquivo gerado e confirme que nenhuma linha em branco
-ficou logo antes de um `});` ou logo depois de um `=> {` (regra 9), e que os
-describes de path estão em `Happy path` → `Error path` → `Edge cases` (regra 3).
-
-Ao final, informe quantos cenários foram gerados por path e o que ficou
-descoberto de propósito (ex.: código inalcançável).
+Antes de responder, percorra o "Checklist de entrega" no fim desta skill, item por item.
 
 ## Convenções deste projeto
 
@@ -328,3 +324,55 @@ it.each([
 });
 ```
 - Dependências sempre mockadas com `jest.fn()`; nada de I/O real, banco ou rede
+
+## Checklist de entrega
+
+Percorra **todos** os itens antes de responder ao usuário. Se algum falhar, corrija
+o arquivo de teste e volte ao início do checklist.
+
+### Cobertura (passo 2)
+
+- [ ] Toda fonte de teste tem cenários: funções exportadas, métodos públicos,
+      `constructor` que valida/transforma, getters com lógica
+- [ ] Cada `if` / `else` / ternário / `switch` / `??` / `||` virou pelo menos um cenário
+- [ ] Cada `throw` e tipo de erro possível está coberto
+- [ ] Cada retorno distinto está coberto
+- [ ] Dependências: sucesso, falha (`rejects`) e argumentos passados, quando aplicável
+- [ ] Entradas inválidas (`null`, `undefined`, `''`, só espaços, tipo errado) cobertas
+- [ ] Limites e normalizações cobertos quando existirem no código
+- [ ] Comportamento assíncrono (resolve / reject) coberto quando existir
+
+### Estrutura (regras 1 a 4)
+
+- [ ] Um describe global: `'<Nome> - Unit tests'`
+- [ ] Com 2+ fontes de teste, cada fonte tem seu próprio describe (nome da função/método)
+- [ ] Paths na ordem `Happy path` → `Error path` → `Edge cases`; paths vazios omitidos
+- [ ] Cada teste é `it('should ...')` com comportamento esperado e condição explícita
+
+### Formatação (regras 5 a 9 e convenções)
+
+- [ ] AAA com comentários `// Arrange`, `// Act`, `// Assert` e linha em branco **entre** blocos
+- [ ] `// Act & Assert` (ou `// Arrange & Act`) quando act e assert são a mesma expressão
+- [ ] Sem bloco `// Arrange` quando não há nada para preparar
+- [ ] Nenhuma linha em branco logo após `=> {` nem logo antes de `});`
+- [ ] Linha em branco apenas entre blocos irmãos (`it`, `describe`, blocos AAA)
+- [ ] Instância sob teste chamada `sut`
+- [ ] Descrições dos testes em inglês; mensagens de erro esperadas em pt-BR
+- [ ] `it.each`: um caso por linha no array (valor simples ou tupla)
+- [ ] Arquivo de teste ao lado do alvo: `x.ts` → `x.spec.ts`
+
+### Hooks (seção Hooks)
+
+- [ ] Setup idêntico em 2+ testes foi extraído para hook
+- [ ] Hook no describe mais interno que precisa dele
+- [ ] Variáveis compartilhadas com `let` no escopo do describe
+- [ ] `afterEach` com limpeza quando há spy, mock ou fake timers
+- [ ] Hooks sem comentários AAA
+- [ ] Entrada e resultado esperado do cenário permanecem visíveis no `it`
+
+### Processo (topo da skill e passo 4)
+
+- [ ] Nenhum outro `*.spec.ts` / `*.test.ts` foi lido para inferir padrão ou formatação
+- [ ] `npm test -- <arquivo>.spec.ts` passou
+- [ ] Código de produção não foi alterado (ou bug reportado ao usuário)
+- [ ] Resposta ao usuário informa quantos cenários por path e o que ficou descoberto de propósito
