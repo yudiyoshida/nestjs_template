@@ -31,7 +31,7 @@ import { Environment } from './environment.enum';
         AWS_BUCKET_NAME: Joi.string().required(),
 
         SMTP_HOST: Joi.string().required(),
-        SMTP_PORT: Joi.string().required(),
+        SMTP_PORT: Joi.number().required(),
         SMTP_TO: Joi.string().required(),
         SMTP_FROM: Joi.string().required(),
         SMTP_USERNAME: Joi.string().required(),
