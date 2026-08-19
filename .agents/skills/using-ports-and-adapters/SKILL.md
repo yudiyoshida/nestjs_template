@@ -160,9 +160,13 @@ Vendor no nome e na pasta: `redis`, `winston`, `nodemailer`, `viacep`, `aws-s3`,
 
 ## Modificadores de acesso
 
-**Obrigatório:** método, getter, setter e atributo declaram `public`, `private` ou `protected` — inclusive públicos.
+**Obrigatório em classe de comportamento** (adapter real, adapter fake, helper): método, getter, setter e atributo declaram `public`, `private` ou `protected` — inclusive públicos.
 
-**Exceção:** `constructor` público **sem** a palavra `public`. Parameter properties no construtor usam `private readonly` (e `@Inject` quando for token).
+**Exceções (sem modificador):**
+
+- `constructor` público — sem a palavra `public`. Parameter properties no construtor usam `private readonly` (e `@Inject` quando for token).
+- `static register(): DynamicModule` no `XxxModule` — sempre `static register`, nunca `public static register`.
+- Campos de classe de DTO (`dtos/<kebab>.dto.ts` e `adapters/<vendor>/dtos/<vendor>.dto.ts`) — a classe descreve só a forma do dado: `zipCode: string;`, não `public zipCode: string;`.
 
 ## Token
 

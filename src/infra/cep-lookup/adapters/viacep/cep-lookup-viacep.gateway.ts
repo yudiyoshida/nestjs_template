@@ -29,11 +29,7 @@ export class CepLookupViacepAdapterGateway implements ICepLookupGateway {
         `${this.configService.viacepApiUrl}/${normalizedCep}/json/`,
       );
 
-      if (result.data?.erro === true) {
-        throw new ExternalApiError('CEP não encontrado');
-      }
-
-      if (!result.data?.cep) {
+      if (result.data?.erro === true || !result.data?.cep) {
         throw new ExternalApiError('CEP não encontrado');
       }
 
