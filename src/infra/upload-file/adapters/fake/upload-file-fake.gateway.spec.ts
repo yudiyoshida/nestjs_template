@@ -1,4 +1,4 @@
-import { UploadFileInput } from '../../dtos/upload-file.dto';
+import { UploadFileInputDto } from '../../dtos/upload-file.dto';
 import { UploadFileFakeAdapterGateway } from './upload-file-fake.gateway';
 
 describe('UploadFileFakeAdapterGateway - Unit tests', () => {
@@ -12,7 +12,7 @@ describe('UploadFileFakeAdapterGateway - Unit tests', () => {
     describe('Happy path', () => {
       it('should resolve a publicUrl starting with the fake host', async() => {
         // Arrange
-        const input: UploadFileInput = {
+        const input: UploadFileInputDto = {
           buffer: Buffer.from('file'),
           originalName: 'file.txt',
           mimeType: 'text/plain',

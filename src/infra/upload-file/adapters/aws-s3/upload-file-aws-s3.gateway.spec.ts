@@ -5,7 +5,7 @@ import { Test } from '@nestjs/testing';
 import { ConfigService } from 'src/core/config/config.service';
 import { TOKENS } from 'src/core/di/token';
 import { type ILoggerGateway, LogContext } from 'src/infra/logger/logger.gateway';
-import type { UploadFileInput } from '../../dtos/upload-file.dto';
+import type { UploadFileInputDto } from '../../dtos/upload-file.dto';
 import { UploadFileAwsS3AdapterGateway } from './upload-file-aws-s3.gateway';
 
 jest.mock('@aws-sdk/client-s3');
@@ -16,7 +16,7 @@ jest.mock('crypto', () => ({
   randomUUID: jest.fn(() => '00000000-0000-0000-0000-000000000001'),
 }));
 
-const buildInput = (overrides: Partial<UploadFileInput> = {}): UploadFileInput => ({
+const buildInput = (overrides: Partial<UploadFileInputDto> = {}): UploadFileInputDto => ({
   buffer: Buffer.from('data'),
   originalName: 'photo.jpg',
   mimeType: 'image/jpeg',
@@ -46,6 +46,7 @@ describe('UploadFileAwsS3AdapterGateway - Unit tests', () => {
     configService.awsAccessKeyId = 'AKIA_TEST_KEY';
     configService.awsSecretAccessKey = 'test-secret';
     configService.awsBucketName = 'my-bucket';
+    configService.awsRegion = 'us-east-1';
 
     const module = await Test.createTestingModule({
       providers: [
@@ -83,6 +84,23 @@ describe('UploadFileAwsS3AdapterGateway - Unit tests', () => {
           }),
         );
         expect(logger.error).not.toHaveBeenCalled();
+      });
+
+      it('should build the S3 client with region and credentials from ConfigService', async() => {
+        // Arrange
+        const input = buildInput();
+
+        // Act
+        await sut.upload(input);
+
+        // Assert
+        expect(S3).toHaveBeenCalledWith({
+          region: 'us-east-1',
+          credentials: {
+            accessKeyId: 'AKIA_TEST_KEY',
+            secretAccessKey: 'test-secret',
+          },
+        });
       });
     });
 
@@ -185,22 +203,38 @@ describe('UploadFileAwsS3AdapterGateway - Unit tests', () => {
     });
 
     describe('Edge cases', () => {
-      it('should not call S3 send when URL has empty path', async() => {
+      it('should log and not call S3 send when URL has empty path', async() => {
+        // Arrange
+        const publicUrl = 'https://my-bucket.s3.amazonaws.com/';
+
         // Act
-        await sut.delete('https://my-bucket.s3.amazonaws.com/');
+        await sut.delete(publicUrl);
 
         // Assert
         expect(mockS3Send).not.toHaveBeenCalled();
-        expect(logger.error).not.toHaveBeenCalled();
+        expect(logger.error).toHaveBeenCalledWith(LogContext.UPLOAD_FILE, {
+          adapter: 'aws-s3',
+          action: 'delete',
+          publicUrl,
+          error: 'URL do arquivo inválida',
+        });
       });
 
-      it('should not call S3 send when URL is invalid', async() => {
+      it('should log and not call S3 send when URL is invalid', async() => {
+        // Arrange
+        const publicUrl = 'not-a-valid-url';
+
         // Act
-        await sut.delete('not-a-valid-url');
+        await sut.delete(publicUrl);
 
         // Assert
         expect(mockS3Send).not.toHaveBeenCalled();
-        expect(logger.error).not.toHaveBeenCalled();
+        expect(logger.error).toHaveBeenCalledWith(LogContext.UPLOAD_FILE, {
+          adapter: 'aws-s3',
+          action: 'delete',
+          publicUrl,
+          error: 'URL do arquivo inválida',
+        });
       });
     });
   });

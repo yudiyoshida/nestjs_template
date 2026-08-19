@@ -6,7 +6,7 @@ import { ConfigService } from 'src/core/config/config.service';
 import { TOKENS } from 'src/core/di/token';
 import { type ILoggerGateway, LogContext } from 'src/infra/logger/logger.gateway';
 import { ExternalApiError } from 'src/shared/errors/external-api.error';
-import type { UploadFileInput, UploadedFileOutput } from '../../dtos/upload-file.dto';
+import type { UploadFileInputDto, UploadFileOutputDto } from '../../dtos/upload-file.dto';
 import { IUploadFileGateway } from '../../upload-file.gateway';
 import type { S3UploadParams } from './dtos/aws-s3.dto';
 
@@ -19,34 +19,41 @@ export class UploadFileAwsS3AdapterGateway implements IUploadFileGateway {
     private readonly configService: ConfigService,
   ) {}
 
-  public async upload(input: UploadFileInput): Promise<UploadedFileOutput> {
+  public async upload(input: UploadFileInputDto): Promise<UploadFileOutputDto> {
+    let location: string | undefined;
+
     try {
       const s3 = await this.getS3Client();
-      const params = this.toVendor(input);
 
       const s3Response = await new Upload({
         client: s3,
-        params,
+        params: this.toVendor(input),
       }).done();
 
-      return this.toPort(s3Response.Location);
+      location = s3Response.Location;
     }
     catch (error) {
-      this.logger.error(LogContext.UPLOAD_FILE, {
-        adapter: 'aws-s3',
-        action: 'upload',
-        fileName: input.originalName,
-        fileSize: input.sizeInBytes,
-        fileType: input.mimeType,
-        error,
-      });
+      this.logUploadError(input, error);
       throw new ExternalApiError('Erro ao fazer upload do arquivo');
     }
+
+    if (!location) {
+      this.logUploadError(input, new ExternalApiError('Resposta do S3 sem Location'));
+      throw new ExternalApiError('Erro ao fazer upload do arquivo');
+    }
+
+    return this.toPort(location);
   }
 
   public async delete(publicUrl: string): Promise<void> {
     const fileKey = this.getFileKey(publicUrl);
     if (!fileKey) {
+      this.logger.error(LogContext.UPLOAD_FILE, {
+        adapter: 'aws-s3',
+        action: 'delete',
+        publicUrl,
+        error: 'URL do arquivo inválida',
+      });
       return;
     }
 
@@ -90,6 +97,7 @@ export class UploadFileAwsS3AdapterGateway implements IUploadFileGateway {
     }
 
     this.s3 = new S3({
+      region: this.configService.awsRegion,
       credentials: {
         accessKeyId: this.configService.awsAccessKeyId,
         secretAccessKey: this.configService.awsSecretAccessKey,
@@ -99,7 +107,18 @@ export class UploadFileAwsS3AdapterGateway implements IUploadFileGateway {
     return this.s3;
   }
 
-  private toVendor(input: UploadFileInput): S3UploadParams {
+  private logUploadError(input: UploadFileInputDto, error: unknown): void {
+    this.logger.error(LogContext.UPLOAD_FILE, {
+      adapter: 'aws-s3',
+      action: 'upload',
+      fileName: input.originalName,
+      fileSize: input.sizeInBytes,
+      fileType: input.mimeType,
+      error,
+    });
+  }
+
+  private toVendor(input: UploadFileInputDto): S3UploadParams {
     return {
       ACL: 'public-read',
       Body: input.buffer,
@@ -109,11 +128,7 @@ export class UploadFileAwsS3AdapterGateway implements IUploadFileGateway {
     };
   }
 
-  private toPort(location: string | undefined): UploadedFileOutput {
-    if (!location) {
-      throw new ExternalApiError('Erro ao fazer upload do arquivo');
-    }
-
+  private toPort(location: string): UploadFileOutputDto {
     return { publicUrl: location };
   }
 }

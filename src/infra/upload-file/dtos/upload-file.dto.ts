@@ -1,11 +1,11 @@
-export class UploadFileInput {
+export class UploadFileInputDto {
   buffer: Buffer;
   originalName: string;
   mimeType: string;
   sizeInBytes: number;
   folder?: string;
-};
+}
 
-export class UploadedFileOutput {
+export class UploadFileOutputDto {
   publicUrl: string;
-};
+}

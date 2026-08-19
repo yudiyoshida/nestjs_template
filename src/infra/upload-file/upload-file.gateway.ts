@@ -1,6 +1,6 @@
-import { UploadFileInput, UploadedFileOutput } from './dtos/upload-file.dto';
+import { UploadFileInputDto, UploadFileOutputDto } from './dtos/upload-file.dto';
 
 export interface IUploadFileGateway {
-  upload(input: UploadFileInput): Promise<UploadedFileOutput>;
+  upload(input: UploadFileInputDto): Promise<UploadFileOutputDto>;
   delete(publicUrl: string): Promise<void>;
 }

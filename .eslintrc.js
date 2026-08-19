@@ -18,6 +18,7 @@ module.exports = {
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/interface-name-prefix': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
+    '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     '@typescript-eslint/type-annotation-spacing': ['error', { 'before': false, 'after': true }],
     'arrow-spacing': ['error', { 'before': true, 'after': true }],
     'camelcase': ['error', { 'properties': 'always' }],
