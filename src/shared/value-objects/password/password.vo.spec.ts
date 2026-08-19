@@ -1,5 +1,6 @@
 import * as bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
+import { InvalidPasswordError } from './password.error';
 import { Password } from './password.vo';
 
 jest.mock('bcrypt');
@@ -90,6 +91,20 @@ describe('Password - Unit tests', () => {
     });
 
     describe('Error path', () => {
+      it.each([
+        null,
+        undefined,
+        '',
+        '           ',
+        123,
+        {},
+        [],
+      ])('should throw InvalidPasswordError when providing an invalid password (%s)', (password: any) => {
+        // Act & Assert
+        expect(() => new Password(password)).toThrow(InvalidPasswordError);
+        expect(bcrypt.hashSync).not.toHaveBeenCalled();
+      });
+
       it('should propagate when bcrypt.hashSync throws', () => {
         // Arrange
         (bcrypt.hashSync as jest.Mock).mockImplementation(() => {
@@ -98,26 +113,6 @@ describe('Password - Unit tests', () => {
 
         // Act & Assert
         expect(() => new Password('my-password')).toThrow('hash failed');
-      });
-    });
-
-    describe('Edge cases', () => {
-      it('should hash an empty string password', () => {
-        // Act
-        const sut = new Password('');
-
-        // Assert
-        expect(sut.value).toBe('hashed-password');
-        expect(bcrypt.hashSync).toHaveBeenCalledWith('', 'generated-salt');
-      });
-
-      it('should hash a whitespace-only password', () => {
-        // Act
-        const sut = new Password('   ');
-
-        // Assert
-        expect(sut.value).toBe('hashed-password');
-        expect(bcrypt.hashSync).toHaveBeenCalledWith('   ', 'generated-salt');
       });
     });
   });

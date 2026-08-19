@@ -1,5 +1,6 @@
 import * as bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
+import { InvalidPasswordError } from './password.error';
 
 export class Password {
   private readonly saltRounds = 10;
@@ -14,7 +15,18 @@ export class Password {
   }
 
   constructor(password: string) {
+    if (!this.validate(password)) {
+      throw new InvalidPasswordError();
+    }
+
     this._value = this.hashPassword(password);
+  }
+
+  private validate(password: string): boolean {
+    if (typeof password !== 'string') return false;
+    if (!password.trim()) return false;
+
+    return true;
   }
 
   private hashPassword(password: string): string {
