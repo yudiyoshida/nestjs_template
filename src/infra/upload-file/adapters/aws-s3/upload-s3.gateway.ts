@@ -6,7 +6,16 @@ import { ConfigService } from 'src/core/config/config.service';
 import { TOKENS } from 'src/core/di/token';
 import { type ILoggerGateway, LogContext } from 'src/infra/logger/logger.gateway';
 import { ExternalApiError } from 'src/shared/errors/external-api.error';
+import type { UploadFileInput, UploadedFileOutput } from '../../dtos/upload-file.dto';
 import { IUploadFileGateway } from '../../upload-file.gateway';
+
+type S3UploadParams = {
+  ACL: 'public-read';
+  Body: Buffer;
+  Bucket: string;
+  ContentType: string;
+  Key: string;
+};
 
 @Injectable()
 export class UploadS3AdapterGateway implements IUploadFileGateway {
@@ -44,30 +53,43 @@ export class UploadS3AdapterGateway implements IUploadFileGateway {
     return this.s3;
   }
 
-  public async upload(file: Express.Multer.File, folder?: string): Promise<string> {
+  private toVendor(input: UploadFileInput): S3UploadParams {
+    return {
+      ACL: 'public-read',
+      Body: input.buffer,
+      Bucket: this.configService.awsBucketName,
+      ContentType: input.mimeType,
+      Key: `${input.folder ? input.folder + '/' : ''}${crypto.randomUUID()}-${input.originalName}`,
+    };
+  }
+
+  private toPort(location: string | undefined): UploadedFileOutput {
+    if (!location) {
+      throw new ExternalApiError('Erro ao fazer upload do arquivo');
+    }
+
+    return { publicUrl: location };
+  }
+
+  public async upload(input: UploadFileInput): Promise<UploadedFileOutput> {
     try {
       const s3 = await this.getS3Client();
+      const params = this.toVendor(input);
 
       const s3Response = await new Upload({
         client: s3,
-        params: {
-          ACL: 'public-read',
-          Body: file.buffer,
-          Bucket: this.configService.awsBucketName,
-          ContentType: file.mimetype,
-          Key: `${folder ? folder + '/' : ''}${crypto.randomUUID()}-${file.originalname}`,
-        },
+        params,
       }).done();
 
-      return s3Response.Location!;
+      return this.toPort(s3Response.Location);
     }
     catch (error) {
       this.logger.error(LogContext.UPLOAD_FILE, {
         adapter: 's3',
         action: 'upload',
-        fileName: file.originalname,
-        fileSize: file.size,
-        fileType: file.mimetype,
+        fileName: input.originalName,
+        fileSize: input.sizeInBytes,
+        fileType: input.mimeType,
         error,
       });
       throw new ExternalApiError('Erro ao fazer upload do arquivo');
