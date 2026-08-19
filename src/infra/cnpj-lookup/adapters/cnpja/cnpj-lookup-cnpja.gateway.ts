@@ -1,5 +1,6 @@
 import { HttpService } from '@nestjs/axios';
 import { Inject, Injectable } from '@nestjs/common';
+import type { AxiosError } from 'axios';
 import { ConfigService } from 'src/core/config/config.service';
 import { TOKENS } from 'src/core/di/token';
 import { LogContext, type ILoggerGateway } from 'src/infra/logger/logger.gateway';
@@ -28,6 +29,7 @@ import {
   CnpjaCompanySizeDto,
   CnpjaCountryDto,
   CnpjaEmailDto,
+  CnpjaErrorDto,
   CnpjaMemberAgentDto,
   CnpjaMemberDto,
   CnpjaOfficeCompanyDto,
@@ -41,6 +43,7 @@ import {
 @Injectable()
 export class CnpjLookupCnpjaAdapterGateway implements ICnpjLookupGateway {
   private readonly CNPJ_LENGTH = 14;
+  private readonly NOT_FOUND_STATUS = 404;
 
   constructor(
     @Inject(TOKENS.LoggerGateway) private readonly logger: ILoggerGateway,
@@ -73,14 +76,18 @@ export class CnpjLookupCnpjaAdapterGateway implements ICnpjLookupGateway {
         error,
       });
 
-      if (error?.response?.status === 404) {
-        throw new ExternalApiError('CNPJ não encontrado');
-      }
-
-      throw new ExternalApiError(
-        error?.response?.data?.message ?? error?.message ?? 'Erro ao consultar CNPJ',
-      );
+      throw this.toPortError(error as AxiosError<CnpjaErrorDto>);
     }
+  }
+
+  private toPortError(error: AxiosError<CnpjaErrorDto>): ExternalApiError {
+    if (error?.response?.status === this.NOT_FOUND_STATUS) {
+      return new ExternalApiError('CNPJ não encontrado');
+    }
+
+    return new ExternalApiError(
+      error?.response?.data?.message ?? error?.message ?? 'Erro ao consultar CNPJ',
+    );
   }
 
   private toVendorCnpj(cnpj: string): string {
