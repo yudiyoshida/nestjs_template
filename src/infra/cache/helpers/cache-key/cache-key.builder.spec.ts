@@ -1,3 +1,4 @@
+import { CacheKeyBuilderError } from 'src/infra/cache/helpers/cache-key/cache-key-builder.error';
 import { CacheKeyBuilder } from './cache-key.builder';
 
 describe('CacheKeyBuilder - Unit tests', () => {
@@ -167,12 +168,12 @@ describe('CacheKeyBuilder - Unit tests', () => {
     describe('Error path', () => {
       it('should throw when the resource was not provided', () => {
         // Act & Assert
-        expect(() => sut.build()).toThrow('Resource é obrigatório');
+        expect(() => sut.build()).toThrow(new CacheKeyBuilderError('resource'));
       });
 
       it('should throw when the command was not provided', () => {
         // Act & Assert
-        expect(() => sut.setResource('account').build()).toThrow('Command é obrigatório');
+        expect(() => sut.setResource('account').build()).toThrow(new CacheKeyBuilderError('command'));
       });
     });
 

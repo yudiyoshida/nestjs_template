@@ -1,4 +1,4 @@
-import { AppException } from 'src/core/filters/app.exception';
+import { CacheKeyBuilderError } from 'src/infra/cache/helpers/cache-key/cache-key-builder.error';
 
 type Resource =
   | 'account'
@@ -46,10 +46,10 @@ export class CacheKeyBuilder {
 
   public build(): string {
     if (!this.resource) {
-      throw new AppException('Resource é obrigatório');
+      throw new CacheKeyBuilderError('resource');
     }
     if (!this.command) {
-      throw new AppException('Command é obrigatório');
+      throw new CacheKeyBuilderError('command');
     }
 
     const keyParts: string[] = [];
