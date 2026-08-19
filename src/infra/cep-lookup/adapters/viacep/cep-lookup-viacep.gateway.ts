@@ -37,14 +37,7 @@ export class CepLookupViacepAdapterGateway implements ICepLookupGateway {
         throw new ExternalApiError('CEP não encontrado');
       }
 
-      return {
-        zipCode: result.data.cep,
-        street: result.data.logradouro ?? '',
-        complement: result.data.complemento?.trim() || null,
-        neighborhood: result.data.bairro ?? '',
-        city: result.data.localidade ?? '',
-        state: result.data.uf ?? '',
-      };
+      return this.toPort(result.data);
     }
     catch (error) {
       this.logger.error(LogContext.CEP_LOOKUP, {
@@ -54,5 +47,16 @@ export class CepLookupViacepAdapterGateway implements ICepLookupGateway {
       });
       throw new ExternalApiError(error?.message ?? 'Erro ao buscar CEP');
     }
+  }
+
+  private toPort(data: ViacepOutputDto): CepLookupOutputDto {
+    return {
+      zipCode: data.cep,
+      street: data.logradouro ?? '',
+      complement: data.complemento?.trim() || null,
+      neighborhood: data.bairro ?? '',
+      city: data.localidade ?? '',
+      state: data.uf ?? '',
+    };
   }
 }

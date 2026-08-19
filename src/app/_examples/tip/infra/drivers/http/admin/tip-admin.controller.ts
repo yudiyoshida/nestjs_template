@@ -80,7 +80,7 @@ export class TipAdminController {
     summary: 'Editar dica',
     applyBadRequest: true,
     applyNotFound: true,
-    applyForbidden: true,
+    applyUnprocessableEntity: true,
     okResponse: SuccessMessage,
   })
   public async edit(@Param() params: Params, @Body() body: EditTipInputDto): Promise<SuccessMessage> {
@@ -92,7 +92,6 @@ export class TipAdminController {
     tags: ['Portal Gerencial - Dicas'],
     summary: 'Deletar dica permanentemente (admin pode deletar qualquer dica)',
     applyNotFound: true,
-    applyForbidden: true,
     okResponse: SuccessMessage,
   })
   public async delete(@Param() params: Params): Promise<SuccessMessage> {

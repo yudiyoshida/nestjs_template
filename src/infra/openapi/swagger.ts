@@ -11,6 +11,7 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiTags,
+  ApiUnprocessableEntityResponse,
   ApiUnsupportedMediaTypeResponse,
   getSchemaPath,
 } from '@nestjs/swagger';
@@ -29,6 +30,7 @@ type swaggerProps = {
   applyForbidden?: boolean;
   applyNotFound?: boolean;
   applyConflict?: boolean;
+  applyUnprocessableEntity?: boolean;
   applyUnsupportedMediaType?: boolean;
 }
 
@@ -46,6 +48,7 @@ export function Swagger(props: swaggerProps) {
     applyForbiddenResponse(props.applyForbidden),
     applyNotFoundResponse(props.applyNotFound),
     applyConflictResponse(props.applyConflict),
+    applyUnprocessableEntityResponse(props.applyUnprocessableEntity),
     applyUnsupportedMediaTypeResponse(props.applyUnsupportedMediaType),
 
     ApiInternalServerErrorResponse({ type: ServerError, description: 'Internal Server Error' }),
@@ -110,6 +113,10 @@ function applyNotFoundResponse(apply?: boolean) {
 
 function applyConflictResponse(apply?: boolean) {
   return apply ? ApiConflictResponse({ type: ClientError, description: 'Conflict' }) : () => {};
+}
+
+function applyUnprocessableEntityResponse(apply?: boolean) {
+  return apply ? ApiUnprocessableEntityResponse({ type: ClientError, description: 'Unprocessable Entity' }) : () => {};
 }
 
 function applyUnsupportedMediaTypeResponse(apply?: boolean) {

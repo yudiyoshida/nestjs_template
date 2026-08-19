@@ -84,7 +84,7 @@ export class TipUserController {
     summary: 'Editar dica (apenas o criador pode editar)',
     applyBadRequest: true,
     applyNotFound: true,
-    applyForbidden: true,
+    applyUnprocessableEntity: true,
     okResponse: SuccessMessage,
   })
   public async edit(@Param() params: Params, @Body() body: EditTipInputDto, @User() user: Payload): Promise<SuccessMessage> {
@@ -96,7 +96,6 @@ export class TipUserController {
     tags: ['Aplicativo - Dicas'],
     summary: 'Deletar dica (apenas o criador pode deletar)',
     applyNotFound: true,
-    applyForbidden: true,
     okResponse: SuccessMessage,
   })
   public async delete(@Param() params: Params, @User() user: Payload): Promise<SuccessMessage> {
