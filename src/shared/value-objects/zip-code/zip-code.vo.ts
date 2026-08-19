@@ -4,6 +4,10 @@ export class ZipCode {
   private readonly FORMAT = /^\d{8}$/;
   private readonly _value: string;
 
+  public get value(): string {
+    return this._value;
+  }
+
   constructor(raw: string) {
     const zipCode = this.sanitize(raw);
 
@@ -12,10 +16,6 @@ export class ZipCode {
     }
 
     this._value = zipCode;
-  }
-
-  public get value(): string {
-    return this._value;
   }
 
   private sanitize(zipCode: string): string {

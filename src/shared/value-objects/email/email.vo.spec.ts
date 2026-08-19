@@ -17,6 +17,18 @@ describe('Email - Unit tests', () => {
       // Assert
       expect(sut.value).toBe(input);
     });
+
+    it.each([
+      ['  user@example.com  ', 'user@example.com'],
+      ['User@Example.COM', 'user@example.com'],
+      ['\tUSER.NAME@EXAMPLE.com\n', 'user.name@example.com'],
+    ])('should normalize %s to %s', (input: string, expected: string) => {
+      // Act
+      const sut = new Email(input);
+
+      // Assert
+      expect(sut.value).toBe(expected);
+    });
   });
 
   describe('Error path', () => {
@@ -31,9 +43,26 @@ describe('Email - Unit tests', () => {
       'user@example.abcde',
       'user @example.com',
       'user@@example.com',
+      123,
+      {},
+      [],
     ])('should throw InvalidEmailError when providing an invalid email (%s)', (email: any) => {
       // Act & Assert
       expect(() => new Email(email)).toThrow(InvalidEmailError);
+    });
+  });
+
+  describe('Edge cases', () => {
+    it('should keep the value immutable after creation', () => {
+      // Arrange
+      const sut = new Email('  User@Example.COM  ');
+
+      // Act
+      const result = sut.value;
+
+      // Assert
+      expect(result).toBe('user@example.com');
+      expect(sut.value).toBe('user@example.com');
     });
   });
 });
