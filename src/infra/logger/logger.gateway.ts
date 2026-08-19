@@ -48,7 +48,6 @@ type WsData = CommomData & {
 type CacheData = CommomData & {
   action: string;
   key: string | string[];
-  value?: any;
   ttlInSeconds?: number;
 }
 

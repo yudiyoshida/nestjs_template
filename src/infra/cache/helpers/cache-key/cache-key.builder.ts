@@ -1,3 +1,5 @@
+import { AppException } from 'src/core/filters/app.exception';
+
 type Resource =
   | 'account'
   | 'banner'
@@ -43,8 +45,12 @@ export class CacheKeyBuilder {
   }
 
   public build(): string {
-    if (!this.resource) throw new Error('Resource é obrigatório');
-    if (!this.command) throw new Error('Command é obrigatório');
+    if (!this.resource) {
+      throw new AppException('Resource é obrigatório');
+    }
+    if (!this.command) {
+      throw new AppException('Command é obrigatório');
+    }
 
     const keyParts: string[] = [];
     keyParts.push('cache');
@@ -55,7 +61,8 @@ export class CacheKeyBuilder {
     if (this.data) {
       if (typeof this.data === 'string') {
         keyParts.push(this.data);
-      } else {
+      }
+      else {
         keyParts.push(JSON.stringify(this.data));
       }
     }
