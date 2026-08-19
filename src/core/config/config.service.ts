@@ -101,4 +101,12 @@ export class ConfigService {
   get viacepApiUrl(): string {
     return this.nestConfigService.get<string>('VIACEP_API_URL')!;
   }
+
+  // cnpja
+  get cnpjaApiUrl(): string {
+    return this.nestConfigService.get<string>('CNPJA_API_URL')!;
+  }
+  get cnpjaApiKey(): string {
+    return this.nestConfigService.get<string>('CNPJA_API_KEY')!;
+  }
 }

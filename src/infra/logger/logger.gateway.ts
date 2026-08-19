@@ -8,6 +8,7 @@ export enum LogContext {
   WS = 'ws',
   CACHE = 'cache',
   CEP_LOOKUP = 'cep-lookup',
+  CNPJ_LOOKUP = 'cnpj-lookup',
   SMTP = 'smtp',
   UPLOAD_FILE = 'upload-file',
 }
@@ -17,6 +18,7 @@ type LogContextDataMap = {
   [LogContext.WS]: WsData
   [LogContext.CACHE]: CacheData
   [LogContext.CEP_LOOKUP]: CepLookupData
+  [LogContext.CNPJ_LOOKUP]: CnpjLookupData
   [LogContext.SMTP]: SmtpData
   [LogContext.UPLOAD_FILE]: UploadFileData
 }
@@ -52,6 +54,10 @@ type CacheData = CommomData & {
 
 type CepLookupData = CommomData & {
   cep: string;
+}
+
+type CnpjLookupData = CommomData & {
+  cnpj: string;
 }
 
 type SmtpData = CommomData & {

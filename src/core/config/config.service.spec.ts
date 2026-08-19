@@ -362,5 +362,29 @@ describe('ConfigService - Unit tests', () => {
       expect(result).toBe('https://viacep.com.br/ws');
       expect(nestConfigService.get).toHaveBeenCalledWith('VIACEP_API_URL');
     });
+
+    it('should return cnpjaApiUrl from nestConfigService', () => {
+      // Arrange
+      nestConfigService.get.mockReturnValue('https://api.cnpja.com');
+
+      // Act
+      const result = sut.cnpjaApiUrl;
+
+      // Assert
+      expect(result).toBe('https://api.cnpja.com');
+      expect(nestConfigService.get).toHaveBeenCalledWith('CNPJA_API_URL');
+    });
+
+    it('should return cnpjaApiKey from nestConfigService', () => {
+      // Arrange
+      nestConfigService.get.mockReturnValue('test-cnpja-api-key');
+
+      // Act
+      const result = sut.cnpjaApiKey;
+
+      // Assert
+      expect(result).toBe('test-cnpja-api-key');
+      expect(nestConfigService.get).toHaveBeenCalledWith('CNPJA_API_KEY');
+    });
   });
 });
