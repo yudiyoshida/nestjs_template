@@ -51,6 +51,9 @@ describe('CNPJ - Unit tests', () => {
       '112223330001811',
       '1122233300#181',
       '112223330001AB',
+      123,
+      {},
+      [],
     ])('should throw InvalidCnpjError when providing an invalid cnpj (%s)', (cnpj: any) => {
       // Act & Assert
       expect(() => new CNPJ(cnpj)).toThrow(InvalidCnpjError);

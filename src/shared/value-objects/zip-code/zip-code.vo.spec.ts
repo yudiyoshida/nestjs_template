@@ -13,21 +13,6 @@ describe('ZipCode - Unit tests', () => {
       // Assert
       expect(sut.value).toBe('01310100');
     });
-
-    it.each([
-      ['01310-100', '01310100'],
-      ['01310.100', '01310100'],
-      ['01310 100', '01310100'],
-      [' 01310100 ', '01310100'],
-      ['0 1.3 1 0-1 0 0', '01310100'],
-      ['\t01310\n100', '01310100'],
-    ])('should normalize %s to %s', (input: string, expected: string) => {
-      // Act
-      const sut = new ZipCode(input);
-
-      // Assert
-      expect(sut.value).toBe(expected);
-    });
   });
 
   describe('Error path', () => {
@@ -61,6 +46,21 @@ describe('ZipCode - Unit tests', () => {
   });
 
   describe('Edge cases', () => {
+    it.each([
+      ['01310-100', '01310100'],
+      ['01310.100', '01310100'],
+      ['01310 100', '01310100'],
+      [' 01310100 ', '01310100'],
+      ['0 1.3 1 0-1 0 0', '01310100'],
+      ['\t01310\n100', '01310100'],
+    ])('should normalize %s to %s', (input: string, expected: string) => {
+      // Act
+      const sut = new ZipCode(input);
+
+      // Assert
+      expect(sut.value).toBe(expected);
+    });
+
     it('should create a zip code value object when providing only zeros', () => {
       // Act
       const sut = new ZipCode('00000000');

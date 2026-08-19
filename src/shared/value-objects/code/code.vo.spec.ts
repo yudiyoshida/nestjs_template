@@ -51,7 +51,12 @@ describe('Code - Unit tests', () => {
       0,
       -1,
       -100,
-    ])('should throw InvalidExpirationTimeError when expirationTimeInMinutes is %s', (expirationTimeInMinutes: number) => {
+      undefined,
+      NaN,
+      Infinity,
+      -Infinity,
+      '5',
+    ])('should throw InvalidExpirationTimeError when expirationTimeInMinutes is %s', (expirationTimeInMinutes: any) => {
       // Act & Assert
       expect(() => new Code(expirationTimeInMinutes)).toThrow(InvalidExpirationTimeError);
     });

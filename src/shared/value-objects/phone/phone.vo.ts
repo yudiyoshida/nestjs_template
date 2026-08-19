@@ -23,6 +23,6 @@ export class Phone {
   }
 
   private sanitize(phone: string): string {
-    return phone.replace(/\D/g, '');
+    return typeof phone === 'string' ? phone.replace(/\D/g, '') : '';
   }
 }

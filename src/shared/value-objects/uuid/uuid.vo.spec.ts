@@ -3,6 +3,10 @@ import { UUID } from './uuid.vo';
 const UUID_V4_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 
 describe('UUID - Unit tests', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   describe('Happy path', () => {
     it('should create a uuid value object with a valid v4 uuid', () => {
       // Act
@@ -24,29 +28,25 @@ describe('UUID - Unit tests', () => {
     it('should use crypto.randomUUID to generate the value', () => {
       // Arrange
       const fixedUuid = 'a1b2c3d4-e5f6-4789-a012-3456789abcde';
-      const randomUUIDSpy = jest
-        .spyOn(crypto, 'randomUUID')
-        .mockReturnValue(fixedUuid);
+      jest.spyOn(crypto, 'randomUUID').mockReturnValue(fixedUuid);
 
       // Act
       const sut = new UUID();
 
       // Assert
       expect(sut.value).toBe(fixedUuid);
-      expect(randomUUIDSpy).toHaveBeenCalledTimes(1);
-
-      randomUUIDSpy.mockRestore();
+      expect(crypto.randomUUID).toHaveBeenCalledTimes(1);
     });
   });
 
   describe('Edge cases', () => {
     it('should generate different uuids for different instances', () => {
       // Act
-      const first = new UUID();
-      const second = new UUID();
+      const sut = new UUID();
+      const other = new UUID();
 
       // Assert
-      expect(first.value).not.toBe(second.value);
+      expect(sut.value).not.toBe(other.value);
     });
 
     it('should return the same value on multiple accesses', () => {

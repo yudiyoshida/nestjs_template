@@ -56,7 +56,14 @@ describe('Document - Unit tests', () => {
       '123456789012',
       '1234567890123',
       '123456789012345',
-    ])('should throw InvalidDocumentError when document length is neither cpf nor cnpj length (%s)', (raw: string) => {
+      '',
+      '   ',
+      null,
+      undefined,
+      123,
+      {},
+      [],
+    ])('should throw InvalidDocumentError when providing an invalid document (%s)', (raw: any) => {
       // Act & Assert
       expect(() => new Document(raw)).toThrow(InvalidDocumentError);
     });
@@ -69,24 +76,6 @@ describe('Document - Unit tests', () => {
     it('should throw InvalidCnpjError when document has cnpj length but invalid cnpj digits', () => {
       // Act & Assert
       expect(() => new Document('11111111111111')).toThrow(InvalidCnpjError);
-    });
-
-    it('should throw InvalidDocumentError when document is an empty string', () => {
-      // Act & Assert
-      expect(() => new Document('')).toThrow(InvalidDocumentError);
-    });
-
-    it.each([
-      null,
-      undefined,
-    ])('should throw TypeError when document is nullish (%s)', (raw: any) => {
-      // Act & Assert
-      expect(() => new Document(raw)).toThrow(TypeError);
-    });
-
-    it('should throw InvalidDocumentError when document has only whitespace and mask characters', () => {
-      // Act & Assert
-      expect(() => new Document('   ')).toThrow(InvalidDocumentError);
     });
   });
 });

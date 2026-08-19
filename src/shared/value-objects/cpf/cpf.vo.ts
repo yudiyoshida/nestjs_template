@@ -18,7 +18,7 @@ export class CPF {
   }
 
   private sanitize(cpf: string): string {
-    return cpf?.replace(/[\s./-]*/gim, '');
+    return typeof cpf === 'string' ? cpf.replace(/[\s./-]*/gim, '') : '';
   }
 
   private validate(cpf: string): boolean {

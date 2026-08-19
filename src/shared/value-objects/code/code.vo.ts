@@ -15,7 +15,11 @@ export class Code {
   }
 
   constructor(expirationTimeInMinutes: number) {
-    if (expirationTimeInMinutes <= 0) {
+    if (
+      typeof expirationTimeInMinutes !== 'number'
+      || !Number.isFinite(expirationTimeInMinutes)
+      || expirationTimeInMinutes <= 0
+    ) {
       throw new InvalidExpirationTimeError();
     }
 

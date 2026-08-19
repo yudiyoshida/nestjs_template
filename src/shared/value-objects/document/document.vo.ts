@@ -26,6 +26,6 @@ export class Document {
   }
 
   private sanitize(document: string): string {
-    return document?.replace(/[\s./-]*/gim, '')?.toUpperCase();
+    return typeof document === 'string' ? document.replace(/[\s./-]*/gim, '').toUpperCase() : '';
   }
 }

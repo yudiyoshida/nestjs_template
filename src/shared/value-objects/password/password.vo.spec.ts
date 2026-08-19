@@ -27,6 +27,18 @@ describe('Password - Unit tests', () => {
         expect(bcrypt.compareSync).toHaveBeenCalledWith('plain-password', 'hashed-password');
       });
     });
+
+    describe('Error path', () => {
+      it('should propagate when bcrypt.compareSync throws', () => {
+        // Arrange
+        (bcrypt.compareSync as jest.Mock).mockImplementation(() => {
+          throw new Error('compare failed');
+        });
+
+        // Act & Assert
+        expect(() => Password.compare('plain-password', 'hashed-password')).toThrow('compare failed');
+      });
+    });
   });
 
   describe('generateRandom', () => {
@@ -43,6 +55,18 @@ describe('Password - Unit tests', () => {
         expect(sut).toBe('random-base64url-value');
         expect(randomBytes).toHaveBeenCalledWith(12);
         expect(toString).toHaveBeenCalledWith('base64url');
+      });
+    });
+
+    describe('Error path', () => {
+      it('should propagate when randomBytes throws', () => {
+        // Arrange
+        (randomBytes as jest.Mock).mockImplementation(() => {
+          throw new Error('randomBytes failed');
+        });
+
+        // Act & Assert
+        expect(() => Password.generateRandom()).toThrow('randomBytes failed');
       });
     });
   });
@@ -62,6 +86,18 @@ describe('Password - Unit tests', () => {
         expect(sut.value).toBe('hashed-password');
         expect(bcrypt.genSaltSync).toHaveBeenCalledWith(10);
         expect(bcrypt.hashSync).toHaveBeenCalledWith('my-password', 'generated-salt');
+      });
+    });
+
+    describe('Error path', () => {
+      it('should propagate when bcrypt.hashSync throws', () => {
+        // Arrange
+        (bcrypt.hashSync as jest.Mock).mockImplementation(() => {
+          throw new Error('hash failed');
+        });
+
+        // Act & Assert
+        expect(() => new Password('my-password')).toThrow('hash failed');
       });
     });
 

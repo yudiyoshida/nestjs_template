@@ -23,7 +23,7 @@ export class CNPJ {
   }
 
   private sanitize(cnpj: string): string {
-    return cnpj?.replace(/[\s./-]/gim, '')?.toUpperCase();
+    return typeof cnpj === 'string' ? cnpj.replace(/[\s./-]/gim, '').toUpperCase() : '';
   }
 
   private validate(cnpj: string): boolean {

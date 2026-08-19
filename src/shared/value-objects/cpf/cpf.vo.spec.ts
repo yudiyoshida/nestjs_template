@@ -23,6 +23,9 @@ describe('CPF - Unit tests', () => {
       '           ',
       'invalid-cpf',
       '123.456.789-00',
+      123,
+      {},
+      [],
     ])('should throw InvalidCpfError when providing an invalid cpf (%s)', (cpf: any) => {
       // Act & Assert
       expect(() => new CPF(cpf)).toThrow(InvalidCpfError);

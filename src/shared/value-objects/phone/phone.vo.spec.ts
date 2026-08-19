@@ -24,6 +24,9 @@ describe('Phone - Unit tests', () => {
       'abcdefghijk',
       '123456789',
       '123456789012',
+      123,
+      {},
+      [],
     ])('should throw InvalidPhoneError when providing an invalid phone (%s)', (phone: any) => {
       // Act & Assert
       expect(() => new Phone(phone)).toThrow(InvalidPhoneError);
