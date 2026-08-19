@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { ILoggerGateway, LogContext } from '../../logger.gateway';
+import { ILoggerGateway, LogContext, LogContextDataMap } from '../../logger.gateway';
 
 @Injectable()
 export class LoggerFakeAdapterGateway implements ILoggerGateway {
-  public debug(_context: LogContext, _data: any): void {}
-  public error(_context: LogContext, _data: any): void {}
+  public debug<T extends LogContext>(_context: T, _data: LogContextDataMap[T]): void {}
+  public error<T extends LogContext>(_context: T, _data: LogContextDataMap[T]): void {}
 }

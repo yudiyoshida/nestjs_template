@@ -13,7 +13,7 @@ export enum LogContext {
   UPLOAD_FILE = 'upload-file',
 }
 
-type LogContextDataMap = {
+export type LogContextDataMap = {
   [LogContext.HTTP]: HttpData
   [LogContext.WS]: WsData
   [LogContext.CACHE]: CacheData
