@@ -5,7 +5,7 @@ import { LoggerModule } from './logger/logger.module';
 @Module({
   imports: [
     DatabaseModule,
-    LoggerModule,
+    LoggerModule.register(),
   ],
 })
 export class InfraModule {}

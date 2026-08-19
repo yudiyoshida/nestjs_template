@@ -27,6 +27,7 @@ Se código existente contradiz esta skill, **esta skill vence**. Não imite o le
 - `src/core/config/config.service.ts` — getter
 - `src/core/config/config.service.spec.ts` — spec do getter
 - `.env.example` — chave documentada
+- `src/infra/infra-vendors.ts` — **só** se a chave for `*_VENDOR` (objeto const + type + guard)
 
 Exceção: usuário apontar um arquivo, ou pedir edição de getter/schema que já existe — leia só esse arquivo.
 
@@ -40,12 +41,26 @@ Conjunto atômico (os quatro juntos, ou nenhum):
 
 | Arquivo | O que muda |
 |---------|------------|
-| `src/core/config/config.module.ts` | `CHAVE: Joi.<tipo>().required()` no `validationSchema` |
+| `src/core/config/config.module.ts` | `CHAVE: Joi.<tipo>().required()` (ou `Joi.when` se credencial de vendor) no `validationSchema` |
 | `src/core/config/config.service.ts` | getter camelCase + `this.nestConfigService.get<T>('CHAVE')!` |
 | `src/core/config/config.service.spec.ts` | spec via skill `writing-unit-tests` |
 | `.env.example` | `CHAVE=` (valor de exemplo só se já houver padrão no arquivo) |
 
-Remover variável: apagar os quatro. Renomear/trocar tipo: os quatro.
+**Única chave do Joi fora do `.env.example`: `NODE_ENV`.** Ela vem do processo (script npm:
+`NODE_ENV=test jest`), não do arquivo — o próprio `envFilePath` é `.env.${NODE_ENV}`. Toda chave
+nova, sem exceção, entra no `.env.example`.
+
+Todo port de infra com `register()` inclui `*_VENDOR` no conjunto atômico **mais** `src/infra/infra-vendors.ts`:
+
+1. Objeto `XxxVendor = { Fake: 'fake', Real: 'kebab' } as const` + type + `XXX_VENDORS = Object.values(XxxVendor)` + guard `isXxxVendor`
+2. Joi: `Joi.string().valid(...XXX_VENDORS).required()` — **proibido** literal solto no `.valid()` / `is:` de vendor
+3. Credenciais: `requiredWhen('*_VENDOR', XxxVendor.Real)` (helper no `config.module`; `Joi.number()` no 3º arg se preciso)
+4. Getter tipado: `get xxxVendor(): XxxVendor`
+5. Spec + `.env.example`
+
+Valor = `XxxVendor.Fake` + kebabs reais. `*_VENDOR=fake` permite fluxo sem I/O externo.
+
+Remover variável: apagar os quatro (+ linha em `infra-vendors.ts` se for `*_VENDOR`). Renomear/trocar tipo: os quatro.
 
 `Environment` (`environment.enum.ts`) só muda se nascer um runtime novo (`development` / `production` / `test`). Variável de app **não** entra no enum.
 
@@ -80,6 +95,7 @@ Progresso:
 | Constante de domínio sem I/O | Constante no recorte |
 | Script fora do Nest (Postman, codegen) | Fora desta skill |
 | Escolher fake vs real em `XxxModule.register()` | `process.env.NODE_ENV === Environment.Test` — skill `using-ports-and-adapters` |
+| Escolher vendor real em `XxxModule.register()` | `process.env.<CAPABILITY>_VENDOR` + mapa — skill `using-ports-and-adapters` |
 
 ## Proibido
 
@@ -88,7 +104,7 @@ Progresso:
 - `this.nestConfigService.get('X')` fora de `config.service.ts`
 - String solta `'JWT_SECRET'` / `'REDIS_URL'` fora de `config.service.ts` e do Joi
 - Getter novo sem Joi, ou Joi novo sem getter
-- Env opcional (`optional()`, `default()`) sem o usuário pedir
+- Env opcional (`optional()`, `default()`) sem o usuário pedir — **exceção:** `Joi.when` de credencial de vendor inativo (ver template)
 - Logar valor de secret, password, token, key
 
 ## Exceções de `process.env` (só estas)
@@ -97,6 +113,7 @@ Progresso:
 |-------|---------|
 | `config.module.ts` → `envFilePath: \`.env.${process.env.NODE_ENV \|\| Environment.Development}\`` | NestConfig ainda não carregou |
 | `XxxModule.register()` → `process.env.NODE_ENV === Environment.Test` | Binding estático antes do DI; skill `using-ports-and-adapters` |
+| `XxxModule.register()` → `process.env.<CAPABILITY>_VENDOR` | Binding estático do vendor antes do DI; skill `using-ports-and-adapters` |
 | `main.ts` **antes** de `NestFactory.create` (HTTPS `SSL_KEY` / `SSL_CERT` / `SSL_CA`) | App ainda não existe; `app.get(ConfigService)` impossível |
 
 Depois de `const app = await NestFactory.create(...)`: **só** `app.get(ConfigService)`. Inclusive `port`, `corsOrigin`. Não voltar para `process.env.PORT`.
@@ -139,6 +156,48 @@ FOO_TIMEOUT: Joi.number().required(),
 ```
 
 `NODE_ENV` já existe: `Joi.string().valid(...Object.values(Environment)).required()`.
+
+Port de infra — vendor selector. Fonte dos kebabs: `src/infra/infra-vendors.ts` (nunca literal no Joi).
+
+```ts
+// infra-vendors.ts
+export const UploadFileVendor = {
+  Fake: 'fake',
+  AwsS3: 'aws-s3',
+} as const;
+
+export type UploadFileVendor = (typeof UploadFileVendor)[keyof typeof UploadFileVendor];
+
+export const UPLOAD_FILE_VENDORS = Object.values(UploadFileVendor);
+
+export function isUploadFileVendor(value: string | undefined): value is UploadFileVendor {
+  return (UPLOAD_FILE_VENDORS as readonly string[]).includes(value ?? '');
+}
+```
+
+```ts
+// config.module.ts — helper local
+function requiredWhen(vendorEnvKey: string, vendor: string, schema: Joi.Schema = Joi.string()) {
+  return Joi.when(vendorEnvKey, {
+    is: vendor,
+    then: schema.required(),
+    otherwise: schema.optional(),
+  });
+}
+
+UPLOAD_FILE_VENDOR: Joi.string().valid(...UPLOAD_FILE_VENDORS).required(),
+AWS_ACCESS_KEY_ID: requiredWhen('UPLOAD_FILE_VENDOR', UploadFileVendor.AwsS3),
+```
+
+**Novo vendor real:** acrescentar chave no objeto `UploadFileVendor` (ex.: `Azure: 'azure-storage-account'`); Joi já espalha `UPLOAD_FILE_VENDORS`. Credenciais: `requiredWhen('UPLOAD_FILE_VENDOR', UploadFileVendor.Azure)`. **Não** afrouxar schema por `NODE_ENV=test`.
+
+```ts
+AWS_ACCESS_KEY_ID: requiredWhen('UPLOAD_FILE_VENDOR', UploadFileVendor.AwsS3),
+AZURE_STORAGE_CONNECTION_STRING: requiredWhen('UPLOAD_FILE_VENDOR', UploadFileVendor.Azure),
+SMTP_PORT: requiredWhen('SMTP_VENDOR', SmtpVendor.Nodemailer, Joi.number()),
+```
+
+Getter da credencial continua com `!` — Joi garante presença quando o vendor ativo exige a chave. Getter do vendor retorna o union (`UploadFileVendor`), não `string`.
 
 ### 2. Getter (`config.service.ts`)
 
@@ -212,6 +271,7 @@ Teste de consumidor: mockar `ConfigService` (getter devolver valor). **Proibido*
 | "É um script rápido / constante local" | Se vem de env, passa pelo service. |
 | "ConfigModule é global" | NestConfig é global. Nosso `ConfigService` não. Importar `ConfigModule`. |
 | "Fake também precisa da URL" | Fake não fala com vendor. Sem `ConfigService`. |
+| "Vou deixar todas as credenciais required com 2 vendors" | `Joi.when` no vendor ativo. Credencial morta fica `optional`. |
 
 ## Checklist de entrega
 
@@ -226,4 +286,5 @@ Antes de responder, confirmar **todos** os que se aplicam:
 - [ ] Tipo Joi = tipo do getter; `!` no `get`
 - [ ] Spec do getter via `writing-unit-tests`; consumidor mocka `ConfigService`, não `process.env`
 - [ ] Fake de adapter sem `ConfigService`
+- [ ] Port com vendor: objeto `XxxVendor` em `infra-vendors.ts` + `*_VENDOR` no conjunto atômico; Joi usa `...XXX_VENDORS` + `requiredWhen(..., XxxVendor.Real)`
 - [ ] Nenhum secret no log

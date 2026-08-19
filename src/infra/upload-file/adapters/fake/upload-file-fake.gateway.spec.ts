@@ -1,11 +1,11 @@
 import { UploadFileInput } from '../../dtos/upload-file.dto';
-import { UploadFakeAdapterGateway } from './upload-fake.gateway';
+import { UploadFileFakeAdapterGateway } from './upload-file-fake.gateway';
 
-describe('UploadFakeAdapterGateway - Unit tests', () => {
-  let sut: UploadFakeAdapterGateway;
+describe('UploadFileFakeAdapterGateway - Unit tests', () => {
+  let sut: UploadFileFakeAdapterGateway;
 
   beforeEach(() => {
-    sut = new UploadFakeAdapterGateway();
+    sut = new UploadFileFakeAdapterGateway();
   });
 
   describe('upload', () => {

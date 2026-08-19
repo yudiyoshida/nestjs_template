@@ -1,5 +1,7 @@
+import { createMock } from '@golevelup/ts-jest';
 import { Socket } from 'socket.io';
 import { AccountRole } from 'src/app/account/domain/enums/account-role.enum';
+import { ConfigService } from 'src/core/config/config.service';
 import { JwtWebSocketStrategy } from './websocket.strategy';
 
 function makeSocket(authorization?: string): Socket {
@@ -14,15 +16,11 @@ function makeSocket(authorization?: string): Socket {
 
 describe('JwtWebSocketStrategy - Unit tests', () => {
   let sut: JwtWebSocketStrategy;
+  let configService: ConfigService;
 
   beforeEach(() => {
-    process.env.JWT_SECRET = 'test-jwt-secret';
-    sut = new JwtWebSocketStrategy();
-  });
-
-  it('should be defined', () => {
-    // Act & Assert
-    expect(sut).toBeDefined();
+    configService = createMock<ConfigService>({ jwtSecret: 'test-jwt-secret' });
+    sut = new JwtWebSocketStrategy(configService);
   });
 
   it('should map the decoded payload to sub and roles', () => {

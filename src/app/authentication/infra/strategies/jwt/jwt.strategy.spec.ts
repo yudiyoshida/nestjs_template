@@ -1,17 +1,15 @@
+import { createMock } from '@golevelup/ts-jest';
 import { AccountRole } from 'src/app/account/domain/enums/account-role.enum';
+import { ConfigService } from 'src/core/config/config.service';
 import { JwtStrategy } from './jwt.strategy';
 
 describe('JwtStrategy - Unit tests', () => {
   let sut: JwtStrategy;
+  let configService: ConfigService;
 
   beforeEach(() => {
-    process.env.JWT_SECRET = 'test-jwt-secret';
-    sut = new JwtStrategy();
-  });
-
-  it('should be defined', () => {
-    // Act & Assert
-    expect(sut).toBeDefined();
+    configService = createMock<ConfigService>({ jwtSecret: 'test-jwt-secret' });
+    sut = new JwtStrategy(configService);
   });
 
   it('should map the decoded payload to sub and roles', () => {

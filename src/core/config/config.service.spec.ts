@@ -1,6 +1,14 @@
-import { createMock } from '@golevelup/ts-jest';
 import { ConfigService as NestConfigService } from '@nestjs/config';
+import { createMock } from '@golevelup/ts-jest';
 import { Test } from '@nestjs/testing';
+import {
+  CacheVendor,
+  CepLookupVendor,
+  CnpjLookupVendor,
+  LoggerVendor,
+  SmtpVendor,
+  UploadFileVendor,
+} from 'src/infra/infra-vendors';
 import { ConfigService } from './config.service';
 import { Environment } from './environment.enum';
 
@@ -680,6 +688,52 @@ describe('ConfigService - Unit tests', () => {
     });
   });
 
+  describe('uploadFileVendor', () => {
+    describe('Happy path', () => {
+      it('should return the upload file vendor when nestConfigService.get returns it', () => {
+        // Arrange
+        jest.spyOn(nestConfigService, 'get').mockReturnValue(UploadFileVendor.AwsS3);
+
+        // Act
+        const result = sut.uploadFileVendor;
+
+        // Assert
+        expect(result).toBe(UploadFileVendor.AwsS3);
+        expect(nestConfigService.get).toHaveBeenCalledWith('UPLOAD_FILE_VENDOR');
+      });
+    });
+
+    describe('Error path', () => {
+      it('should propagate when nestConfigService.get throws', () => {
+        // Arrange
+        jest.spyOn(nestConfigService, 'get').mockImplementation(() => {
+          throw new Error('missing UPLOAD_FILE_VENDOR');
+        });
+
+        // Act & Assert
+        expect(() => sut.uploadFileVendor).toThrow('missing UPLOAD_FILE_VENDOR');
+      });
+    });
+
+    describe('Edge cases', () => {
+      it.each([
+        undefined,
+        null,
+        '',
+        '           ',
+      ])('should return %s when nestConfigService.get returns that value', (value: unknown) => {
+        // Arrange
+        jest.spyOn(nestConfigService, 'get').mockReturnValue(value);
+
+        // Act
+        const result = sut.uploadFileVendor;
+
+        // Assert
+        expect(result).toBe(value);
+      });
+    });
+  });
+
   describe('awsAccessKeyId', () => {
     describe('Happy path', () => {
       it('should return the aws access key id when nestConfigService.get returns it', () => {
@@ -857,6 +911,52 @@ describe('ConfigService - Unit tests', () => {
 
         // Act
         const result = sut.awsBucketName;
+
+        // Assert
+        expect(result).toBe(value);
+      });
+    });
+  });
+
+  describe('smtpVendor', () => {
+    describe('Happy path', () => {
+      it('should return the smtp vendor when nestConfigService.get returns it', () => {
+        // Arrange
+        jest.spyOn(nestConfigService, 'get').mockReturnValue(SmtpVendor.Nodemailer);
+
+        // Act
+        const result = sut.smtpVendor;
+
+        // Assert
+        expect(result).toBe(SmtpVendor.Nodemailer);
+        expect(nestConfigService.get).toHaveBeenCalledWith('SMTP_VENDOR');
+      });
+    });
+
+    describe('Error path', () => {
+      it('should propagate when nestConfigService.get throws', () => {
+        // Arrange
+        jest.spyOn(nestConfigService, 'get').mockImplementation(() => {
+          throw new Error('missing SMTP_VENDOR');
+        });
+
+        // Act & Assert
+        expect(() => sut.smtpVendor).toThrow('missing SMTP_VENDOR');
+      });
+    });
+
+    describe('Edge cases', () => {
+      it.each([
+        undefined,
+        null,
+        '',
+        '           ',
+      ])('should return %s when nestConfigService.get returns that value', (value: unknown) => {
+        // Arrange
+        jest.spyOn(nestConfigService, 'get').mockReturnValue(value);
+
+        // Act
+        const result = sut.smtpVendor;
 
         // Assert
         expect(result).toBe(value);
@@ -1140,6 +1240,52 @@ describe('ConfigService - Unit tests', () => {
     });
   });
 
+  describe('cacheVendor', () => {
+    describe('Happy path', () => {
+      it('should return the cache vendor when nestConfigService.get returns it', () => {
+        // Arrange
+        jest.spyOn(nestConfigService, 'get').mockReturnValue(CacheVendor.Redis);
+
+        // Act
+        const result = sut.cacheVendor;
+
+        // Assert
+        expect(result).toBe(CacheVendor.Redis);
+        expect(nestConfigService.get).toHaveBeenCalledWith('CACHE_VENDOR');
+      });
+    });
+
+    describe('Error path', () => {
+      it('should propagate when nestConfigService.get throws', () => {
+        // Arrange
+        jest.spyOn(nestConfigService, 'get').mockImplementation(() => {
+          throw new Error('missing CACHE_VENDOR');
+        });
+
+        // Act & Assert
+        expect(() => sut.cacheVendor).toThrow('missing CACHE_VENDOR');
+      });
+    });
+
+    describe('Edge cases', () => {
+      it.each([
+        undefined,
+        null,
+        '',
+        '           ',
+      ])('should return %s when nestConfigService.get returns that value', (value: unknown) => {
+        // Arrange
+        jest.spyOn(nestConfigService, 'get').mockReturnValue(value);
+
+        // Act
+        const result = sut.cacheVendor;
+
+        // Assert
+        expect(result).toBe(value);
+      });
+    });
+  });
+
   describe('redisUrl', () => {
     describe('Happy path', () => {
       it('should return the redis url when nestConfigService.get returns it', () => {
@@ -1186,6 +1332,52 @@ describe('ConfigService - Unit tests', () => {
     });
   });
 
+  describe('cepLookupVendor', () => {
+    describe('Happy path', () => {
+      it('should return the cep lookup vendor when nestConfigService.get returns it', () => {
+        // Arrange
+        jest.spyOn(nestConfigService, 'get').mockReturnValue(CepLookupVendor.Viacep);
+
+        // Act
+        const result = sut.cepLookupVendor;
+
+        // Assert
+        expect(result).toBe(CepLookupVendor.Viacep);
+        expect(nestConfigService.get).toHaveBeenCalledWith('CEP_LOOKUP_VENDOR');
+      });
+    });
+
+    describe('Error path', () => {
+      it('should propagate when nestConfigService.get throws', () => {
+        // Arrange
+        jest.spyOn(nestConfigService, 'get').mockImplementation(() => {
+          throw new Error('missing CEP_LOOKUP_VENDOR');
+        });
+
+        // Act & Assert
+        expect(() => sut.cepLookupVendor).toThrow('missing CEP_LOOKUP_VENDOR');
+      });
+    });
+
+    describe('Edge cases', () => {
+      it.each([
+        undefined,
+        null,
+        '',
+        '           ',
+      ])('should return %s when nestConfigService.get returns that value', (value: unknown) => {
+        // Arrange
+        jest.spyOn(nestConfigService, 'get').mockReturnValue(value);
+
+        // Act
+        const result = sut.cepLookupVendor;
+
+        // Assert
+        expect(result).toBe(value);
+      });
+    });
+  });
+
   describe('viacepApiUrl', () => {
     describe('Happy path', () => {
       it('should return the viacep api url when nestConfigService.get returns it', () => {
@@ -1225,6 +1417,52 @@ describe('ConfigService - Unit tests', () => {
 
         // Act
         const result = sut.viacepApiUrl;
+
+        // Assert
+        expect(result).toBe(value);
+      });
+    });
+  });
+
+  describe('cnpjLookupVendor', () => {
+    describe('Happy path', () => {
+      it('should return the cnpj lookup vendor when nestConfigService.get returns it', () => {
+        // Arrange
+        jest.spyOn(nestConfigService, 'get').mockReturnValue(CnpjLookupVendor.Cnpja);
+
+        // Act
+        const result = sut.cnpjLookupVendor;
+
+        // Assert
+        expect(result).toBe(CnpjLookupVendor.Cnpja);
+        expect(nestConfigService.get).toHaveBeenCalledWith('CNPJ_LOOKUP_VENDOR');
+      });
+    });
+
+    describe('Error path', () => {
+      it('should propagate when nestConfigService.get throws', () => {
+        // Arrange
+        jest.spyOn(nestConfigService, 'get').mockImplementation(() => {
+          throw new Error('missing CNPJ_LOOKUP_VENDOR');
+        });
+
+        // Act & Assert
+        expect(() => sut.cnpjLookupVendor).toThrow('missing CNPJ_LOOKUP_VENDOR');
+      });
+    });
+
+    describe('Edge cases', () => {
+      it.each([
+        undefined,
+        null,
+        '',
+        '           ',
+      ])('should return %s when nestConfigService.get returns that value', (value: unknown) => {
+        // Arrange
+        jest.spyOn(nestConfigService, 'get').mockReturnValue(value);
+
+        // Act
+        const result = sut.cnpjLookupVendor;
 
         // Assert
         expect(result).toBe(value);
@@ -1317,6 +1555,52 @@ describe('ConfigService - Unit tests', () => {
 
         // Act
         const result = sut.cnpjaApiKey;
+
+        // Assert
+        expect(result).toBe(value);
+      });
+    });
+  });
+
+  describe('loggerVendor', () => {
+    describe('Happy path', () => {
+      it('should return the logger vendor when nestConfigService.get returns it', () => {
+        // Arrange
+        jest.spyOn(nestConfigService, 'get').mockReturnValue(LoggerVendor.Winston);
+
+        // Act
+        const result = sut.loggerVendor;
+
+        // Assert
+        expect(result).toBe(LoggerVendor.Winston);
+        expect(nestConfigService.get).toHaveBeenCalledWith('LOGGER_VENDOR');
+      });
+    });
+
+    describe('Error path', () => {
+      it('should propagate when nestConfigService.get throws', () => {
+        // Arrange
+        jest.spyOn(nestConfigService, 'get').mockImplementation(() => {
+          throw new Error('missing LOGGER_VENDOR');
+        });
+
+        // Act & Assert
+        expect(() => sut.loggerVendor).toThrow('missing LOGGER_VENDOR');
+      });
+    });
+
+    describe('Edge cases', () => {
+      it.each([
+        undefined,
+        null,
+        '',
+        '           ',
+      ])('should return %s when nestConfigService.get returns that value', (value: unknown) => {
+        // Arrange
+        jest.spyOn(nestConfigService, 'get').mockReturnValue(value);
+
+        // Act
+        const result = sut.loggerVendor;
 
         // Assert
         expect(result).toBe(value);

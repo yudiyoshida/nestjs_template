@@ -1,6 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService as NestConfigService } from '@nestjs/config';
 import { Environment } from './environment.enum';
+import type {
+  CacheVendor,
+  CepLookupVendor,
+  CnpjLookupVendor,
+  LoggerVendor,
+  SmtpVendor,
+  UploadFileVendor,
+} from 'src/infra/infra-vendors';
 
 @Injectable()
 export class ConfigService {
@@ -59,6 +67,9 @@ export class ConfigService {
   }
 
   // upload file
+  get uploadFileVendor(): UploadFileVendor {
+    return this.nestConfigService.get<UploadFileVendor>('UPLOAD_FILE_VENDOR')!;
+  }
   get awsAccessKeyId(): string {
     return this.nestConfigService.get<string>('AWS_ACCESS_KEY_ID')!;
   }
@@ -73,6 +84,9 @@ export class ConfigService {
   }
 
   // smtp
+  get smtpVendor(): SmtpVendor {
+    return this.nestConfigService.get<SmtpVendor>('SMTP_VENDOR')!;
+  }
   get smtpHost(): string {
     return this.nestConfigService.get<string>('SMTP_HOST')!;
   }
@@ -92,21 +106,35 @@ export class ConfigService {
     return this.nestConfigService.get<string>('SMTP_PASSWORD')!;
   }
 
-  // redis
+  // cache
+  get cacheVendor(): CacheVendor {
+    return this.nestConfigService.get<CacheVendor>('CACHE_VENDOR')!;
+  }
   get redisUrl(): string {
     return this.nestConfigService.get<string>('REDIS_URL')!;
   }
 
-  // viacep
+  // cep lookup
+  get cepLookupVendor(): CepLookupVendor {
+    return this.nestConfigService.get<CepLookupVendor>('CEP_LOOKUP_VENDOR')!;
+  }
   get viacepApiUrl(): string {
     return this.nestConfigService.get<string>('VIACEP_API_URL')!;
   }
 
-  // cnpja
+  // cnpj lookup
+  get cnpjLookupVendor(): CnpjLookupVendor {
+    return this.nestConfigService.get<CnpjLookupVendor>('CNPJ_LOOKUP_VENDOR')!;
+  }
   get cnpjaApiUrl(): string {
     return this.nestConfigService.get<string>('CNPJA_API_URL')!;
   }
   get cnpjaApiKey(): string {
     return this.nestConfigService.get<string>('CNPJA_API_KEY')!;
+  }
+
+  // logger
+  get loggerVendor(): LoggerVendor {
+    return this.nestConfigService.get<LoggerVendor>('LOGGER_VENDOR')!;
   }
 }

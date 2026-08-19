@@ -8,23 +8,69 @@ import { type ILoggerGateway, LogContext } from 'src/infra/logger/logger.gateway
 import { ExternalApiError } from 'src/shared/errors/external-api.error';
 import type { UploadFileInput, UploadedFileOutput } from '../../dtos/upload-file.dto';
 import { IUploadFileGateway } from '../../upload-file.gateway';
-
-type S3UploadParams = {
-  ACL: 'public-read';
-  Body: Buffer;
-  Bucket: string;
-  ContentType: string;
-  Key: string;
-};
+import type { S3UploadParams } from './dtos/aws-s3.dto';
 
 @Injectable()
-export class UploadS3AdapterGateway implements IUploadFileGateway {
+export class UploadFileAwsS3AdapterGateway implements IUploadFileGateway {
   private s3: S3;
 
   constructor(
     @Inject(TOKENS.LoggerGateway) private readonly logger: ILoggerGateway,
     private readonly configService: ConfigService,
   ) {}
+
+  public async upload(input: UploadFileInput): Promise<UploadedFileOutput> {
+    try {
+      const s3 = await this.getS3Client();
+      const params = this.toVendor(input);
+
+      const s3Response = await new Upload({
+        client: s3,
+        params,
+      }).done();
+
+      return this.toPort(s3Response.Location);
+    }
+    catch (error) {
+      this.logger.error(LogContext.UPLOAD_FILE, {
+        adapter: 'aws-s3',
+        action: 'upload',
+        fileName: input.originalName,
+        fileSize: input.sizeInBytes,
+        fileType: input.mimeType,
+        error,
+      });
+      throw new ExternalApiError('Erro ao fazer upload do arquivo');
+    }
+  }
+
+  public async delete(publicUrl: string): Promise<void> {
+    const fileKey = this.getFileKey(publicUrl);
+    if (!fileKey) {
+      return;
+    }
+
+    try {
+      const s3 = await this.getS3Client();
+
+      await s3.send(
+        new DeleteObjectCommand({
+          Bucket: this.configService.awsBucketName,
+          Key: fileKey,
+        }),
+      );
+    }
+    catch (error) {
+      this.logger.error(LogContext.UPLOAD_FILE, {
+        adapter: 'aws-s3',
+        action: 'delete',
+        publicUrl,
+        fileKey,
+        error,
+      });
+      throw new ExternalApiError('Erro ao excluir o arquivo');
+    }
+  }
 
   private getFileKey(publicUrl: string): string | null {
     try {
@@ -69,58 +115,5 @@ export class UploadS3AdapterGateway implements IUploadFileGateway {
     }
 
     return { publicUrl: location };
-  }
-
-  public async upload(input: UploadFileInput): Promise<UploadedFileOutput> {
-    try {
-      const s3 = await this.getS3Client();
-      const params = this.toVendor(input);
-
-      const s3Response = await new Upload({
-        client: s3,
-        params,
-      }).done();
-
-      return this.toPort(s3Response.Location);
-    }
-    catch (error) {
-      this.logger.error(LogContext.UPLOAD_FILE, {
-        adapter: 's3',
-        action: 'upload',
-        fileName: input.originalName,
-        fileSize: input.sizeInBytes,
-        fileType: input.mimeType,
-        error,
-      });
-      throw new ExternalApiError('Erro ao fazer upload do arquivo');
-    }
-  }
-
-  public async delete(publicUrl: string): Promise<void> {
-    const fileKey = this.getFileKey(publicUrl);
-    if (!fileKey) {
-      return;
-    }
-
-    try {
-      const s3 = await this.getS3Client();
-
-      await s3.send(
-        new DeleteObjectCommand({
-          Bucket: this.configService.awsBucketName,
-          Key: fileKey,
-        }),
-      );
-    }
-    catch (error) {
-      this.logger.error(LogContext.UPLOAD_FILE, {
-        adapter: 's3',
-        action: 'delete',
-        publicUrl,
-        fileKey,
-        error,
-      });
-      throw new ExternalApiError('Erro ao excluir o arquivo');
-    }
   }
 }

@@ -26,6 +26,7 @@ Se um adapter existente contradiz esta skill, **esta skill vence**.
 
 - o que o usuário indicou (contrato da API, SDK, regra de negócio)
 - `src/core/di/token.ts` — só para **inserir** o Symbol novo
+- `src/infra/infra-vendors.ts` — só para **inserir** vendor no array/type/guard
 - `src/infra/logger/logger.gateway.ts` — só para **inserir** `LogContext` + tipo do mapa, se o adapter for logar
 - o módulo Nest que vai **importar** `XxxModule.register()`
 
@@ -39,13 +40,14 @@ Progresso:
 - [ ] 2. Definir a interface IXxxGateway na linguagem da aplicação (ACL: zero tipo/campo/erro de vendor)
 - [ ] 3. Adicionar TOKENS.XxxGateway em src/core/di/token.ts
 - [ ] 4. Escrever adapter real (ACL: mapear vendor ↔ porta em métodos privados) e adapter fake
-- [ ] 5. Escrever XxxModule.register() (fake em test, real nos demais)
+- [ ] 5. Escrever XxxModule.register() (mapa Binding class/modules/providers + `*_VENDOR` via using-core-config)
 - [ ] 6. LogContext novo, se o adapter logar
 - [ ] 7. Erro: reusar ExternalApiError ou criar via creating-custom-errors
 - [ ] 8. Specs via writing-unit-tests (obrigatório no adapter real; fake se tiver lógica)
 - [ ] 9. Importar XxxModule.register() onde o port for injetado
 - [ ] 10. Checklist de entrega
 ```
+
 
 ## Quando usar ports and adapters
 
@@ -107,8 +109,13 @@ Mudou o JSON da ViaCEP / a API do S3 / o comando Redis? **Só** o adapter real e
 src/infra/<kebab>/
   <kebab>.gateway.ts
   <kebab>.module.ts
+  <kebab>.module.spec.ts        # opcional — testa register()
   dtos/
     <kebab>.dto.ts
+  helpers/                      # opcional — helper puro do capability
+    <helper>/
+      <helper>.builder.ts
+      <helper>.builder.spec.ts
   adapters/
     fake/
       <kebab>-fake.gateway.ts
@@ -122,6 +129,16 @@ src/infra/<kebab>/
 
 `dtos/` na raiz do capability: contrato da **porta** (o que o use case vê).
 `adapters/<vendor>/dtos/`: formato do **vendor**; nunca importado fora desse adapter.
+
+`helpers/`: classe ou função pura, in-process, do capability — sem I/O, sem porta, sem token
+(ex.: `src/infra/cache/helpers/cache-key/cache-key.builder.ts`, que monta a chave de cache).
+Exportada direto, importada pelo consumidor via `new`. Spec obrigatório se tiver lógica.
+
+`<kebab>.module.spec.ts`: spec do `register()` — recomendado, principalmente com 2+ vendors reais.
+Cobre: `NODE_ENV=test` força `fake` mesmo com `*_VENDOR` real; vendor real fora de test devolve o
+binding certo (`imports` + `useClass`); `*_VENDOR=fake` fora de test; `throw` com `*_VENDOR`
+inválido e ausente; `module`/`exports` com o token. Salvar e restaurar `process.env.NODE_ENV` e
+`process.env.*_VENDOR` em `beforeEach`/`afterEach`. Formato: skill `writing-unit-tests`.
 
 **Sem** barrel `index.ts`.
 
@@ -289,32 +306,76 @@ Fake com estado (Map, lista de envios) é válido para teste. Fake no-op (`debug
 
 ### 4. Módulo — padrão `register()`
 
-Majoridade: `static register(): DynamicModule`, `useClass` conforme `NODE_ENV === Environment.Test`.
+Majoridade: `static register(): DynamicModule`. Em `NODE_ENV === Environment.Test` força key `fake`. Fora de test: `process.env.<CAPABILITY>_VENDOR` + type guard + mapa. `fake` **é** valor válido de `*_VENDOR` (dev/staging sem vendor real).
+
+Chave env = capability SCREAMING_SNAKE + `_VENDOR` (ex.: `CEP_LOOKUP_VENDOR`). Valor = kebab em `src/infra/infra-vendors.ts` (`fake` + pastas `adapters/<vendor>/`). Declarar com skill `using-core-config` no mesmo diff.
+
+Cada entry do mapa é um **binding**:
+
+```ts
+type XxxAdapterBinding = {
+  class: Type<IXxxGateway>;
+  modules: Array<Type<unknown> | DynamicModule | Promise<DynamicModule> | ForwardReference>;
+  providers: Provider[];
+};
+```
+
+**Proibido:** `useClass: isTest ? Fake : UmConcreto` hardcoded. Sempre o mapa com binding.
 
 ```ts
 import { HttpModule } from '@nestjs/axios';
-import { DynamicModule, Module } from '@nestjs/common';
+import { DynamicModule, ForwardReference, Module, Provider, Type } from '@nestjs/common';
 import { ConfigModule } from 'src/core/config/config.module';
 import { Environment } from 'src/core/config/environment.enum';
+import { isCepLookupVendor, CepLookupVendor } from 'src/infra/infra-vendors';
 import { TOKENS } from 'src/core/di/token';
 import { CepLookupFakeAdapterGateway } from './adapters/fake/cep-lookup-fake.gateway';
 import { CepLookupViacepAdapterGateway } from './adapters/viacep/cep-lookup-viacep.gateway';
+import { ICepLookupGateway } from './cep-lookup.gateway';
+
+type CepLookupAdapterBinding = {
+  class: Type<ICepLookupGateway>;
+  modules: Array<Type<unknown> | DynamicModule | Promise<DynamicModule> | ForwardReference>;
+  providers: Provider[];
+};
+
+const CEP_LOOKUP_ADAPTERS: Record<CepLookupVendor, CepLookupAdapterBinding> = {
+  [CepLookupVendor.Fake]: {
+    class: CepLookupFakeAdapterGateway,
+    modules: [],
+    providers: [],
+  },
+  [CepLookupVendor.Viacep]: {
+    class: CepLookupViacepAdapterGateway,
+    modules: [ConfigModule, HttpModule],
+    providers: [],
+  },
+};
 
 @Module({})
 export class CepLookupModule {
   static register(): DynamicModule {
-    const isTest = process.env.NODE_ENV === Environment.Test;
+    const vendor = process.env.NODE_ENV === Environment.Test
+      ? CepLookupVendor.Fake
+      : process.env.CEP_LOOKUP_VENDOR;
+    const binding = isCepLookupVendor(vendor)
+      ? CEP_LOOKUP_ADAPTERS[vendor]
+      : undefined;
+
+    if (!binding) {
+      throw new Error(`Invalid CEP_LOOKUP_VENDOR "${vendor ?? ''}"`);
+    }
 
     return {
       module: CepLookupModule,
       imports: [
-        ConfigModule,
-        HttpModule,
+        ...binding.modules,
       ],
       providers: [
+        ...binding.providers,
         {
           provide: TOKENS.CepLookupGateway,
-          useClass: isTest ? CepLookupFakeAdapterGateway : CepLookupViacepAdapterGateway,
+          useClass: binding.class,
         },
       ],
       exports: [
@@ -325,9 +386,16 @@ export class CepLookupModule {
 }
 ```
 
-`HttpModule` só se o adapter real usar `@nestjs/axios`. `ConfigModule` sempre que houver `ConfigService`.
+`HttpModule` só no binding do adapter que usa `@nestjs/axios`. `ConfigModule` só no binding que injeta `ConfigService`. Fake: `modules: []`, `providers: []`.
 
-**`@Global()`:** só se dezenas de módulos precisarem do port sem importar (logger, cache). Mesmo global, o binding continua `TOKENS.XxxGateway` + fake em test. Não colocar capability novo em `InfraModule` por inércia — importar `XxxModule.register()` no módulo Nest que injeta o port.
+**Novo vendor** (ex.: `adapters/brasilapi/` ou `fake` já existe):
+
+1. Chave no objeto em `infra-vendors.ts` (skill `using-core-config` + `requiredWhen` nas credenciais)
+2. Pasta `adapters/<vendor>/` + entry no mapa com `class` / `modules` / `providers` usando `XxxVendor.Real`
+
+Compile time: vendor novo sem linha no mapa → erro TS; classe que não implementa a porta → erro TS.
+
+**`@Global()`:** só se dezenas de módulos precisarem do port sem importar (logger, cache). Mesmo global, o binding continua via `register()`. Não colocar capability novo em `InfraModule` por inércia — importar `XxxModule.register()` no módulo Nest que injeta o port.
 
 ### 5. Consumo (application / guard / filter)
 
@@ -376,7 +444,8 @@ Não lançar `HttpException` / `Error` nativo no adapter.
 - Application depende da **porta**; adapter depende do **vendor**
 - Adapter = ACL: `toPort` / `toVendor` privados; use case nunca vê modelo externo
 - Valor devolvido ao use case já está no DTO da porta
-- Config (URL, bucket, host) só em `ConfigService` — se a chave não existir, adicionar lá, não hardcode
+- Config (URL, bucket, host, `*_VENDOR`) só em `ConfigService` — se a chave não existir, adicionar lá, não hardcode
+- Binding de vendor: `Record<XxxVendor, { class, modules, providers }>` + type guard; `NODE_ENV=test` força `fake`; fora de test `*_VENDOR=fake` também válido
 - Um capability = uma porta. Não misturar SMTP + S3 na mesma interface
 - Fake e real implementam **todos** os métodos da porta (fake já devolve DTO da porta)
 - Comentário só se citar contrato/docs do vendor
@@ -386,8 +455,10 @@ Não lançar `HttpException` / `Error` nativo no adapter.
 | Artefato | Delegar / não fazer |
 |----------|---------------------|
 | `<kebab>-<vendor>.gateway.spec.ts` | Skill `writing-unit-tests` (**obrigatório**) |
-| Fake com lógica (TTL, Map) `.spec.ts` | Skill `writing-unit-tests` (**obrigatório**) |
+| Fake com lógica (TTL, Map, lista de envios) `.spec.ts` | Skill `writing-unit-tests` (**obrigatório**) |
 | Fake no-op sem ramo | Spec opcional |
+| `<kebab>.module.spec.ts` | Skill `writing-unit-tests` (**recomendado**) |
+| `helpers/<helper>/<helper>.builder.spec.ts` | Skill `writing-unit-tests` (**obrigatório** se tiver lógica) |
 | Classe de erro nova | Skill `creating-custom-errors` |
 | DAO/Repository Prisma do módulo | Fora — não usar esta skill |
 | Controller HTTP | Fora |
@@ -404,7 +475,9 @@ Antes de responder, confirmar **todos**:
 - [ ] Porta e DTOs da capability: linguagem da aplicação; zero campo/tipo/erro do vendor
 - [ ] Adapter real é ACL: `toPort`/`toVendor` (ou equivalentes privados); falha do vendor traduzida
 - [ ] DTO da porta ≠ DTO do vendor; DTO de vendor só em `adapters/<vendor>/dtos/`
-- [ ] Teste usa fake via `NODE_ENV === Environment.Test` no `register()`
+- [ ] Binding via mapa `{ class, modules, providers }` (inclui entry `fake`); throw se vendor inválido
+- [ ] Vendor via objeto `XxxVendor` em `infra-vendors.ts` (sem literal solto); `*_VENDOR` + `requiredWhen` via `using-core-config`
+- [ ] Teste força fake via `NODE_ENV === Environment.Test`; `*_VENDOR=fake` válido fora de test
 - [ ] Falha de I/O: `ExternalApiError` ou erro via `creating-custom-errors` (reuso primeiro)
 - [ ] Log (se houver): `LogContext` + mapa atualizados; `adapter` no payload; sem segredo
 - [ ] Modificador explícito em todo membro; `constructor` público sem `public`

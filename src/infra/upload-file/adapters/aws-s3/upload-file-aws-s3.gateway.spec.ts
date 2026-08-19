@@ -6,7 +6,7 @@ import { ConfigService } from 'src/core/config/config.service';
 import { TOKENS } from 'src/core/di/token';
 import { type ILoggerGateway, LogContext } from 'src/infra/logger/logger.gateway';
 import type { UploadFileInput } from '../../dtos/upload-file.dto';
-import { UploadS3AdapterGateway } from './upload-s3.gateway';
+import { UploadFileAwsS3AdapterGateway } from './upload-file-aws-s3.gateway';
 
 jest.mock('@aws-sdk/client-s3');
 jest.mock('@aws-sdk/lib-storage');
@@ -24,8 +24,8 @@ const buildInput = (overrides: Partial<UploadFileInput> = {}): UploadFileInput =
   ...overrides,
 });
 
-describe('UploadS3AdapterGateway - Unit tests', () => {
-  let sut: UploadS3AdapterGateway;
+describe('UploadFileAwsS3AdapterGateway - Unit tests', () => {
+  let sut: UploadFileAwsS3AdapterGateway;
   let logger: ILoggerGateway;
   let configService: ConfigService;
   let mockS3Send: jest.Mock;
@@ -49,13 +49,13 @@ describe('UploadS3AdapterGateway - Unit tests', () => {
 
     const module = await Test.createTestingModule({
       providers: [
-        UploadS3AdapterGateway,
+        UploadFileAwsS3AdapterGateway,
         { provide: TOKENS.LoggerGateway, useValue: logger },
         { provide: ConfigService, useValue: configService },
       ],
     }).compile();
 
-    sut = module.get(UploadS3AdapterGateway);
+    sut = module.get(UploadFileAwsS3AdapterGateway);
   });
 
   afterEach(() => {
@@ -97,7 +97,7 @@ describe('UploadS3AdapterGateway - Unit tests', () => {
         await expect(sut.upload(input)).rejects.toThrow('Erro ao fazer upload do arquivo');
 
         expect(logger.error).toHaveBeenCalledWith(LogContext.UPLOAD_FILE, {
-          adapter: 's3',
+          adapter: 'aws-s3',
           action: 'upload',
           fileName: 'photo.jpg',
           fileSize: 4,
@@ -115,7 +115,7 @@ describe('UploadS3AdapterGateway - Unit tests', () => {
         await expect(sut.upload(input)).rejects.toThrow('Erro ao fazer upload do arquivo');
 
         expect(logger.error).toHaveBeenCalledWith(LogContext.UPLOAD_FILE, {
-          adapter: 's3',
+          adapter: 'aws-s3',
           action: 'upload',
           fileName: 'photo.jpg',
           fileSize: 4,
@@ -175,7 +175,7 @@ describe('UploadS3AdapterGateway - Unit tests', () => {
         await expect(sut.delete(publicUrl)).rejects.toThrow('Erro ao excluir o arquivo');
 
         expect(logger.error).toHaveBeenCalledWith(LogContext.UPLOAD_FILE, {
-          adapter: 's3',
+          adapter: 'aws-s3',
           action: 'delete',
           publicUrl,
           fileKey: 'path/file.pdf',

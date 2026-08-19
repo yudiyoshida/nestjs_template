@@ -9,7 +9,7 @@ import { AuthorizationGuard } from './authorization/authorization.guard';
   imports: [
     AccountModule,
     CacheModule.register(),
-    LoggerModule,
+    LoggerModule.register(),
   ],
   providers: [
     AuthenticationGuard,

@@ -4,7 +4,7 @@ import { UploadFileInput, UploadedFileOutput } from '../../dtos/upload-file.dto'
 import { IUploadFileGateway } from '../../upload-file.gateway';
 
 @Injectable()
-export class UploadFakeAdapterGateway implements IUploadFileGateway {
+export class UploadFileFakeAdapterGateway implements IUploadFileGateway {
   public async upload(_input: UploadFileInput): Promise<UploadedFileOutput> {
     return { publicUrl: 'http://fake-url.com/' + Date.now() };
   }

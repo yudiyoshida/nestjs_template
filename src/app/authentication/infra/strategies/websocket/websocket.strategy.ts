@@ -3,14 +3,15 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { Socket } from 'socket.io';
 import { Payload } from 'src/app/authentication/domain/types/payload.type';
+import { ConfigService } from 'src/core/config/config.service';
 
 @Injectable()
 export class JwtWebSocketStrategy extends PassportStrategy(Strategy, 'jwt-ws') {
-  constructor() {
+  constructor(private readonly configService: ConfigService) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([JwtWebSocketStrategy.extractJwtFromSocket]),
       ignoreExpiration: false,
-      secretOrKey: process.env.JWT_SECRET,
+      secretOrKey: configService.jwtSecret,
     });
   }
 
