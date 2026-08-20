@@ -38,7 +38,7 @@ export class UploadFileAwsS3AdapterGateway implements IUploadFileGateway {
     }
 
     if (!location) {
-      this.logUploadError(input, new ExternalApiError('Resposta do S3 sem Location'));
+      this.logUploadError(input, 'Resposta do S3 sem Location');
       throw new ExternalApiError('Erro ao fazer upload do arquivo');
     }
 
@@ -54,7 +54,7 @@ export class UploadFileAwsS3AdapterGateway implements IUploadFileGateway {
         publicUrl,
         error: 'URL do arquivo inválida',
       });
-      return;
+      throw new ExternalApiError('URL do arquivo inválida');
     }
 
     try {

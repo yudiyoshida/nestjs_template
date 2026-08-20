@@ -16,7 +16,7 @@ jest.mock('crypto', () => ({
   randomUUID: jest.fn(() => '00000000-0000-0000-0000-000000000001'),
 }));
 
-const buildInput = (overrides: Partial<UploadFileInputDto> = {}): UploadFileInputDto => ({
+const makeInput = (overrides: Partial<UploadFileInputDto> = {}): UploadFileInputDto => ({
   buffer: Buffer.from('data'),
   originalName: 'photo.jpg',
   mimeType: 'image/jpeg',
@@ -32,6 +32,7 @@ describe('UploadFileAwsS3AdapterGateway - Unit tests', () => {
   let mockUploadDone: jest.Mock;
 
   beforeEach(async() => {
+    jest.clearAllMocks();
     mockS3Send = jest.fn().mockResolvedValue(undefined);
     mockUploadDone = jest.fn().mockResolvedValue({
       Location: 'https://my-bucket.s3.amazonaws.com/client-attachments/00000000-0000-0000-0000-000000000001-photo.jpg',
@@ -42,11 +43,12 @@ describe('UploadFileAwsS3AdapterGateway - Unit tests', () => {
     jest.mocked(DeleteObjectCommand).mockImplementation((input) => input as unknown as DeleteObjectCommand);
 
     logger = createMock<ILoggerGateway>();
-    configService = createMock<ConfigService>();
-    configService.awsAccessKeyId = 'AKIA_TEST_KEY';
-    configService.awsSecretAccessKey = 'test-secret';
-    configService.awsBucketName = 'my-bucket';
-    configService.awsRegion = 'us-east-1';
+    configService = createMock<ConfigService>({
+      awsAccessKeyId: 'AKIA_TEST_KEY',
+      awsSecretAccessKey: 'test-secret',
+      awsBucketName: 'my-bucket',
+      awsRegion: 'us-east-1',
+    });
 
     const module = await Test.createTestingModule({
       providers: [
@@ -67,7 +69,7 @@ describe('UploadFileAwsS3AdapterGateway - Unit tests', () => {
     describe('Happy path', () => {
       it('should return publicUrl from S3 upload response', async() => {
         // Arrange
-        const input = buildInput({ folder: 'client-attachments' });
+        const input = makeInput({ folder: 'client-attachments' });
 
         // Act
         const result = await sut.upload(input);
@@ -88,7 +90,7 @@ describe('UploadFileAwsS3AdapterGateway - Unit tests', () => {
 
       it('should build the S3 client with region and credentials from ConfigService', async() => {
         // Arrange
-        const input = buildInput();
+        const input = makeInput();
 
         // Act
         await sut.upload(input);
@@ -109,7 +111,7 @@ describe('UploadFileAwsS3AdapterGateway - Unit tests', () => {
         // Arrange
         const failure = new Error('S3 network error');
         mockUploadDone.mockRejectedValueOnce(failure);
-        const input = buildInput();
+        const input = makeInput();
 
         // Act & Assert
         await expect(sut.upload(input)).rejects.toThrow('Erro ao fazer upload do arquivo');
@@ -127,7 +129,7 @@ describe('UploadFileAwsS3AdapterGateway - Unit tests', () => {
       it('should log and throw ExternalApiError when upload response has no Location', async() => {
         // Arrange
         mockUploadDone.mockResolvedValueOnce({});
-        const input = buildInput();
+        const input = makeInput();
 
         // Act & Assert
         await expect(sut.upload(input)).rejects.toThrow('Erro ao fazer upload do arquivo');
@@ -138,7 +140,7 @@ describe('UploadFileAwsS3AdapterGateway - Unit tests', () => {
           fileName: 'photo.jpg',
           fileSize: 4,
           fileType: 'image/jpeg',
-          error: expect.any(Error),
+          error: 'Resposta do S3 sem Location',
         });
       });
     });
@@ -146,7 +148,7 @@ describe('UploadFileAwsS3AdapterGateway - Unit tests', () => {
     describe('Edge cases', () => {
       it('should build Key without folder prefix when folder is not provided', async() => {
         // Arrange
-        const input = buildInput();
+        const input = makeInput();
 
         // Act
         await sut.upload(input);
@@ -159,6 +161,19 @@ describe('UploadFileAwsS3AdapterGateway - Unit tests', () => {
             }),
           }),
         );
+      });
+
+      it('should build the S3 client only once when uploading twice', async() => {
+        // Arrange
+        const input = makeInput();
+
+        // Act
+        await sut.upload(input);
+        await sut.upload(input);
+
+        // Assert
+        expect(S3).toHaveBeenCalledTimes(1);
+        expect(Upload).toHaveBeenCalledTimes(2);
       });
     });
   });
@@ -200,17 +215,15 @@ describe('UploadFileAwsS3AdapterGateway - Unit tests', () => {
           error: failure,
         });
       });
-    });
 
-    describe('Edge cases', () => {
-      it('should log and not call S3 send when URL has empty path', async() => {
-        // Arrange
-        const publicUrl = 'https://my-bucket.s3.amazonaws.com/';
+      it.each([
+        'https://my-bucket.s3.amazonaws.com/',
+        'not-a-valid-url',
+        '',
+      ])('should log and throw ExternalApiError when the URL has no file key (%s)', async(publicUrl: string) => {
+        // Act & Assert
+        await expect(sut.delete(publicUrl)).rejects.toThrow('URL do arquivo inválida');
 
-        // Act
-        await sut.delete(publicUrl);
-
-        // Assert
         expect(mockS3Send).not.toHaveBeenCalled();
         expect(logger.error).toHaveBeenCalledWith(LogContext.UPLOAD_FILE, {
           adapter: 'aws-s3',
@@ -219,21 +232,20 @@ describe('UploadFileAwsS3AdapterGateway - Unit tests', () => {
           error: 'URL do arquivo inválida',
         });
       });
+    });
 
-      it('should log and not call S3 send when URL is invalid', async() => {
+    describe('Edge cases', () => {
+      it('should decode the file key extracted from the public URL', async() => {
         // Arrange
-        const publicUrl = 'not-a-valid-url';
+        const publicUrl = 'https://my-bucket.s3.amazonaws.com/client-attachments/meu%20arquivo.pdf';
 
         // Act
         await sut.delete(publicUrl);
 
         // Assert
-        expect(mockS3Send).not.toHaveBeenCalled();
-        expect(logger.error).toHaveBeenCalledWith(LogContext.UPLOAD_FILE, {
-          adapter: 'aws-s3',
-          action: 'delete',
-          publicUrl,
-          error: 'URL do arquivo inválida',
+        expect(DeleteObjectCommand).toHaveBeenCalledWith({
+          Bucket: 'my-bucket',
+          Key: 'client-attachments/meu arquivo.pdf',
         });
       });
     });
