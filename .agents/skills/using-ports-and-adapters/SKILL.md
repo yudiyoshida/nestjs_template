@@ -415,25 +415,9 @@ Importar `ICepLookupGateway` de `src/infra/<kebab>/<kebab>.gateway.ts` e `TOKENS
 
 ## Log
 
-Se o adapter logar: injetar `ILoggerGateway` com `@Inject(TOKENS.LoggerGateway)`. Incluir `adapter: '<vendor>'` no payload.
+Fonte da verdade: skill **`using-logger`**. Injetar `ILoggerGateway`, `LogContext` + mapa, `debug`/`error`, segredos.
 
-Acrescentar em `LogContext` e em `LogContextDataMap` (mesmo arquivo da porta de logger):
-
-```ts
-export enum LogContext {
-  // ...valores já existentes
-  XXX = 'xxx',
-}
-
-type XxxData = CommomData & {
-  action: string;
-  // campos úteis da operação, sem segredo (senha, token, hash)
-};
-```
-
-E o índice: `[LogContext.XXX]: XxxData`.
-
-Não logar senha, secret, token, hash, body de e-mail completo se contiver dado sensível.
+Resumo mínimo (detalhe só naquela skill): adapter real loga falha com `adapter: '<vendor>'`; contexto novo = enum + type + mapa no mesmo diff; **não** editar Winston só por contexto novo.
 
 ## Erros
 
@@ -483,7 +467,7 @@ Antes de responder, confirmar **todos**:
 - [ ] Vendor via objeto `XxxVendor` em `infra-vendors.ts` (sem literal solto); `*_VENDOR` + `requiredWhen` via `using-core-config`
 - [ ] Teste força fake via `NODE_ENV === Environment.Test`; `*_VENDOR=fake` válido fora de test
 - [ ] Falha de I/O: `ExternalApiError` ou erro via `creating-custom-errors` (reuso primeiro)
-- [ ] Log (se houver): `LogContext` + mapa atualizados; `adapter` no payload; sem segredo
+- [ ] Log (se houver): skill `using-logger` (contexto + mapa; `adapter` no payload; sem segredo)
 - [ ] Modificador explícito em todo membro; `constructor` público sem `public`
 - [ ] Spec do adapter real existe, escrito com `writing-unit-tests`, suíte passando
 - [ ] Spec do fake existe se o fake tiver lógica; suíte passando
