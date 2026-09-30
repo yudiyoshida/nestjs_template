@@ -112,7 +112,7 @@ Arquivo TypeScript do projeto com comportamento a verificar em isolamento:
 
 | Situação | Onde vai |
 |----------|----------|
-| Teste com módulo real ou Prisma (`*.integration.spec.ts`) | Fora (sem skill; planejada writing-integration-tests) |
+| Teste com módulo real ou Prisma (`*.integration.spec.ts`) | Skill `writing-integration-tests` |
 | Teste HTTP ponta a ponta | Fora (sem skill; planejada writing-e2e-tests) |
 
 ## Estrutura obrigatória do arquivo
@@ -453,7 +453,7 @@ it.each([
 
 | Artefato | Delegar a |
 |----------|-----------|
-| `*.integration.spec.ts` (módulo real, Prisma) | Fora (sem skill; planejada writing-integration-tests) |
+| `*.integration.spec.ts` (módulo real, Prisma) | Skill `writing-integration-tests` |
 | Código de produção | Não alterar para o teste passar sem confirmar; bug → reportar ao usuário |
 
 ## Checklist de entrega

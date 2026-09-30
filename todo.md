@@ -18,7 +18,6 @@ flow
 
 
 skills que precisam ser criadas (em ordem de criacao)
-- writing-integration-tests: use case e dao/repository com banco real
 - arquitetura (nesta ordem)
   - creating-prisma-models: model em prisma/schema + seed
   - creating-domain-entities: ddd (entity + factory + enums)

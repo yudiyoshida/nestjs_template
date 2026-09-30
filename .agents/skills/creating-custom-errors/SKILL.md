@@ -136,7 +136,7 @@ Sempre passar status explícito com `HttpStatus` de `@nestjs/common` (nunca núm
 | `throw new …` em services, entidades ou gateways | Fora (sem skill) — tarefa separada, só com pedido do usuário |
 | Flags `@Swagger` no controller (`applyNotFound`, `applyConflict`, `applyForbidden`, etc.) | Fora (sem skill; planejada using-swagger-decorator) |
 | Testes unitários | Skill `writing-unit-tests` — tarefa separada, só com pedido do usuário |
-| Testes de integração | Fora (sem skill; planejada writing-integration-tests) |
+| Testes de integração | Skill `writing-integration-tests` — tarefa separada, só com pedido do usuário |
 
 ## Checklist de entrega
 

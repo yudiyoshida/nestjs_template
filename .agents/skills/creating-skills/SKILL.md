@@ -300,8 +300,9 @@ Delegações recorrentes (skills que já existem):
 | Log | Skill `using-logger` |
 | Porta de infra / vendor externo | Skill `using-ports-and-adapters` |
 | Teste unitário | Skill `writing-unit-tests` |
+| Teste de integração (banco real) | Skill `writing-integration-tests` |
 
-Demais skills: `grep -h '^description:' .agents/skills/*/SKILL.md`.
+Demais skills: `grep -h '^description:' .agents/skills/*/SKILL.md`. Skill nova que vira destino recorrente (teste, erro, config…) ganha linha nesta tabela no passo 8.
 
 **Propagação (passo 8).** A skill nova assume artefatos que outras skills marcavam como sem dono:
 
