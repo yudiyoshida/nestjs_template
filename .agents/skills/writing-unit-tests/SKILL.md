@@ -82,7 +82,40 @@ Classifique cada cenário em um dos três paths e liste-os nesta ordem:
 
 Omita um describe de path que não tenha nenhum cenário.
 
-### 3. Estrutura obrigatória do arquivo
+### 3. Escrever o arquivo
+
+Seguir as seções "Estrutura obrigatória do arquivo", "Hooks" e, para classe Nest com DI,
+"Classes com injeção de dependência (NestJS)".
+
+### 4. Rodar e iterar
+
+```bash
+npm test -- src/path/to/file.spec.ts
+```
+
+Se falhar: leia a mensagem, corrija o teste quando a expectativa estiver errada,
+e **reporte ao usuário** quando a falha indicar um bug no código de produção — não
+altere o código de produção para o teste passar sem confirmar. Repita até verde.
+
+Antes de responder, percorra o "Checklist de entrega" no fim desta skill, item por item.
+
+## Quando usar
+
+Arquivo TypeScript do projeto com comportamento a verificar em isolamento:
+
+| Alvo | Montagem |
+|------|----------|
+| VO, função pura, mapper | `new` direto |
+| Classe Nest com DI no construtor (`@Injectable`, `@Controller`, guard, filter, interceptor, gateway) | `Test.createTestingModule` + `createMock` — seção "Classes com injeção de dependência (NestJS)" |
+
+### Quando não usar
+
+| Situação | Onde vai |
+|----------|----------|
+| Teste com módulo real ou Prisma (`*.integration.spec.ts`) | Fora (sem skill; planejada writing-integration-tests) |
+| Teste HTTP ponta a ponta | Fora (sem skill; planejada writing-e2e-tests) |
+
+## Estrutura obrigatória do arquivo
 
 Regras, sem exceção:
 
@@ -224,7 +257,7 @@ describe('UserService - Unit tests', () => {
 });
 ```
 
-### Hooks
+## Hooks
 
 Nunca repita o mesmo setup em dois ou mais testes. Se uma linha de `// Arrange`
 apareceria idêntica em 2+ testes, ela vira hook.
@@ -273,7 +306,7 @@ describe('Error path', () => {
 });
 ```
 
-### Classes com injeção de dependência (NestJS)
+## Classes com injeção de dependência (NestJS)
 
 Use para classes Nest com DI no construtor (`@Injectable`, `@Controller`, guard,
 filter, interceptor, gateway). VOs, funções puras e mappers: `new` direto. Apenas
@@ -368,18 +401,6 @@ describe('FindAllTip - Unit tests', () => {
 });
 ```
 
-### 4. Rodar e iterar
-
-```bash
-npm test -- src/path/to/file.spec.ts
-```
-
-Se falhar: leia a mensagem, corrija o teste quando a expectativa estiver errada,
-e **reporte ao usuário** quando a falha indicar um bug no código de produção — não
-altere o código de produção para o teste passar sem confirmar. Repita até verde.
-
-Antes de responder, percorra o "Checklist de entrega" no fim desta skill, item por item.
-
 ## Convenções deste projeto
 
 Lista completa. Não verifique nem complemente estas convenções lendo outros
@@ -427,6 +448,13 @@ it.each([
   Nada de I/O real, banco ou rede
 - ESLint `space-before-function-paren: never` — escreva `async()` e
   `beforeEach(async() => ...)`, **sem** espaço antes do `(`
+
+## Fora do escopo
+
+| Artefato | Delegar a |
+|----------|-----------|
+| `*.integration.spec.ts` (módulo real, Prisma) | Fora (sem skill; planejada writing-integration-tests) |
+| Código de produção | Não alterar para o teste passar sem confirmar; bug → reportar ao usuário |
 
 ## Checklist de entrega
 

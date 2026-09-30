@@ -42,7 +42,7 @@ Progresso:
 - [ ] 7. Checklist de entrega
 ```
 
-## Quando logar (observabilidade)
+## Quando usar
 
 Log existe para **entender o sistema depois**: falha de I/O, request que estourou, operação de cache. Não para narrar o domínio.
 
@@ -59,6 +59,16 @@ Log existe para **entender o sistema depois**: falha de I/O, request que estouro
 **Novo contexto** só se for recorte novo (novo port de infra, novo canal driving). Valor do enum = kebab do recorte (`cnpj-lookup` → `LogContext.CNPJ_LOOKUP = 'cnpj-lookup'`). Arquivo: `logs/cnpj-lookup.log`.
 
 **Proibido:** `console.log` / `console.error`, `@nestjs/common` `Logger`, importar `winston` fora do adapter Winston, criar segundo `LoggerModule`.
+
+### Quando não usar
+
+| Situação | Onde vai |
+|----------|----------|
+| Novo port + log no adapter | Skill `using-ports-and-adapters` (ACL, register) **e** esta skill (payload) |
+| Novo vendor de logger (pino, …) | Skill `using-ports-and-adapters` + skill `using-core-config` — **não** esta skill |
+| Sentry / APM | Fora (sem skill; planejada using-error-tracking) |
+| Auditoria de use case com interceptor | Fora (sem skill; planejada auditing-with-interceptors) — só com pedido do usuário |
+| Recriar `LoggerModule` / adapter Winston / fake | Proibido |
 
 ## debug vs error
 
@@ -158,14 +168,11 @@ Não reescrever spec do Winston/Fake/LoggerModule só porque nasceu um `LogConte
 
 ## Fora do escopo
 
-| Pedido | Onde |
-|--------|------|
-| Novo port + log no adapter | Skill `using-ports-and-adapters` (ACL, register) **e** esta skill (payload) |
-| `LOGGER_VENDOR`, env | Skill `using-core-config` |
-| Novo vendor de logger (pino, …) | `using-ports-and-adapters` + `using-core-config` — **não** esta skill |
-| Sentry / APM | Fora (todo de observabilidade externa) |
-| Auditoria de use case com interceptor | Fora até o usuário pedir essa tarefa |
-| Recriar `LoggerModule` / adapter Winston / fake | Proibido |
+| Artefato | Delegar a |
+|----------|-----------|
+| Spec do consumidor (adapter, filter) | Skill `writing-unit-tests` (**obrigatório**) |
+| `LOGGER_VENDOR` e demais env | Skill `using-core-config` |
+| Spec do Winston, do fake e do `LoggerModule` | Não reescrever só porque nasceu um `LogContext` |
 
 ## Checklist de entrega
 

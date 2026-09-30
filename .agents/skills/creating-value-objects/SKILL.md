@@ -38,7 +38,7 @@ Progresso:
 - [ ] 6. Rodar a suíte do `.vo.spec.ts` e o checklist de entrega
 ```
 
-## Quando criar um value object (DDD)
+## Quando usar
 
 Um value object representa um **conceito de domínio definido pelo valor**, não por identidade. Duas instâncias com os mesmos atributos são intercambiáveis; o que importa é o valor, não o objeto em memória.
 
@@ -54,10 +54,10 @@ Um value object representa um **conceito de domínio definido pelo valor**, não
 | Anti-primitivo | A mesma validação não deve repetir em services e DTOs |
 | Sem efeito colateral | Métodos calculam/retornam; não fazem I/O nem chamam repositório |
 
-### Quando não criar
+### Quando não usar
 
-| Situação | Use em vez de VO |
-|----------|------------------|
+| Situação | Onde vai |
+|----------|----------|
 | Identidade e ciclo de vida (id, versão, auditoria) | Entidade ou agregado |
 | Só transporte HTTP (body/query de API) | DTO + `class-validator` |
 | String/número sem regra nem comportamento | Primitivo |
@@ -74,7 +74,7 @@ Um value object representa um **conceito de domínio definido pelo valor**, não
 | Onde valida formato de e-mail/CPF? | No VO | — | Opcional (entrada HTTP) |
 | Onde fica regra “FAQ expirado não edita”? | — | Entidade/domínio | — |
 
-## Decisão de localização
+## Estrutura de pastas
 
 | Destino | Critério |
 |---------|----------|
@@ -89,7 +89,7 @@ Arquivos na pasta shared (um diretório por conceito):
 
 **Sem** barrel `index.ts` na pasta do VO.
 
-## Modificadores de acesso explícitos
+## Modificadores de acesso
 
 **Obrigatório:** cada método, getter, setter e atributo declara `public`, `private` ou `protected` — inclusive membros públicos.
 
@@ -97,7 +97,7 @@ Arquivos na pasta shared (um diretório por conceito):
 
 Estado interno do valor: sempre `private readonly` (ex.: `private readonly _value: string`).
 
-## Templates obrigatórios
+## Templates
 
 Estilo alinhado ao ESLint do projeto: indent 2, aspas simples, `semi`, vírgula final em multiline, `else` em nova linha.
 
@@ -388,7 +388,7 @@ Esta skill **não** escreve sozinha:
 |----------|-----------|
 | `<kebab>.error.ts` | Skill `creating-custom-errors` (local: ao lado do VO em `value-objects/<kebab>/`) |
 | `<kebab>.vo.spec.ts` | Skill `writing-unit-tests` (**obrigatório** em cada entrega de VO novo) |
-| Uso do VO em entidade, service, DTO, controller | Tarefa separada, só se o usuário pedir |
+| Uso do VO em entidade, service, DTO, controller | Fora (sem skill) — tarefa separada, só se o usuário pedir |
 
 ## Checklist de entrega
 

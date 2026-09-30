@@ -31,39 +31,6 @@ Se código existente contradiz esta skill, **esta skill vence**. Não imite o le
 
 Exceção: usuário apontar um arquivo, ou pedir edição de getter/schema que já existe — leia só esse arquivo.
 
-## Regra de ouro
-
-**Mudou variável de ambiente → atualizar `ConfigService` no mesmo diff.** Sempre.
-
-Nunca adicionar chave no `.env` / Joi sem getter. Nunca adicionar getter sem Joi. Nunca ler a chave sem passar pelo getter.
-
-Conjunto atômico (os quatro juntos, ou nenhum):
-
-| Arquivo | O que muda |
-|---------|------------|
-| `src/core/config/config.module.ts` | `CHAVE: Joi.<tipo>().required()` (ou `Joi.when` se credencial de vendor) no `validationSchema` |
-| `src/core/config/config.service.ts` | getter camelCase + `this.nestConfigService.get<T>('CHAVE')!` |
-| `src/core/config/config.service.spec.ts` | spec via skill `writing-unit-tests` |
-| `.env.example` | `CHAVE=` (valor de exemplo só se já houver padrão no arquivo) |
-
-**Única chave do Joi fora do `.env.example`: `NODE_ENV`.** Ela vem do processo (script npm:
-`NODE_ENV=test jest`), não do arquivo — o próprio `envFilePath` é `.env.${NODE_ENV}`. Toda chave
-nova, sem exceção, entra no `.env.example`.
-
-Todo port de infra com `register()` inclui `*_VENDOR` no conjunto atômico **mais** `src/infra/infra-vendors.ts`:
-
-1. Objeto `XxxVendor = { Fake: 'fake', Real: 'kebab' } as const` + type + `XXX_VENDORS = Object.values(XxxVendor)` + guard `isXxxVendor`
-2. Joi: `Joi.string().valid(...XXX_VENDORS).required()` — **proibido** literal solto no `.valid()` / `is:` de vendor
-3. Credenciais: `requiredWhen('*_VENDOR', XxxVendor.Real)` (helper no `config.module`; `Joi.number()` no 3º arg se preciso)
-4. Getter tipado: `get xxxVendor(): XxxVendor`
-5. Spec + `.env.example`
-
-Valor = `XxxVendor.Fake` + kebabs reais. `*_VENDOR=fake` permite fluxo sem I/O externo.
-
-Remover variável: apagar os quatro (+ linha em `infra-vendors.ts` se for `*_VENDOR`). Renomear/trocar tipo: os quatro.
-
-`Environment` (`environment.enum.ts`) só muda se nascer um runtime novo (`development` / `production` / `test`). Variável de app **não** entra no enum.
-
 ## Fluxo
 
 ```
@@ -86,7 +53,7 @@ Progresso:
 | Depois de `NestFactory.create`, CORS/listen/Swagger | `app.get(ConfigService)` |
 | Comparar ambiente (dev/prod/test) em classe injetável | `configService.isDevelopment` / `isProduction` / `isTest` |
 
-## Quando não usar
+### Quando não usar
 
 | Situação | Onde vai |
 |----------|----------|
@@ -96,39 +63,6 @@ Progresso:
 | Script fora do Nest (Postman, codegen) | Fora desta skill |
 | Escolher fake vs real em `XxxModule.register()` | `process.env.NODE_ENV === Environment.Test` — skill `using-ports-and-adapters` |
 | Escolher vendor real em `XxxModule.register()` | `process.env.<CAPABILITY>_VENDOR` + mapa — skill `using-ports-and-adapters` |
-
-## Proibido
-
-- `process.env.QUALQUER_COISA` em application, domain, adapter, strategy, filter, interceptor, guard
-- `ConfigService` de `@nestjs/config` no consumidor (alias `NestConfigService` só dentro de `config.service.ts`)
-- `this.nestConfigService.get('X')` fora de `config.service.ts`
-- String solta `'JWT_SECRET'` / `'REDIS_URL'` fora de `config.service.ts` e do Joi
-- Getter novo sem Joi, ou Joi novo sem getter
-- Env opcional (`optional()`, `default()`) sem o usuário pedir — **exceção:** `Joi.when` de credencial de vendor inativo (ver template)
-- Logar valor de secret, password, token, key
-
-## Exceções de `process.env` (só estas)
-
-| Local | Por quê |
-|-------|---------|
-| `config.module.ts` → `envFilePath: \`.env.${process.env.NODE_ENV \|\| Environment.Development}\`` | NestConfig ainda não carregou |
-| `XxxModule.register()` → `process.env.NODE_ENV === Environment.Test` | Binding estático antes do DI; skill `using-ports-and-adapters` |
-| `XxxModule.register()` → `process.env.<CAPABILITY>_VENDOR` | Binding estático do vendor antes do DI; skill `using-ports-and-adapters` |
-| `main.ts` **antes** de `NestFactory.create` (HTTPS `SSL_KEY` / `SSL_CERT` / `SSL_CA`) | App ainda não existe; `app.get(ConfigService)` impossível |
-
-Depois de `const app = await NestFactory.create(...)`: **só** `app.get(ConfigService)`. Inclusive `port`, `corsOrigin`. Não voltar para `process.env.PORT`.
-
-Passport `super({ secretOrKey })`: injetar `ConfigService` no constructor e ler o getter **dentro** do `super(...)`. Não usar `process.env` porque o `super` “não tem DI”.
-
-```ts
-constructor(private readonly configService: ConfigService) {
-  super({
-    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-    ignoreExpiration: false,
-    secretOrKey: configService.jwtSecret,
-  });
-}
-```
 
 ## Nomeação
 
@@ -254,7 +188,75 @@ Skill `writing-unit-tests`. Espelhar os getters já testados: mock de `NestConfi
 
 Teste de consumidor: mockar `ConfigService` (getter devolver valor). **Proibido** `process.env.X = '...'` para alimentar produção.
 
-## Red flags — parar e corrigir
+## Regra de ouro
+
+**Mudou variável de ambiente → atualizar `ConfigService` no mesmo diff.** Sempre.
+
+Nunca adicionar chave no `.env` / Joi sem getter. Nunca adicionar getter sem Joi. Nunca ler a chave sem passar pelo getter.
+
+Conjunto atômico (os quatro juntos, ou nenhum):
+
+| Arquivo | O que muda |
+|---------|------------|
+| `src/core/config/config.module.ts` | `CHAVE: Joi.<tipo>().required()` (ou `Joi.when` se credencial de vendor) no `validationSchema` |
+| `src/core/config/config.service.ts` | getter camelCase + `this.nestConfigService.get<T>('CHAVE')!` |
+| `src/core/config/config.service.spec.ts` | spec via skill `writing-unit-tests` |
+| `.env.example` | `CHAVE=` (valor de exemplo só se já houver padrão no arquivo) |
+
+**Única chave do Joi fora do `.env.example`: `NODE_ENV`.** Ela vem do processo (script npm:
+`NODE_ENV=test jest`), não do arquivo — o próprio `envFilePath` é `.env.${NODE_ENV}`. Toda chave
+nova, sem exceção, entra no `.env.example`.
+
+Todo port de infra com `register()` inclui `*_VENDOR` no conjunto atômico **mais** `src/infra/infra-vendors.ts`:
+
+1. Objeto `XxxVendor = { Fake: 'fake', Real: 'kebab' } as const` + type + `XXX_VENDORS = Object.values(XxxVendor)` + guard `isXxxVendor`
+2. Joi: `Joi.string().valid(...XXX_VENDORS).required()` — **proibido** literal solto no `.valid()` / `is:` de vendor
+3. Credenciais: `requiredWhen('*_VENDOR', XxxVendor.Real)` (helper no `config.module`; `Joi.number()` no 3º arg se preciso)
+4. Getter tipado: `get xxxVendor(): XxxVendor`
+5. Spec + `.env.example`
+
+Valor = `XxxVendor.Fake` + kebabs reais. `*_VENDOR=fake` permite fluxo sem I/O externo.
+
+Remover variável: apagar os quatro (+ linha em `infra-vendors.ts` se for `*_VENDOR`). Renomear/trocar tipo: os quatro.
+
+`Environment` (`environment.enum.ts`) só muda se nascer um runtime novo (`development` / `production` / `test`). Variável de app **não** entra no enum.
+
+## Proibido
+
+- `process.env.QUALQUER_COISA` em application, domain, adapter, strategy, filter, interceptor, guard
+- `ConfigService` de `@nestjs/config` no consumidor (alias `NestConfigService` só dentro de `config.service.ts`)
+- `this.nestConfigService.get('X')` fora de `config.service.ts`
+- String solta `'JWT_SECRET'` / `'REDIS_URL'` fora de `config.service.ts` e do Joi
+- Getter novo sem Joi, ou Joi novo sem getter
+- Env opcional (`optional()`, `default()`) sem o usuário pedir — **exceção:** `Joi.when` de credencial de vendor inativo (ver template)
+- Logar valor de secret, password, token, key
+
+## Exceções de `process.env` (só estas)
+
+| Local | Por quê |
+|-------|---------|
+| `config.module.ts` → `envFilePath: \`.env.${process.env.NODE_ENV \|\| Environment.Development}\`` | NestConfig ainda não carregou |
+| `XxxModule.register()` → `process.env.NODE_ENV === Environment.Test` | Binding estático antes do DI; skill `using-ports-and-adapters` |
+| `XxxModule.register()` → `process.env.<CAPABILITY>_VENDOR` | Binding estático do vendor antes do DI; skill `using-ports-and-adapters` |
+| `main.ts` **antes** de `NestFactory.create` (HTTPS `SSL_KEY` / `SSL_CERT` / `SSL_CA`) | App ainda não existe; `app.get(ConfigService)` impossível |
+
+Depois de `const app = await NestFactory.create(...)`: **só** `app.get(ConfigService)`. Inclusive `port`, `corsOrigin`. Não voltar para `process.env.PORT`.
+
+Passport `super({ secretOrKey })`: injetar `ConfigService` no constructor e ler o getter **dentro** do `super(...)`. Não usar `process.env` porque o `super` “não tem DI”.
+
+```ts
+constructor(private readonly configService: ConfigService) {
+  super({
+    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+    ignoreExpiration: false,
+    secretOrKey: configService.jwtSecret,
+  });
+}
+```
+
+## Red flags
+
+Qualquer item abaixo → parar e corrigir.
 
 - `process.env.` fora da tabela de exceções
 - `from '@nestjs/config'` em arquivo que não é `config.service.ts` / `config.module.ts` / `config.service.spec.ts`
@@ -272,6 +274,14 @@ Teste de consumidor: mockar `ConfigService` (getter devolver valor). **Proibido*
 | "ConfigModule é global" | NestConfig é global. Nosso `ConfigService` não. Importar `ConfigModule`. |
 | "Fake também precisa da URL" | Fake não fala com vendor. Sem `ConfigService`. |
 | "Vou deixar todas as credenciais required com 2 vendors" | `Joi.when` no vendor ativo. Credencial morta fica `optional`. |
+
+## Fora do escopo
+
+| Artefato | Delegar a |
+|----------|-----------|
+| `config.service.spec.ts` (spec dos getters) | Skill `writing-unit-tests` (**obrigatório**) |
+| `XxxModule.register()` e binding de vendor | Skill `using-ports-and-adapters` |
+| `.env.development`, `.env.test`, `.env.production` (locais, fora do git) | Fora (sem skill) — só o `.env.example` é versionado |
 
 ## Checklist de entrega
 

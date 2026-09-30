@@ -48,8 +48,7 @@ Progresso:
 - [ ] 10. Checklist de entrega
 ```
 
-
-## Quando usar ports and adapters
+## Quando usar
 
 Hexagonal (ports & adapters): o **centro** (application/domain) não conhece Redis, AWS, ViaCEP, Nodemailer. Conhece só a **porta** (interface). O **adapter** fala com o mundo externo e traduz para o contrato da porta.
 
@@ -92,12 +91,12 @@ Dessa forma, a API não precisa entender o contexto dos sistemas externos e ser�
 
 Mudou o JSON da ViaCEP / a API do S3 / o comando Redis? **Só** o adapter real e o DTO em `adapters/<vendor>/dtos/` mudam. Porta, fake, use case e token ficam iguais.
 
-### Quando não criar port em `src/infra`
+### Quando não usar
 
 | Situação | Onde vai |
 |----------|----------|
-| Persistência de entidade do módulo (Prisma `save`/`findById`) | Port `IXxxRepository` / `IXxxDao` no módulo — **fora desta skill** |
-| HTTP de entrada (controller) | Driving adapter no módulo (`infra/drivers/http`) — **fora desta skill** |
+| Persistência de entidade do módulo (Prisma `save`/`findById`) | Fora (sem skill; planejada creating-persistence-adapters) — port `IXxxRepository` / `IXxxDao` no módulo |
+| HTTP de entrada (controller) | Fora (sem skill; planejada creating-controllers) — driving adapter no módulo (`infra/drivers/http`) |
 | Validação de request, Swagger, filter Nest | `src/infra/validators`, `openapi`, `core/filters` — não são ports |
 | `PrismaService` / `DatabaseModule` | Cliente compartilhado, não é `IXxxGateway` |
 | Helper puro in-process (montar chave de cache) | Função/classe no próprio recorte, sem porta |
@@ -167,16 +166,6 @@ Vendor no nome e na pasta: `redis`, `winston`, `nodemailer`, `viacep`, `aws-s3`,
 - `constructor` público — sem a palavra `public`. Parameter properties no construtor usam `private readonly` (e `@Inject` quando for token).
 - `static register(): DynamicModule` no `XxxModule` — sempre `static register`, nunca `public static register`.
 - Campos de classe de DTO (`dtos/<kebab>.dto.ts` e `adapters/<vendor>/dtos/<vendor>.dto.ts`) — a classe descreve só a forma do dado: `zipCode: string;`, não `public zipCode: string;`.
-
-## Token
-
-Em `src/core/di/token.ts`, **adicionar** uma linha no objeto `TOKENS` (não reordenar o resto):
-
-```ts
-XxxGateway: Symbol.for('XxxGateway'),
-```
-
-O string do `Symbol.for` é **idêntico** à chave. Application injeta `TOKENS.XxxGateway`, nunca a classe do adapter.
 
 ## Templates
 
@@ -413,6 +402,16 @@ Importar `ICepLookupGateway` de `src/infra/<kebab>/<kebab>.gateway.ts` e `TOKENS
 
 **Proibido** no application/domain: importar classe `*AdapterGateway`, DTO de vendor, `redis`, `@aws-sdk/*`, `nodemailer`, URL do vendor, `Express.Multer.File`.
 
+## Token
+
+Em `src/core/di/token.ts`, **adicionar** uma linha no objeto `TOKENS` (não reordenar o resto):
+
+```ts
+XxxGateway: Symbol.for('XxxGateway'),
+```
+
+O string do `Symbol.for` é **idêntico** à chave. Application injeta `TOKENS.XxxGateway`, nunca a classe do adapter.
+
 ## Log
 
 Fonte da verdade: skill **`using-logger`**. Injetar `ILoggerGateway`, `LogContext` + mapa, `debug`/`error`, segredos.
@@ -440,17 +439,17 @@ Não lançar `HttpException` / `Error` nativo no adapter.
 
 ## Fora do escopo
 
-| Artefato | Delegar / não fazer |
-|----------|---------------------|
+| Artefato | Delegar a |
+|----------|-----------|
 | `<kebab>-<vendor>.gateway.spec.ts` | Skill `writing-unit-tests` (**obrigatório**) |
 | Fake com lógica (TTL, Map, lista de envios) `.spec.ts` | Skill `writing-unit-tests` (**obrigatório**) |
 | Fake no-op sem ramo | Spec opcional |
 | `<kebab>.module.spec.ts` | Skill `writing-unit-tests` (**recomendado**) |
 | `helpers/<helper>/<helper>.builder.spec.ts` | Skill `writing-unit-tests` (**obrigatório** se tiver lógica) |
 | Classe de erro nova | Skill `creating-custom-errors` |
-| DAO/Repository Prisma do módulo | Fora — não usar esta skill |
-| Controller HTTP | Fora |
-| Ligar o VO/use case além do `@Inject` | Só se o usuário pedir |
+| DAO/Repository Prisma do módulo | Fora (sem skill; planejada creating-persistence-adapters) — não usar esta skill |
+| Controller HTTP | Fora (sem skill; planejada creating-controllers) |
+| Ligar o VO/use case além do `@Inject` | Fora (sem skill) — só se o usuário pedir |
 
 ## Checklist de entrega
 

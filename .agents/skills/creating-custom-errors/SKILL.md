@@ -7,13 +7,13 @@ description: Cria e padroniza classes de erro da aplicação que estendem AppExc
 
 Padroniza erros da aplicação estendendo `AppException`, com localização por camada e status HTTP explícito via `HttpStatus`.
 
-## Regra base
+## Esta skill é a única fonte da verdade
 
-Todo erro customizado **estende** `AppException` importado de `src/core/filters/app.exception`.
+**Proibido consultar outros erros do projeto para descobrir o formato.** Todo o padrão — base `AppException`, localização, template, nomeação, mensagens e status HTTP — está definido aqui e apenas aqui.
 
-**Proibido:** `Error` nativo, `HttpException`, `NotFoundException` ou outras exceções do Nest usadas como erro de domínio/aplicação.
+Ler erros existentes é **obrigatório** no passo 1, mas só para achar semântica equivalente e reusar (seção "Reuso antes de criar") — nunca para copiar formato. Se um erro existente contradiz esta skill, **esta skill vence**.
 
-O `HttpExceptionFilter` (`src/core/filters/http-exception/http-exception.filter.ts`) captura `AppException`, registra o erro e responde ao cliente com JSON `{ message }` e status HTTP igual a `exception.code` (ou `400` se `code` não foi definido).
+Exceção: usuário apontar um arquivo como referência, ou pedir edição de um erro que já existe — leia só esse arquivo.
 
 ## Fluxo
 
@@ -25,21 +25,19 @@ Progresso:
 - [ ] 4. Rodar o checklist de entrega
 ```
 
-## Passo 1: Reusar antes de criar
+## Quando usar
 
-O objetivo é **centralizar** erros. Antes de criar um arquivo novo:
+Toda falha esperada que o cliente da API precisa receber como `{ message }` com status HTTP: regra de negócio, recurso não encontrado, unicidade, credencial ou permissão, value object inválido, falha de integração externa. A seção "Status HTTP" mapeia cada caso.
 
-1. Buscar em `src/shared/errors/` por erro com a mesma semântica.
-2. Buscar em `src/app/<modulo>/domain/errors/` e `src/app/<modulo>/application/errors/` do módulo alvo.
-3. Para validação de VO, verificar se já existe `<vo>.error.ts` ao lado do value object em `src/shared/value-objects/<vo>/`.
+### Quando não usar
 
-**Se já existe** um erro equivalente (mesma regra, mesmo status, mesma mensagem para o cliente): **reusar** e informar o usuário. Não duplicar.
+| Situação | Onde vai |
+|----------|----------|
+| Erro equivalente já existe | Reusar (seção "Reuso antes de criar") |
+| Formato de body, query ou params inválido | Fora (sem skill) — DTO + `class-validator`; o `ValidationPipe` já responde 400 |
+| Falha de vendor dentro de adapter de infra | Reusar `ExternalApiError`; adapter via skill `using-ports-and-adapters` |
 
-**Promoção:** se um erro de módulo passa a ser usado por um segundo módulo (ou por `src/infra/`), mover/promover para `src/shared/errors/` e atualizar imports — só quando o usuário pedir refatoração; ao criar novo erro compartilhado, colocar direto em `shared`.
-
-Exemplos de erros globais existentes: `EmailAlreadyTakenError`, `DocumentAlreadyTakenError`, `ExternalApiError`.
-
-## Passo 2: Decisão de localização
+## Estrutura de pastas
 
 | Destino | Critério |
 |---------|----------|
@@ -50,7 +48,13 @@ Exemplos de erros globais existentes: `EmailAlreadyTakenError`, `DocumentAlready
 
 Uma classe por arquivo. Arquivos legados com múltiplas classes (ex.: `utc-date.error.ts`) não precisam ser divididos por esta skill — **novos** erros seguem uma classe por arquivo.
 
-## Passo 3: Template obrigatório
+## Nomeação
+
+- **Classe:** PascalCase, sufixo `Error` (ex.: `FaqNotFoundError`, `InvalidCpfError`).
+- **Arquivo:** kebab-case + sufixo `.error.ts` (ex.: `faq-not-found.error.ts`, `invalid-credential.error.ts`).
+- **`this.name`:** string idêntica ao nome da classe.
+
+## Templates
 
 Sem parâmetros:
 
@@ -82,11 +86,27 @@ export class EmailAlreadyTakenError extends AppException {
 
 Ordem no `constructor`: `super(message, HttpStatus.…)` → `this.name = 'NomeDaClasse'`.
 
-## Nomeação
+## Regra base
 
-- **Classe:** PascalCase, sufixo `Error` (ex.: `FaqNotFoundError`, `InvalidCpfError`).
-- **Arquivo:** kebab-case + sufixo `.error.ts` (ex.: `faq-not-found.error.ts`, `invalid-credential.error.ts`).
-- **`this.name`:** string idêntica ao nome da classe.
+Todo erro customizado **estende** `AppException` importado de `src/core/filters/app.exception`.
+
+**Proibido:** `Error` nativo, `HttpException`, `NotFoundException` ou outras exceções do Nest usadas como erro de domínio/aplicação.
+
+O `HttpExceptionFilter` (`src/core/filters/http-exception/http-exception.filter.ts`) captura `AppException`, registra o erro e responde ao cliente com JSON `{ message }` e status HTTP igual a `exception.code` (ou `400` se `code` não foi definido).
+
+## Reuso antes de criar
+
+O objetivo é **centralizar** erros. Antes de criar um arquivo novo:
+
+1. Buscar em `src/shared/errors/` por erro com a mesma semântica.
+2. Buscar em `src/app/<modulo>/domain/errors/` e `src/app/<modulo>/application/errors/` do módulo alvo.
+3. Para validação de VO, verificar se já existe `<vo>.error.ts` ao lado do value object em `src/shared/value-objects/<vo>/`.
+
+**Se já existe** um erro equivalente (mesma regra, mesmo status, mesma mensagem para o cliente): **reusar** e informar o usuário. Não duplicar.
+
+**Promoção:** se um erro de módulo passa a ser usado por um segundo módulo (ou por `src/infra/`), mover/promover para `src/shared/errors/` e atualizar imports — só quando o usuário pedir refatoração; ao criar novo erro compartilhado, colocar direto em `shared`.
+
+Exemplos de erros globais existentes: `EmailAlreadyTakenError`, `DocumentAlreadyTakenError`, `ExternalApiError`.
 
 ## Mensagens
 
@@ -111,13 +131,12 @@ Sempre passar status explícito com `HttpStatus` de `@nestjs/common` (nunca núm
 
 ## Fora do escopo
 
-Esta skill **não** altera:
-
-- `throw new …` em services, entidades ou gateways
-- flags `@Swagger` no controller (`applyNotFound`, `applyConflict`, `applyForbidden`, etc.)
-- testes unitários ou de integração
-
-Se o usuário pedir explicitamente, fazer em tarefa separada.
+| Artefato | Delegar a |
+|----------|-----------|
+| `throw new …` em services, entidades ou gateways | Fora (sem skill) — tarefa separada, só com pedido do usuário |
+| Flags `@Swagger` no controller (`applyNotFound`, `applyConflict`, `applyForbidden`, etc.) | Fora (sem skill; planejada using-swagger-decorator) |
+| Testes unitários | Skill `writing-unit-tests` — tarefa separada, só com pedido do usuário |
+| Testes de integração | Fora (sem skill; planejada writing-integration-tests) |
 
 ## Checklist de entrega
 
@@ -130,4 +149,5 @@ Antes de responder ao usuário, confirmar **todos** os itens:
 - [ ] Mensagem em pt-BR, sem dado sensível
 - [ ] Arquivo `<kebab>.error.ts` na camada/pasta correta
 - [ ] Uma classe por arquivo (erro novo)
-- [ ] Não existe erro equivalente duplicado; reuso ou promoção tratados no passo 1
+- [ ] Não existe erro equivalente duplicado; reuso ou promoção tratados em "Reuso antes de criar"
+- [ ] Nenhum formato copiado de outro erro do repositório — apenas esta skill
