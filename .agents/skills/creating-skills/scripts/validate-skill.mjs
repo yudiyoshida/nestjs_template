@@ -13,6 +13,9 @@ const MIN_CHECKLIST_ITEMS = 3;
 const NAME_FORMAT = /^[a-z]+ing-[a-z0-9]+(-[a-z0-9]+)*$/;
 const SOURCE_OF_TRUTH = 'Esta skill é a única fonte da verdade';
 const TOOL_DIRS = ['.claude/skills', '.cursor/skills'];
+const PATH_PATTERN = /\b(?:src|test|prisma|resources)\/[^\s`'"),;|]*/g;
+const EXAMPLES_PATTERN = /src\/app\/_examples\/[A-Za-z][^\s`'"),;|]*/g;
+const FICTIONAL_PREFIXES = ['src/app/product', 'src/path/to'];
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', '..');
 const skillsDir = join(root, '.agents', 'skills');
@@ -50,6 +53,7 @@ function validate(name) {
     checkTitle(name, body, errors);
     checkSections(body, errors, warnings);
     checkReferences(body, errors);
+    checkPaths(body, errors);
     if (lines.length > MAX_LINES) {
       warnings.push(`${lines.length} linhas (alvo abaixo de ${MAX_LINES}): mover detalhe para references/`);
     }
@@ -248,6 +252,36 @@ function checkReferences(body, errors) {
   }
   for (const reference of missing) {
     errors.push(`cita skill inexistente "${reference}": usar "Fora (sem skill)"`);
+  }
+}
+
+// Módulo de exemplo é proibido em qualquer lugar; caminho citado no texto (fora de bloco
+// de código) precisa existir, exceto placeholder, glob e módulo fictício.
+function checkPaths(body, errors) {
+  const examples = new Set();
+  const missing = new Set();
+  for (const line of body) {
+    for (const [reference] of line.text.matchAll(EXAMPLES_PATTERN)) {
+      examples.add(reference);
+    }
+    if (line.fenced) {
+      continue;
+    }
+    for (const [raw] of line.text.matchAll(PATH_PATTERN)) {
+      const path = raw.replace(/[.:]+$/, '');
+      const skip = /[<>*{}]|\.\.\./.test(path)
+        || path.includes('_examples')
+        || FICTIONAL_PREFIXES.some((prefix) => path.startsWith(prefix));
+      if (!skip && !existsSync(join(root, path)) && !existsSync(join(root, `${path}.ts`))) {
+        missing.add(path);
+      }
+    }
+  }
+  for (const reference of examples) {
+    errors.push(`cita módulo de exemplo removível "${reference}": usar código permanente ou o módulo fictício product`);
+  }
+  for (const path of missing) {
+    errors.push(`caminho citado não existe: "${path}"`);
   }
 }
 

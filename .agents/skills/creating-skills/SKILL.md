@@ -276,10 +276,37 @@ Skill que gera classe TypeScript inclui este bloco, ajustando a lista de classes
 - Negrito só no núcleo: proibição ou obrigação que quebra o padrão se violada. Negrito em tudo = negrito em nada.
 - Regra não óbvia leva uma frase de porquê. O agente que entende o motivo acerta o caso que a regra não previu.
 - Mesmo termo para a mesma coisa em todas as skills (porta, adapter, DAO, use case, driver) — sem sinônimo rotativo.
-- Exemplos com nomes reais do projeto (FAQ, Tip, Account, CEP), compiláveis, com imports `src/...`.
+- Exemplos e caminhos citados: seção "Exemplos e referências".
 - Checklist: cada regra central tem item. Regra sem item costuma ser esquecida.
 - Sem emoji, sem histórico ("antes era…"), sem TODO, sem data.
 - Tamanho: alvo abaixo de 500 linhas, porque a skill inteira entra no contexto quando dispara. Passou disso: mover detalhe para `references/<tema>.md` e dizer no SKILL.md quando ler.
+
+## Exemplos e referências
+
+Skill não pode depender de código que vai sumir. Os módulos em `src/app/_examples/` serão apagados, e projetos derivados do template removem o que não usam.
+
+| Onde | Pode citar |
+|------|------------|
+| Texto (instrução de ler, editar ou importar) | Só caminho estável e existente: `src/core`, `src/infra`, `src/shared`, `src/app/account`, `src/app/authentication`, `prisma/`, `test/`, `resources/`. O validador falha se o caminho não existir. |
+| Bloco de código (exemplo) | Código real dessas mesmas pastas; se o artefato só existir em módulo removível, o módulo fictício `product` |
+
+- **Nunca** citar `src/app/_examples/` nem nomes de FAQ/Tip — nem em texto, nem em bloco de código.
+- Exemplo com `product` abre com a linha: "Módulo fictício `product` (ilustrativo — adapte nomes e imports ao alvo)."
+- Nome de feature em regra genérica: placeholder (`<modulo>`, `<Entidade>`, `<UseCase>`).
+
+Módulo fictício `product` — mesmos nomes em todas as skills:
+
+| Peça | Nome |
+|------|------|
+| Pasta | `src/app/product/` |
+| Módulo Nest | `ProductModule` |
+| Model Prisma | `Product` (`id`, `name`, `status`, `createdAt`, `updatedAt`) |
+| Enum de status | `ProductStatus` (`ACTIVE = 'Active'`, `INACTIVE = 'Inactive'`) |
+| Erros | `ProductNotFoundError`, `ProductCannotBeEditedError` |
+| Use cases | `CreateProduct`, `EditProduct`, `FindProductById`, `FindAllProduct` |
+| Portas | `IProductDao`, `IProductRepository` (`TOKENS.ProductDao`, `TOKENS.ProductRepository`) |
+
+Peça nova do `product` usada numa skill → acrescentar nesta tabela no mesmo diff.
 
 ## Delegação entre skills
 
@@ -326,9 +353,9 @@ Formato da pergunta:
 
 ```
 Divergência: buscar por id sem resultado
-- A: lança NotFound — find-faq-by-id.service.ts
-- B: devolve null — find-tip-by-id.service.ts
-Recomendação: A — o Swagger das duas rotas já declara 404 e o cliente não precisa tratar null.
+- A: lança NotFound — find-product-by-id.service.ts
+- B: devolve null — find-account-by-id.service.ts
+Recomendação: A — o Swagger das rotas declara 404 e o cliente não precisa tratar null.
 ```
 
 Sem como perguntar (execução autônoma): escrever a recomendação como regra e listar a decisão como pendente na resposta ao usuário.
@@ -359,6 +386,7 @@ Confere:
 - seções obrigatórias na ordem; checklist por último
 - `Progresso:` no Fluxo; tabela `Artefato | Delegar a`; pelo menos 3 itens no checklist
 - referência só a skill existente
+- nenhuma referência a `src/app/_examples/<...>`; caminho citado no texto existe (exceto módulo fictício `product` e placeholders)
 - symlinks relativos resolvendo
 - aviso acima de 500 linhas
 
@@ -374,6 +402,7 @@ O validador confere formato, não qualidade. O teste de verdade é a primeira ta
 | "Já conheço o padrão; pulo a pesquisa" | Memória desatualiza. O código atual decide, e o usuário decide as divergências. |
 | "O código faz dos dois jeitos; fico com o mais comum" | Pergunte. A escolha vira regra em toda feature. |
 | "Cito a skill planejada; ela vai existir" | O agente tenta carregar e falha. `Fora (sem skill)`. |
+| "Uso FAQ/Tip no exemplo; é o que existe" | Módulos de exemplo serão apagados. Código permanente ou módulo fictício `product`. |
 | "Copio a pasta para `.claude/skills`" | Cópia diverge. Symlink relativo. |
 | "Description curta basta" | É o único texto visto antes de carregar. Gatilho faltando = skill ignorada. |
 | "Item de checklist: código limpo" | Item tem que ser sim/não verificável. |
@@ -401,7 +430,8 @@ Antes de responder, confirmar **todos**:
 - [ ] "Esta skill é a única fonte da verdade" presente como primeira seção (em skill de reuso, separando ler para reuso × copiar formato)
 - [ ] Fluxo com `Progresso:`, passos numerados, último passo = checklist
 - [ ] Divergências e lacunas levadas ao usuário; cada decisão virou regra (ou ficou listada como pendente)
-- [ ] Templates com nomes reais do projeto e estilo do ESLint
+- [ ] Templates com código permanente ou módulo fictício `product`, no estilo do ESLint
+- [ ] Nenhuma referência a `src/app/_examples/` nem a FAQ/Tip; caminho citado no texto existe
 - [ ] `Fora do escopo` em tabela `Artefato | Delegar a`; só skill existente; resto `Fora (sem skill)`
 - [ ] Propagação feita nas outras skills (linhas `Fora` e `Quando não usar` do artefato)
 - [ ] Checklist da skill nova com itens sim/não, um por regra central

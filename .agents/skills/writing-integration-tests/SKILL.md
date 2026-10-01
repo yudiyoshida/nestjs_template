@@ -72,10 +72,10 @@ test/
 
 | Peça | Forma | Exemplo |
 |------|-------|---------|
-| Arquivo | `<alvo>.integration.spec.ts`, ao lado do alvo | `edit-tip.service.integration.spec.ts` |
-| describe global | `'<Classe> - Integration tests'` | `'EditTip - Integration tests'` |
+| Arquivo | `<alvo>.integration.spec.ts`, ao lado do alvo | `edit-product.service.integration.spec.ts` |
+| describe global | `'<Classe> - Integration tests'` | `'EditProduct - Integration tests'` |
 | Instância sob teste | `sut` | — |
-| Factory de dado | `make<Entidade>(overrides)` no topo do arquivo | `makeTip({ status: TipStatus.EXPIRED })` |
+| Factory de dado | `make<Entidade>(overrides)` no topo do arquivo | `makeProduct({ status: ProductStatus.INACTIVE })` |
 
 ## Templates
 
@@ -83,50 +83,45 @@ Estilo: indent 2, aspas simples, `semi`, vírgula final em multiline, `else` em 
 
 ### A — Use case
 
-Uma fonte de teste (`execute`): paths direto no describe global.
+Módulo fictício `product` (ilustrativo — adapte nomes e imports ao alvo). Uma fonte de teste (`execute`): paths direto no describe global.
 
 ```ts
 import { Test } from '@nestjs/testing';
 import { Prisma } from '@prisma/client';
-import { TipStatus } from 'src/app/_examples/tip/domain/enums/tip-status.enum';
-import { TipType } from 'src/app/_examples/tip/domain/enums/tip-type.enum';
-import { TipCannotBeEditedError } from 'src/app/_examples/tip/domain/errors/tip-cannot-be-edited.error';
-import { TipNotFoundError } from 'src/app/_examples/tip/domain/errors/tip-not-found.error';
-import { TipModule } from 'src/app/_examples/tip/tip.module';
+import { ProductStatus } from 'src/app/product/domain/enums/product-status.enum';
+import { ProductCannotBeEditedError } from 'src/app/product/domain/errors/product-cannot-be-edited.error';
+import { ProductNotFoundError } from 'src/app/product/domain/errors/product-not-found.error';
+import { ProductModule } from 'src/app/product/product.module';
 import { ConfigModule } from 'src/core/config/config.module';
 import { PrismaService } from 'src/infra/database/prisma/prisma.service';
-import { EditTip } from './edit-tip.service';
+import { EditProduct } from './edit-product.service';
 
-function makeTip(overrides: Partial<Prisma.TipCreateInput> = {}): Prisma.TipCreateInput {
+function makeProduct(overrides: Partial<Prisma.ProductCreateInput> = {}): Prisma.ProductCreateInput {
   return {
-    type: TipType.WEATHER,
-    title: 'Ventos fortes',
-    content: 'Rajadas podem chegar a 60 km/h.',
-    status: TipStatus.ACTIVE,
-    createdBy: 'account-id',
-    expiresAt: new Date('2099-01-01T00:00:00.000Z'),
+    name: 'Caneta azul',
+    status: ProductStatus.ACTIVE,
     ...overrides,
   };
 }
 
-describe('EditTip - Integration tests', () => {
-  let sut: EditTip;
+describe('EditProduct - Integration tests', () => {
+  let sut: EditProduct;
   let prisma: PrismaService;
 
   beforeAll(async() => {
     const module = await Test.createTestingModule({
       imports: [
-        TipModule,
+        ProductModule,
         ConfigModule,
       ],
     }).compile();
 
-    sut = module.get(EditTip);
+    sut = module.get(EditProduct);
     prisma = module.get(PrismaService);
   });
 
   beforeEach(async() => {
-    await prisma.tip.deleteMany();
+    await prisma.product.deleteMany();
   });
 
   afterAll(async() => {
@@ -134,33 +129,33 @@ describe('EditTip - Integration tests', () => {
   });
 
   describe('Happy path', () => {
-    it('should persist the new title when the tip is active', async() => {
+    it('should persist the new name when the product is active', async() => {
       // Arrange
-      const tip = await prisma.tip.create({ data: makeTip() });
+      const product = await prisma.product.create({ data: makeProduct() });
 
       // Act
-      await sut.execute(tip.id, { title: 'Ventos fortes (atualizado)' });
+      await sut.execute(product.id, { name: 'Caneta preta' });
 
       // Assert
-      const saved = await prisma.tip.findUnique({ where: { id: tip.id } });
-      expect(saved?.title).toBe('Ventos fortes (atualizado)');
+      const saved = await prisma.product.findUnique({ where: { id: product.id } });
+      expect(saved?.name).toBe('Caneta preta');
     });
   });
 
   describe('Error path', () => {
-    it('should throw TipNotFoundError when the tip does not exist', async() => {
+    it('should throw ProductNotFoundError when the product does not exist', async() => {
       // Act & Assert
-      await expect(sut.execute('non-existing-id', { title: 'Novo título' })).rejects.toThrow(TipNotFoundError);
+      await expect(sut.execute('non-existing-id', { name: 'Caneta preta' })).rejects.toThrow(ProductNotFoundError);
     });
 
-    it('should throw TipCannotBeEditedError and keep the title when the tip is expired', async() => {
+    it('should throw ProductCannotBeEditedError and keep the name when the product is inactive', async() => {
       // Arrange
-      const tip = await prisma.tip.create({ data: makeTip({ status: TipStatus.EXPIRED }) });
+      const product = await prisma.product.create({ data: makeProduct({ status: ProductStatus.INACTIVE }) });
 
       // Act & Assert
-      await expect(sut.execute(tip.id, { title: 'Novo título' })).rejects.toThrow(TipCannotBeEditedError);
-      const saved = await prisma.tip.findUnique({ where: { id: tip.id } });
-      expect(saved?.title).toBe(tip.title);
+      await expect(sut.execute(product.id, { name: 'Caneta preta' })).rejects.toThrow(ProductCannotBeEditedError);
+      const saved = await prisma.product.findUnique({ where: { id: product.id } });
+      expect(saved?.name).toBe(product.name);
     });
   });
 });
@@ -168,25 +163,29 @@ describe('EditTip - Integration tests', () => {
 
 ### B — DAO/Repository
 
-Várias fontes de teste (um método público cada): um describe por método, paths dentro.
+Código real de `account`. Várias fontes de teste (um método público cada): um describe por método, paths dentro.
 
 ```ts
 import { Test } from '@nestjs/testing';
 import { Prisma } from '@prisma/client';
+import { AccountRole } from 'src/app/account/domain/enums/account-role.enum';
+import { AccountStatus } from 'src/app/account/domain/enums/account-status.enum';
 import { ConfigModule } from 'src/core/config/config.module';
 import { PrismaService } from 'src/infra/database/prisma/prisma.service';
-import { FaqDaoAdapterPrisma } from './faq.dao';
+import { AccountPrismaAdapterDao } from './account-prisma.dao';
 
-function makeFaq(overrides: Partial<Prisma.FaqCreateInput> = {}): Prisma.FaqCreateInput {
+function makeAccount(overrides: Partial<Prisma.AccountCreateInput> = {}): Prisma.AccountCreateInput {
   return {
-    question: 'Como recuperar minha senha?',
-    answer: 'Clique em "Esqueci minha senha" na tela de login.',
+    email: 'jhondoe@email.com',
+    password: 'hashed-password',
+    status: AccountStatus.ACTIVE,
+    roles: { create: { role: AccountRole.STUDENT } },
     ...overrides,
   };
 }
 
-describe('FaqDaoAdapterPrisma - Integration tests', () => {
-  let sut: FaqDaoAdapterPrisma;
+describe('AccountPrismaAdapterDao - Integration tests', () => {
+  let sut: AccountPrismaAdapterDao;
   let prisma: PrismaService;
 
   beforeAll(async() => {
@@ -195,41 +194,42 @@ describe('FaqDaoAdapterPrisma - Integration tests', () => {
         ConfigModule,
       ],
       providers: [
-        FaqDaoAdapterPrisma,
+        AccountPrismaAdapterDao,
         PrismaService,
       ],
     }).compile();
 
-    sut = module.get(FaqDaoAdapterPrisma);
+    sut = module.get(AccountPrismaAdapterDao);
     prisma = module.get(PrismaService);
   });
 
   beforeEach(async() => {
-    await prisma.faq.deleteMany();
+    await prisma.account.deleteMany();
   });
 
   afterAll(async() => {
     await prisma.$disconnect();
   });
 
-  describe('findAll', () => {
+  describe('findById', () => {
     describe('Happy path', () => {
-      it('should return the most recent faq first', async() => {
+      it('should return the account without sensitive data', async() => {
         // Arrange
-        await prisma.faq.create({ data: makeFaq({ question: 'Antiga', createdAt: new Date('2025-01-01T00:00:00.000Z') }) });
-        await prisma.faq.create({ data: makeFaq({ question: 'Nova', createdAt: new Date('2025-01-02T00:00:00.000Z') }) });
+        const account = await prisma.account.create({ data: makeAccount() });
 
         // Act
-        const [faqs, total] = await sut.findAll({ page: 1, size: 10 });
+        const result = await sut.findById(account.id);
 
         // Assert
-        expect(total).toBe(2);
-        expect(faqs.map((faq) => faq.question)).toEqual(['Nova', 'Antiga']);
+        expect(result).toEqual({
+          id: account.id,
+          email: 'jhondoe@email.com',
+          status: AccountStatus.ACTIVE,
+          roles: [AccountRole.STUDENT],
+        });
       });
     });
-  });
 
-  describe('findById', () => {
     describe('Edge cases', () => {
       it('should return null when the id does not exist', async() => {
         // Act
@@ -237,6 +237,23 @@ describe('FaqDaoAdapterPrisma - Integration tests', () => {
 
         // Assert
         expect(result).toBeNull();
+      });
+    });
+  });
+
+  describe('resetPassword', () => {
+    describe('Happy path', () => {
+      it('should save the new password and clear the reset token', async() => {
+        // Arrange
+        const account = await prisma.account.create({ data: makeAccount({ passwordResetToken: 'reset-token' }) });
+
+        // Act
+        await sut.resetPassword(account.id, 'new-hashed-password');
+
+        // Assert
+        const saved = await prisma.account.findUnique({ where: { id: account.id } });
+        expect(saved?.password).toBe('new-hashed-password');
+        expect(saved?.passwordResetToken).toBeNull();
       });
     });
   });

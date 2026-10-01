@@ -328,74 +328,74 @@ Exemplo (use case com dao mockado):
 ```ts
 import { createMock } from '@golevelup/ts-jest';
 import { Test } from '@nestjs/testing';
+import { AccountDto } from 'src/app/account/application/dtos/account.dto';
+import { AccountRole } from 'src/app/account/domain/enums/account-role.enum';
+import { AccountStatus } from 'src/app/account/domain/enums/account-status.enum';
 import { TOKENS } from 'src/core/di/token';
-import type { ITipDao } from '../../persistence/dao/tip-dao.interface';
-import { FindAllTipQueryDto } from './dtos/find-all-tip-query.dto';
-import { FindAllTip } from './find-all-tip.service';
+import type { IAccountDao } from '../../persistence/dao/account-dao.interface';
+import { FindAccountById } from './find-account-by-id.service';
 
-describe('FindAllTip - Unit tests', () => {
-  let sut: FindAllTip;
-  let tipDao: ITipDao;
+describe('FindAccountById - Unit tests', () => {
+  let sut: FindAccountById;
+  let accountDao: IAccountDao;
 
   beforeEach(async() => {
-    tipDao = createMock<ITipDao>();
+    accountDao = createMock<IAccountDao>();
 
     const module = await Test.createTestingModule({
       providers: [
-        FindAllTip,
-        { provide: TOKENS.TipDao, useValue: tipDao },
+        FindAccountById,
+        { provide: TOKENS.AccountDao, useValue: accountDao },
       ],
     }).compile();
 
-    sut = module.get(FindAllTip);
+    sut = module.get(FindAccountById);
   });
 
   afterEach(() => {
     jest.restoreAllMocks();
   });
 
-  describe('execute', () => {
-    describe('Happy path', () => {
-      it('should return a paginated dto built from the dao result', async() => {
-        // Arrange
-        const tips = [{ id: 'tip-id' }];
-        const query: FindAllTipQueryDto = { page: 1, size: 10 };
-        jest.spyOn(tipDao, 'findAll').mockResolvedValue([tips, 1]);
+  describe('Happy path', () => {
+    it('should return the account found by the dao', async() => {
+      // Arrange
+      const account: AccountDto = {
+        id: 'account-id',
+        email: 'jhondoe@email.com',
+        status: AccountStatus.ACTIVE,
+        roles: [AccountRole.STUDENT],
+      };
+      jest.spyOn(accountDao, 'findById').mockResolvedValue(account);
 
-        // Act
-        const result = await sut.execute(query);
+      // Act
+      const result = await sut.execute('account-id');
 
-        // Assert
-        expect(tipDao.findAll).toHaveBeenCalledWith(query);
-        expect(result.totalItems).toBe(1);
-        expect(result.data).toEqual(tips);
-      });
+      // Assert
+      expect(accountDao.findById).toHaveBeenCalledWith('account-id');
+      expect(result).toEqual(account);
     });
+  });
 
-    describe('Error path', () => {
-      it('should propagate when the dao rejects', async() => {
-        // Arrange
-        const query: FindAllTipQueryDto = { page: 1, size: 10 };
-        jest.spyOn(tipDao, 'findAll').mockRejectedValue(new Error('db down'));
+  describe('Error path', () => {
+    it('should propagate when the dao rejects', async() => {
+      // Arrange
+      jest.spyOn(accountDao, 'findById').mockRejectedValue(new Error('db down'));
 
-        // Act & Assert
-        await expect(sut.execute(query)).rejects.toThrow('db down');
-      });
+      // Act & Assert
+      await expect(sut.execute('account-id')).rejects.toThrow('db down');
     });
+  });
 
-    describe('Edge cases', () => {
-      it('should return empty data when the dao returns no rows', async() => {
-        // Arrange
-        const query: FindAllTipQueryDto = { page: 1, size: 10 };
-        jest.spyOn(tipDao, 'findAll').mockResolvedValue([[], 0]);
+  describe('Edge cases', () => {
+    it('should return null when the dao finds no account', async() => {
+      // Arrange
+      jest.spyOn(accountDao, 'findById').mockResolvedValue(null);
 
-        // Act
-        const result = await sut.execute(query);
+      // Act
+      const result = await sut.execute('account-id');
 
-        // Assert
-        expect(result.data).toEqual([]);
-        expect(result.totalItems).toBe(0);
-      });
+      // Assert
+      expect(result).toBeNull();
     });
   });
 });

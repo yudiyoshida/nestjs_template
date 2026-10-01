@@ -72,7 +72,7 @@ Um value object representa um **conceito de domínio definido pelo valor**, não
 | Dois registros “iguais” são o mesmo conceito? | Sim | Não (ids diferentes) | N/A |
 | Pode existir inválido após criado? | Não | Pode (estados de transição) | Pode até validar no pipe |
 | Onde valida formato de e-mail/CPF? | No VO | — | Opcional (entrada HTTP) |
-| Onde fica regra “FAQ expirado não edita”? | — | Entidade/domínio | — |
+| Onde fica regra “produto inativo não edita”? | — | Entidade/domínio | — |
 
 ## Estrutura de pastas
 

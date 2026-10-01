@@ -42,7 +42,7 @@ Toda falha esperada que o cliente da API precisa receber como `{ message }` com 
 | Destino | Critério |
 |---------|----------|
 | `src/shared/errors/<kebab>.error.ts` | Usado por 2+ módulos, ou falha de integração/infra reutilizável (ex.: API externa, unicidade de e-mail/documento). |
-| `src/app/<modulo>/domain/errors/<kebab>.error.ts` | Regra de negócio, entidade de domínio, estado inválido da entidade, recurso do módulo não encontrado (ex.: `FaqNotFoundError`, `TipCannotBeEditedError`). |
+| `src/app/<modulo>/domain/errors/<kebab>.error.ts` | Regra de negócio, entidade de domínio, estado inválido da entidade, recurso do módulo não encontrado (ex.: `ProductNotFoundError`, `ProductCannotBeEditedError` — módulo fictício `product`). |
 | `src/app/<modulo>/application/errors/<kebab>.error.ts` | Falha de orquestração na camada de aplicação: credencial, refresh token, conta inativa, permissão no fluxo de auth (ex.: `InvalidCredentialError`, `ForbiddenAccountError`). |
 | `src/shared/value-objects/<vo>/<vo>.error.ts` | Erro disparado **apenas** na construção/validação desse value object (ex.: `InvalidCnpjError` em `cnpj.error.ts`). |
 
@@ -50,8 +50,8 @@ Uma classe por arquivo. Arquivos legados com múltiplas classes (ex.: `utc-date.
 
 ## Nomeação
 
-- **Classe:** PascalCase, sufixo `Error` (ex.: `FaqNotFoundError`, `InvalidCpfError`).
-- **Arquivo:** kebab-case + sufixo `.error.ts` (ex.: `faq-not-found.error.ts`, `invalid-credential.error.ts`).
+- **Classe:** PascalCase, sufixo `Error` (ex.: `InvalidCredentialError`, `InvalidCpfError`).
+- **Arquivo:** kebab-case + sufixo `.error.ts` (ex.: `invalid-credential.error.ts`, `forbidden-account.error.ts`).
 - **`this.name`:** string idêntica ao nome da classe.
 
 ## Templates
@@ -62,10 +62,10 @@ Sem parâmetros:
 import { HttpStatus } from '@nestjs/common';
 import { AppException } from 'src/core/filters/app.exception';
 
-export class FaqNotFoundError extends AppException {
+export class InvalidCredentialError extends AppException {
   constructor() {
-    super('FAQ não encontrado na base de dados.', HttpStatus.NOT_FOUND);
-    this.name = 'FaqNotFoundError';
+    super('Credenciais inválidas.', HttpStatus.BAD_REQUEST);
+    this.name = 'InvalidCredentialError';
   }
 }
 ```
