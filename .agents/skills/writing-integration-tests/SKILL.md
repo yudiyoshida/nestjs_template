@@ -336,7 +336,7 @@ Se falhar: corrigir o teste quando a expectativa estiver errada; falha que indic
 |----------|-----------|
 | Teste unitário (com mocks) | Skill `writing-unit-tests` |
 | Teste HTTP ponta a ponta | Fora (sem skill; planejada writing-e2e-tests) |
-| Model e seed Prisma | Fora (sem skill; planejada creating-prisma-models) |
+| Model e seed Prisma | Skill `creating-prisma-models` |
 | `.env.test` e criação do banco de teste | Fora (sem skill) — usuário ajusta; arquivo local, fora do git |
 | `test/jest.global-setup.ts` | Não editar |
 | Código de produção | Não alterar para o teste passar; bug → reportar ao usuário |

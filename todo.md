@@ -19,7 +19,6 @@ flow
 
 skills que precisam ser criadas (em ordem de criacao)
 - arquitetura (nesta ordem)
-  - creating-prisma-models: model em prisma/schema + seed
   - creating-domain-entities: ddd (entity + factory + enums)
   - creating-dtos: input/output do usecase, dto entre camadas e dto de resposta por controller (retorno diferente por nivel de acesso)
   - creating-custom-validators: decorators do class-validator e class-transformer (depois de creating-dtos)

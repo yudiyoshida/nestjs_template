@@ -301,6 +301,8 @@ Módulo fictício `product` — mesmos nomes em todas as skills:
 | Pasta | `src/app/product/` |
 | Módulo Nest | `ProductModule` |
 | Model Prisma | `Product` (`id`, `name`, `status`, `createdAt`, `updatedAt`) |
+| Model Prisma filho | `ProductImage` (`id`, `url`, `productId`, `createdAt`, `updatedAt`; lista `images` em `Product`) |
+| Seed | `ProductSeed` |
 | Enum de status | `ProductStatus` (`ACTIVE = 'Active'`, `INACTIVE = 'Inactive'`) |
 | Erros | `ProductNotFoundError`, `ProductCannotBeEditedError` |
 | Use cases | `CreateProduct`, `EditProduct`, `FindProductById`, `FindAllProduct` |
@@ -325,6 +327,7 @@ Delegações recorrentes (skills que já existem):
 | Value object | Skill `creating-value-objects` |
 | Variável de ambiente | Skill `using-core-config` |
 | Log | Skill `using-logger` |
+| Model ou seed Prisma | Skill `creating-prisma-models` |
 | Porta de infra / vendor externo | Skill `using-ports-and-adapters` |
 | Teste unitário | Skill `writing-unit-tests` |
 | Teste de integração (banco real) | Skill `writing-integration-tests` |
