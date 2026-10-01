@@ -151,7 +151,7 @@ Ordem fixa. **R** = sempre. **C** = só quando se aplica; remover a seção quan
 | Seções de regra (`## Regras`, `## Mensagens`, `## Segredos`…) | R | Pelo menos uma; regras verificáveis |
 | `## Red flags` | C | Tabela `Desculpa \| Realidade` para tentações comuns |
 | `## Fora do escopo` | R | Tabela `Artefato \| Delegar a` |
-| `## Checklist de entrega` | R | Itens sim/não; sempre a última seção |
+| `## Checklist de entrega` | R | Itens sim/não; pelo menos um roda comando (seção "Verificação"); sempre a última seção |
 
 ````markdown
 ---
@@ -190,6 +190,7 @@ Progresso:
 - [ ] 1. Confirmar que o pedido é <artefato> (não <vizinho A>, não <vizinho B>)
 - [ ] 2. <passo>
 - [ ] 3. <passo que delega, ex.: spec via writing-unit-tests>
+- [ ] 4. Compilar e lintar: <comandos da seção Verificação>
 - [ ] N. Checklist de entrega
 ```
 
@@ -249,6 +250,7 @@ Estilo: indent 2, aspas simples, `semi`, vírgula final em multiline, `else` em 
 Antes de responder, confirmar **todos**:
 
 - [ ] <item sim/não>
+- [ ] `<comando que prova a entrega>` sem erro
 - [ ] Nenhum padrão copiado de outros <artefato> do repositório — apenas esta skill
 ````
 
@@ -266,6 +268,29 @@ Skill que gera classe TypeScript inclui este bloco, ajustando a lista de classes
 - `constructor` público — sem a palavra `public`. Parameter properties usam `private readonly` (e `@Inject` quando for token).
 - Campos de classe de DTO — a classe descreve só a forma do dado.
 ```
+
+### Verificação
+
+Todo checklist tem pelo menos um item que roda comando. Item só de leitura é autoavaliação: o agente marca sem provar. O validador exige um item com `npm`, `npx` ou `node` entre crases.
+
+Skill que gera ou edita `.ts` de produção inclui estes itens antes do último item do checklist, mais o `npm test` das specs da tarefa:
+
+```markdown
+- [ ] `npx eslint <arquivos .ts tocados>` sem erro; sem `--fix` e nunca `npm run lint`, que corrige `src/` e `test/` inteiros
+- [ ] `npx tsc --noEmit -p tsconfig.build.json` sem erro
+```
+
+Skill que escreve spec inclui estes:
+
+```markdown
+- [ ] `npm test -- <arquivo>.spec.ts` passou
+- [ ] `npx tsc --noEmit -p tsconfig.json` sem erro no arquivo de teste
+- [ ] `npx eslint <arquivo>.spec.ts` sem erro; sem `--fix` e nunca `npm run lint`, que corrige `src/` e `test/` inteiros
+```
+
+O passo do Fluxo antes do checklist roda os mesmos comandos: "Compilar e lintar: …".
+
+Por que dois `tsc`: o `tsconfig.build.json` exclui specs, e o `npm test` não confere tipo (o ts-jest roda com `isolatedModules`). Erro de tipo em spec só aparece com o `tsconfig.json`. Esse config compila o repositório inteiro, então o item de spec olha só o arquivo de teste.
 
 ## Escrita
 
@@ -387,7 +412,7 @@ Confere:
 - H1 igual ao nome
 - "Esta skill é a única fonte da verdade" como primeira seção
 - seções obrigatórias na ordem; checklist por último
-- `Progresso:` no Fluxo; tabela `Artefato | Delegar a`; pelo menos 3 itens no checklist
+- `Progresso:` no Fluxo; tabela `Artefato | Delegar a`; pelo menos 3 itens no checklist, um deles com comando (`npm`, `npx` ou `node` entre crases)
 - referência só a skill existente
 - nenhuma referência a `src/app/_examples/<...>`; caminho citado no texto existe (exceto módulo fictício `product` e placeholders)
 - symlinks relativos resolvendo
@@ -409,6 +434,7 @@ O validador confere formato, não qualidade. O teste de verdade é a primeira ta
 | "Copio a pasta para `.claude/skills`" | Cópia diverge. Symlink relativo. |
 | "Description curta basta" | É o único texto visto antes de carregar. Gatilho faltando = skill ignorada. |
 | "Item de checklist: código limpo" | Item tem que ser sim/não verificável. |
+| "Item de checklist: suíte passando" | Comando explícito: `npm test -- <arquivo>` passou. Sem comando escrito, o agente marca sem rodar. |
 | "Aproveito e refatoro o legado" | Fora do escopo. Só com pedido. |
 | "A skill fica mais completa com tudo junto" | Uma skill, um artefato (ou um processo). O resto delega. |
 
@@ -438,7 +464,8 @@ Antes de responder, confirmar **todos**:
 - [ ] `Fora do escopo` em tabela `Artefato | Delegar a`; só skill existente; resto `Fora (sem skill)`
 - [ ] Propagação feita nas outras skills (linhas `Fora` e `Quando não usar` do artefato)
 - [ ] Checklist da skill nova com itens sim/não, um por regra central
+- [ ] Checklist com item de comando; skill que gera `.ts` com os itens e o passo "Compilar e lintar" da seção "Verificação"
 - [ ] Symlinks relativos em `.claude/skills` e `.cursor/skills` resolvendo
-- [ ] Validador sem erro
+- [ ] `node .agents/skills/creating-skills/scripts/validate-skill.mjs <nome>` sem erro
 - [ ] Skill removida da lista do `todo.md` (se estava lá)
 - [ ] Nenhum formato copiado de skill existente — apenas esta skill

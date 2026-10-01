@@ -45,7 +45,9 @@ Progresso:
 - [ ] 7. Erro: reusar ExternalApiError ou criar via creating-custom-errors
 - [ ] 8. Specs via writing-unit-tests (obrigatório no adapter real; fake se tiver lógica)
 - [ ] 9. Importar XxxModule.register() onde o port for injetado
-- [ ] 10. Checklist de entrega
+- [ ] 10. Rodar as suítes de src/infra/<kebab>/
+- [ ] 11. Compilar e lintar: npx eslint nos .ts tocados e npx tsc --noEmit -p tsconfig.build.json
+- [ ] 12. Checklist de entrega
 ```
 
 ## Quando usar
@@ -468,7 +470,10 @@ Antes de responder, confirmar **todos**:
 - [ ] Falha de I/O: `ExternalApiError` ou erro via `creating-custom-errors` (reuso primeiro)
 - [ ] Log (se houver): skill `using-logger` (contexto + mapa; `adapter` no payload; sem segredo)
 - [ ] Modificador explícito em todo membro; `constructor` público sem `public`
-- [ ] Spec do adapter real existe, escrito com `writing-unit-tests`, suíte passando
-- [ ] Spec do fake existe se o fake tiver lógica; suíte passando
+- [ ] Spec do adapter real existe, escrito com `writing-unit-tests`
+- [ ] Spec do fake existe se o fake tiver lógica
 - [ ] `XxxModule.register()` importado no módulo Nest consumidor (ou `@Global()` justificado)
+- [ ] `npm test -- src/infra/<kebab>/` passou
+- [ ] `npx eslint <arquivos .ts tocados>` sem erro; sem `--fix` e nunca `npm run lint`, que corrige `src/` e `test/` inteiros
+- [ ] `npx tsc --noEmit -p tsconfig.build.json` sem erro
 - [ ] Nenhum padrão copiado de outros adapters do repo — apenas esta skill

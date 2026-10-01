@@ -41,7 +41,8 @@ Progresso:
 - [ ] 2. Listar os cenários por fonte de teste e por path
 - [ ] 3. Escrever o arquivo <nome>.spec.ts seguindo a estrutura obrigatória
 - [ ] 4. Rodar a suíte do arquivo e iterar até passar
-- [ ] 5. Rodar o "Checklist de entrega" antes de responder
+- [ ] 5. Compilar e lintar: npx tsc --noEmit -p tsconfig.json e npx eslint no arquivo de teste
+- [ ] 6. Rodar o "Checklist de entrega" antes de responder
 ```
 
 ### 1. Ler o arquivo alvo
@@ -96,6 +97,18 @@ npm test -- src/path/to/file.spec.ts
 Se falhar: leia a mensagem, corrija o teste quando a expectativa estiver errada,
 e **reporte ao usuário** quando a falha indicar um bug no código de produção — não
 altere o código de produção para o teste passar sem confirmar. Repita até verde.
+
+### 5. Compilar e lintar
+
+```bash
+npx tsc --noEmit -p tsconfig.json
+npx eslint src/path/to/file.spec.ts
+```
+
+`npm test` não confere tipo: o ts-jest roda com `isolatedModules`. Erro de tipo no spec
+só aparece no `tsc`. O `tsconfig.json` compila o repositório inteiro: só erro no arquivo
+de teste conta; erro em outro arquivo não é desta tarefa. ESLint sem `--fix` e nunca
+`npm run lint`, que corrige `src/` e `test/` inteiros.
 
 Antes de responder, percorra o "Checklist de entrega" no fim desta skill, item por item.
 
@@ -513,9 +526,11 @@ Aplicável somente quando o alvo usa injeção de dependência do Nest.
 - [ ] `afterEach(() => jest.restoreAllMocks())` quando há `jest.spyOn`
 - [ ] Nenhum `it('should be defined')` gerado
 
-### Processo (topo da skill e passo 4)
+### Processo (topo da skill e passos 4 e 5)
 
 - [ ] Nenhum outro `*.spec.ts` / `*.test.ts` foi lido para inferir padrão ou formatação
 - [ ] `npm test -- <arquivo>.spec.ts` passou
+- [ ] `npx tsc --noEmit -p tsconfig.json` sem erro no arquivo de teste
+- [ ] `npx eslint <arquivo>.spec.ts` sem erro; sem `--fix` e nunca `npm run lint`, que corrige `src/` e `test/` inteiros
 - [ ] Código de produção não foi alterado (ou bug reportado ao usuário)
 - [ ] Resposta ao usuário informa quantos cenários por path e o que ficou descoberto de propósito

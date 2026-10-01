@@ -22,7 +22,8 @@ Progresso:
 - [ ] 1. Procurar erro equivalente já existente (reusar antes de criar)
 - [ ] 2. Decidir localização do arquivo
 - [ ] 3. Escrever o arquivo seguindo o template obrigatório
-- [ ] 4. Rodar o checklist de entrega
+- [ ] 4. Compilar e lintar: npx eslint nos .ts tocados e npx tsc --noEmit -p tsconfig.build.json
+- [ ] 5. Checklist de entrega
 ```
 
 ## Quando usar
@@ -150,4 +151,6 @@ Antes de responder ao usuário, confirmar **todos** os itens:
 - [ ] Arquivo `<kebab>.error.ts` na camada/pasta correta
 - [ ] Uma classe por arquivo (erro novo)
 - [ ] Não existe erro equivalente duplicado; reuso ou promoção tratados em "Reuso antes de criar"
+- [ ] `npx eslint <arquivos .ts tocados>` sem erro; sem `--fix` e nunca `npm run lint`, que corrige `src/` e `test/` inteiros
+- [ ] `npx tsc --noEmit -p tsconfig.build.json` sem erro
 - [ ] Nenhum formato copiado de outro erro do repositório — apenas esta skill

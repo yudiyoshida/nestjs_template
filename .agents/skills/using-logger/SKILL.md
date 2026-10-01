@@ -39,7 +39,9 @@ Progresso:
 - [ ] 4. Injetar ILoggerGateway e chamar debug ou error com payload do mapa
 - [ ] 5. Sanitizar: zero segredo no payload
 - [ ] 6. Spec do consumidor: expect logger.debug/error via writing-unit-tests
-- [ ] 7. Checklist de entrega
+- [ ] 7. Rodar a suíte do spec do consumidor
+- [ ] 8. Compilar e lintar: npx eslint nos .ts tocados e npx tsc --noEmit -p tsconfig.build.json
+- [ ] 9. Checklist de entrega
 ```
 
 ## Quando usar
@@ -184,6 +186,9 @@ Antes de responder, confirmar **todos**:
 - [ ] Winston **não** editado só por contexto novo
 - [ ] `@Inject(TOKENS.LoggerGateway)`; payload bate no mapa; `adapter` no log de infra
 - [ ] Zero segredo; SMTP sem `code`/HTML; cache sem value
-- [ ] Spec do consumidor cobre chamada ao logger (`writing-unit-tests`), suíte passando
+- [ ] Spec do consumidor cobre chamada ao logger (`writing-unit-tests`)
 - [ ] Modificador explícito nos membros novos; `constructor` público sem `public`
+- [ ] `npm test -- <consumidor>.spec.ts` passou
+- [ ] `npx eslint <arquivos .ts tocados>` sem erro; sem `--fix` e nunca `npm run lint`, que corrige `src/` e `test/` inteiros
+- [ ] `npx tsc --noEmit -p tsconfig.build.json` sem erro
 - [ ] Nenhum padrão copiado de outros arquivos — apenas esta skill

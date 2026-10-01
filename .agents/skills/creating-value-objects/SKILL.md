@@ -35,7 +35,9 @@ Progresso:
 - [ ] 3. Escrever <kebab>.vo.ts seguindo o template adequado
 - [ ] 4. Criar <kebab>.error.ts via skill creating-custom-errors (quando o VO lança erro customizado)
 - [ ] 5. Criar <kebab>.vo.spec.ts via skill writing-unit-tests (obrigatório)
-- [ ] 6. Rodar a suíte do `.vo.spec.ts` e o checklist de entrega
+- [ ] 6. Rodar a suíte do <kebab>.vo.spec.ts
+- [ ] 7. Compilar e lintar: npx eslint nos .ts tocados e npx tsc --noEmit -p tsconfig.build.json
+- [ ] 8. Checklist de entrega
 ```
 
 ## Quando usar
@@ -405,5 +407,7 @@ Antes de responder ao usuário, confirmar **todos** os itens:
 - [ ] Sem decorators ou dependências de framework Nest no `.vo.ts`
 - [ ] `<kebab>.error.ts` existe na pasta do VO **quando aplicável** (o `.vo.ts` lança `AppException` na validação/construção): criado via skill `creating-custom-errors`, uma classe por arquivo, `HttpStatus` explícito
 - [ ] `<kebab>.vo.spec.ts` existe ao lado do VO: escrito **obrigatoriamente** com a skill `writing-unit-tests` (não improvisar formato de teste)
-- [ ] Suíte do `<kebab>.vo.spec.ts` executada e passando
+- [ ] `npm test -- <kebab>.vo.spec.ts` passou
+- [ ] `npx eslint <arquivos .ts tocados>` sem erro; sem `--fix` e nunca `npm run lint`, que corrige `src/` e `test/` inteiros
+- [ ] `npx tsc --noEmit -p tsconfig.build.json` sem erro
 - [ ] Nenhum padrão copiado de outros VOs do repositório — apenas esta skill

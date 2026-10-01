@@ -39,7 +39,8 @@ Progresso:
 - [ ] 3. Listar cenários por fonte de teste e por path, com o estado esperado no banco
 - [ ] 4. Escrever <alvo>.integration.spec.ts (montagem e dados desta skill; formato da writing-unit-tests)
 - [ ] 5. Rodar a suíte do arquivo; guarda do banco falhou → parar e avisar o usuário
-- [ ] 6. Checklist de entrega
+- [ ] 6. Compilar e lintar: npx tsc --noEmit -p tsconfig.json e npx eslint no arquivo de teste
+- [ ] 7. Checklist de entrega
 ```
 
 ## Quando usar
@@ -319,6 +320,15 @@ npm test -- src/path/to/file.integration.spec.ts
 
 Se falhar: corrigir o teste quando a expectativa estiver errada; falha que indica bug no código de produção → **reportar ao usuário**, sem alterar produção para o teste passar.
 
+Compilar e lintar:
+
+```bash
+npx tsc --noEmit -p tsconfig.json
+npx eslint src/path/to/file.integration.spec.ts
+```
+
+`npm test` não confere tipo: o ts-jest roda com `isolatedModules`. Erro de tipo no spec só aparece no `tsc`. O `tsconfig.json` compila o repositório inteiro: só erro no arquivo de teste conta; erro em outro arquivo não é desta tarefa. ESLint sem `--fix` e nunca `npm run lint`, que corrige `src/` e `test/` inteiros.
+
 ## Red flags
 
 | Desculpa | Realidade |
@@ -357,5 +367,7 @@ Antes de responder, confirmar **todos**:
 - [ ] Sem `it('should be defined')` e sem comentário além do AAA
 - [ ] Guarda do banco passou (`.env.test` aponta para banco `*_test`)
 - [ ] `npm test -- <arquivo>.integration.spec.ts` passou
+- [ ] `npx tsc --noEmit -p tsconfig.json` sem erro no arquivo de teste
+- [ ] `npx eslint <arquivo>.integration.spec.ts` sem erro; sem `--fix` e nunca `npm run lint`, que corrige `src/` e `test/` inteiros
 - [ ] Código de produção não alterado (ou bug reportado ao usuário)
 - [ ] Nenhum padrão copiado de outros testes do repositório — apenas esta skill

@@ -10,6 +10,7 @@ import { fileURLToPath } from 'node:url';
 const MAX_DESCRIPTION_LENGTH = 1024;
 const MAX_LINES = 500;
 const MIN_CHECKLIST_ITEMS = 3;
+const COMMAND_ITEM = /^\s*- \[ \] .*`(?:npm|npx|node) [^`]+`/m;
 const NAME_FORMAT = /^[a-z]+ing-[a-z0-9]+(-[a-z0-9]+)*$/;
 const SOURCE_OF_TRUTH = 'Esta skill é a única fonte da verdade';
 const TOOL_DIRS = ['.claude/skills', '.cursor/skills'];
@@ -217,9 +218,13 @@ function checkSections(body, errors, warnings) {
     if (checklist !== headings.length - 1) {
       errors.push('"## Checklist de entrega" deve ser a última seção');
     }
-    const items = (sectionText(checklist).match(/^\s*- \[ \] /gm) ?? []).length;
+    const text = sectionText(checklist);
+    const items = (text.match(/^\s*- \[ \] /gm) ?? []).length;
     if (items < MIN_CHECKLIST_ITEMS) {
       errors.push(`"## Checklist de entrega" com ${items} item(ns) (mínimo ${MIN_CHECKLIST_ITEMS})`);
+    }
+    if (!COMMAND_ITEM.test(text)) {
+      errors.push('"## Checklist de entrega" sem item que rode comando (`npm …`, `npx …` ou `node …` entre crases)');
     }
   }
 

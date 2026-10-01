@@ -36,11 +36,13 @@ Exceção: usuário apontar um arquivo, ou pedir edição de getter/schema que j
 ```
 Progresso:
 - [ ] 1. Confirmar que o valor vem de env (não de request, não de banco, não de constante de domínio)
-- [ ] 2. Getter já existe em ConfigService? → só injetar e usar. Parar.
+- [ ] 2. Getter já existe em ConfigService? → só injetar e usar; pular o passo 3
 - [ ] 3. Se não existe: Joi + getter + spec + .env.example no mesmo diff
 - [ ] 4. Consumir só via this.configService.<getter>
 - [ ] 5. Importar ConfigModule no módulo Nest que injeta ConfigService
-- [ ] 6. Checklist de entrega
+- [ ] 6. Rodar a suíte do config.service.spec.ts, se o passo 3 rodou
+- [ ] 7. Compilar e lintar: npx eslint nos .ts tocados e npx tsc --noEmit -p tsconfig.build.json
+- [ ] 8. Checklist de entrega
 ```
 
 ## Quando usar
@@ -298,3 +300,6 @@ Antes de responder, confirmar **todos** os que se aplicam:
 - [ ] Fake de adapter sem `ConfigService`
 - [ ] Port com vendor: objeto `XxxVendor` em `infra-vendors.ts` + `*_VENDOR` no conjunto atômico; Joi usa `...XXX_VENDORS` + `requiredWhen(..., XxxVendor.Real)`
 - [ ] Nenhum secret no log
+- [ ] `npm test -- src/core/config/config.service.spec.ts` passou (variável nova, alterada ou removida)
+- [ ] `npx eslint <arquivos .ts tocados>` sem erro; sem `--fix` e nunca `npm run lint`, que corrige `src/` e `test/` inteiros
+- [ ] `npx tsc --noEmit -p tsconfig.build.json` sem erro
