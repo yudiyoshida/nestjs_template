@@ -48,7 +48,7 @@ $ npm run start:prod
 ## Test
 
 ```bash
-# unit tests
+# tests
 $ npm run test
 
 # test coverage

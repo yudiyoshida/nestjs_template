@@ -53,7 +53,6 @@ services:
     env_file:
       - .env.production
     environment:
-      # Overrides de rede Docker — sempre sobrescrevem o que estiver em .env.production
       NODE_ENV: production
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-template}?schema=public
       REDIS_URL: redis://redis:6379

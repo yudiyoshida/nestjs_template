@@ -68,22 +68,6 @@ services:
 
   # Log watchers - cada um faz tail -F de um log file e joga no stdout
   # O Dozzle captura o stdout e exibe na interface web
-  log-http:
-    image: alpine:3.21
-    container_name: template-log-http
-    restart: unless-stopped
-    volumes:
-      - ./logs:/logs:ro
-    command: ["tail", "-n", "50", "-F", "/logs/http.log"]
-
-  log-ws:
-    image: alpine:3.21
-    container_name: template-log-ws
-    restart: unless-stopped
-    volumes:
-      - ./logs:/logs:ro
-    command: ["tail", "-n", "50", "-F", "/logs/ws.log"]
-
   log-cache:
     image: alpine:3.21
     container_name: template-log-cache
@@ -100,6 +84,22 @@ services:
       - ./logs:/logs:ro
     command: ["tail", "-n", "50", "-F", "/logs/cep-lookup.log"]
 
+  log-cnpj-lookup:
+    image: alpine:3.21
+    container_name: template-log-cnpj-lookup
+    restart: unless-stopped
+    volumes:
+      - ./logs:/logs:ro
+    command: ["tail", "-n", "50", "-F", "/logs/cnpj-lookup.log"]
+
+  log-http:
+    image: alpine:3.21
+    container_name: template-log-http
+    restart: unless-stopped
+    volumes:
+      - ./logs:/logs:ro
+    command: ["tail", "-n", "50", "-F", "/logs/http.log"]
+
   log-smtp:
     image: alpine:3.21
     container_name: template-log-smtp
@@ -115,6 +115,14 @@ services:
     volumes:
       - ./logs:/logs:ro
     command: ["tail", "-n", "50", "-F", "/logs/upload-file.log"]
+
+  log-ws:
+    image: alpine:3.21
+    container_name: template-log-ws
+    restart: unless-stopped
+    volumes:
+      - ./logs:/logs:ro
+    command: ["tail", "-n", "50", "-F", "/logs/ws.log"]
 
   dozzle:
     image: amir20/dozzle:latest
