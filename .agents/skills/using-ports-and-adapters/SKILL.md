@@ -17,7 +17,7 @@ Antes de escrever código, **não**:
 
 - leia, abra ou busque outros `*.gateway.ts`, `*.module.ts` ou adapters em `src/infra/` para copiar formato
 - rode grep/glob por `implements I`, `AdapterGateway`, `static register`, `useClass: isTest`
-- inspecione cache, logger, smtp, cep-lookup ou upload-file para inferir convenções
+- inspecione capabilities existentes em `src/infra/` para inferir convenções
 - copie estilo de adapter legado, mesmo que divirja desta skill
 
 Se um adapter existente contradiz esta skill, **esta skill vence**.
@@ -25,9 +25,9 @@ Se um adapter existente contradiz esta skill, **esta skill vence**.
 **Permitido ler apenas para executar a tarefa (não para formato):**
 
 - o que o usuário indicou (contrato da API, SDK, regra de negócio)
-- `src/core/di/token.ts` — só para **inserir** o Symbol novo
-- `src/infra/infra-vendors.ts` — só para **inserir** vendor no array/type/guard
-- `src/infra/logger/logger.gateway.ts` — só para **inserir** `LogContext` + tipo do mapa, se o adapter for logar
+- arquivo que exporta `TOKENS` — só para **inserir** o Symbol novo (seção "Bloco base")
+- registro de vendors (`export const <Capability>Vendor`) — só para **inserir** vendor no objeto/type/guard (skill `using-core-config`)
+- arquivo que exporta `LogContext` — só para **inserir** `LogContext` + tipo do mapa, se o adapter for logar (skill `using-logger`)
 - o módulo Nest que vai **importar** `XxxModule.register()`
 
 Exceção: usuário apontar um arquivo como referência, ou pedir edição de um gateway que já existe — leia só esse arquivo.
@@ -38,7 +38,7 @@ Exceção: usuário apontar um arquivo como referência, ou pedir edição de um
 Progresso:
 - [ ] 1. Confirmar que o conceito é um port de infra (não DAO/Repo de módulo, não controller, não helper)
 - [ ] 2. Definir a interface IXxxGateway na linguagem da aplicação (ACL: zero tipo/campo/erro de vendor)
-- [ ] 3. Adicionar TOKENS.XxxGateway em src/core/di/token.ts
+- [ ] 3. Adicionar TOKENS.XxxGateway (localizar TOKENS pelo export; ausente → seção "Bloco base")
 - [ ] 4. Escrever adapter real (ACL: mapear vendor ↔ porta em métodos privados) e adapter fake
 - [ ] 5. Escrever XxxModule.register() (mapa Binding class/modules/providers + `*_VENDOR` via using-core-config)
 - [ ] 6. LogContext novo, se o adapter logar
@@ -52,7 +52,7 @@ Progresso:
 
 Hexagonal (ports & adapters): o **centro** (application/domain) não conhece Redis, AWS, ViaCEP, Nodemailer. Conhece só a **porta** (interface). O **adapter** fala com o mundo externo e traduz para o contrato da porta.
 
-Neste projeto, `src/infra` concentra **driven adapters** compartilhados: a aplicação chama o port; o adapter chama o serviço externo.
+`src/infra` concentra **driven adapters** compartilhados: a aplicação chama o port; o adapter chama o serviço externo.
 
 | Critério | Significa |
 |----------|-----------|
@@ -97,7 +97,7 @@ Mudou o JSON da ViaCEP / a API do S3 / o comando Redis? **Só** o adapter real e
 |----------|----------|
 | Persistência de entidade do módulo (Prisma `save`/`findById`) | Fora (sem skill; planejada creating-persistence-adapters) — port `IXxxRepository` / `IXxxDao` no módulo |
 | HTTP de entrada (controller) | Fora (sem skill; planejada creating-controllers) — driving adapter no módulo (`infra/drivers/http`) |
-| Validação de request, Swagger, filter Nest | `src/infra/validators`, `openapi`, `core/filters` — não são ports |
+| Validação de request, Swagger/OpenAPI, filter Nest | Fora (sem skill) — não são ports |
 | `PrismaService` / `DatabaseModule` | Cliente compartilhado, não é `IXxxGateway` |
 | Helper puro in-process (montar chave de cache) | Função/classe no próprio recorte, sem porta |
 | Primitivo ou VO | Skill `creating-value-objects` |
@@ -130,7 +130,7 @@ src/infra/<kebab>/
 `adapters/<vendor>/dtos/`: formato do **vendor**; nunca importado fora desse adapter.
 
 `helpers/`: classe ou função pura, in-process, do capability — sem I/O, sem porta, sem token
-(ex.: `src/infra/cache/helpers/cache-key/cache-key.builder.ts`, que monta a chave de cache).
+(ex.: builder que monta a chave de cache).
 Exportada direto, importada pelo consumidor via `new`. Spec obrigatório se tiver lógica.
 
 `<kebab>.module.spec.ts`: spec do `register()` — recomendado, principalmente com 2+ vendors reais.
@@ -167,9 +167,36 @@ Vendor no nome e na pasta: `redis`, `winston`, `nodemailer`, `viacep`, `aws-s3`,
 - `static register(): DynamicModule` no `XxxModule` — sempre `static register`, nunca `public static register`.
 - Campos de classe de DTO (`dtos/<kebab>.dto.ts` e `adapters/<vendor>/dtos/<vendor>.dto.ts`) — a classe descreve só a forma do dado: `zipCode: string;`, não `public zipCode: string;`.
 
+## Bloco base
+
+Localizar cada símbolo pela busca do export antes de escrever. Se não existir, criar conforme a coluna "Se ausente".
+
+| Símbolo | Localizar por | Se ausente |
+|---------|---------------|------------|
+| `TOKENS` | `const TOKENS = {` | criar em `src/core/di/token.ts` pelo template abaixo |
+| `ExternalApiError` | `export class ExternalApiError` | skill `creating-custom-errors` (seção "Bloco base") |
+| `ConfigService`, `ConfigModule`, `Environment`, registro de vendors | export de cada símbolo | skill `using-core-config` (seção "Bloco base") |
+| `ILoggerGateway`, `LogContext` | `export enum LogContext` | skill `using-logger` (seção "Bloco base") |
+
+```bash
+grep -rn "const TOKENS = {" src
+```
+
+`TOKENS` — nasce com o primeiro token; cada port novo acrescenta uma linha (seção "Token"):
+
+```ts
+const TOKENS = {
+  XxxGateway: Symbol.for('XxxGateway'),
+};
+
+export { TOKENS };
+```
+
 ## Templates
 
 Estilo: indent 2, aspas simples, `semi`, vírgula final em multiline, `else` em nova linha.
+
+Import `'<Símbolo>'`: trocar pelo caminho real do arquivo que exporta o símbolo (seção "Bloco base"). Imports relativos entre arquivos do mesmo capability ficam como no template.
 
 ### 1. Porta
 
@@ -200,17 +227,17 @@ Ou `export type` quando for só input (ex.: e-mail). Sem decorator Swagger no DT
 
 ### 2. Adapter real (ACL)
 
-Mapeia vendor ↔ DTO da porta em métodos **privados**. Credenciais só via `ConfigService`. Falha de integração: log + `ExternalApiError` (já existe em `src/shared/errors/external-api.error.ts`) — **não** criar erro novo com a mesma semântica.
+Mapeia vendor ↔ DTO da porta em métodos **privados**. Credenciais só via `ConfigService`. Falha de integração: log + `ExternalApiError` (seção "Bloco base") — **não** criar erro novo com a mesma semântica.
 
 O método público da porta orquestra: validar entrada nossa → chamar vendor → `toPort`. Não devolver `result.data` cru.
 
 ```ts
 import { HttpService } from '@nestjs/axios';
 import { Inject, Injectable } from '@nestjs/common';
-import { ConfigService } from 'src/core/config/config.service';
-import { TOKENS } from 'src/core/di/token';
-import { LogContext, type ILoggerGateway } from 'src/infra/logger/logger.gateway';
-import { ExternalApiError } from 'src/shared/errors/external-api.error';
+import { ConfigService } from '<ConfigService>';
+import { TOKENS } from '<TOKENS>';
+import { LogContext, type ILoggerGateway } from '<LogContext>';
+import { ExternalApiError } from '<ExternalApiError>';
 import { ICepLookupGateway } from '../../cep-lookup.gateway';
 import { CepLookupOutputDto } from '../../dtos/cep-lookup.dto';
 import { ViacepOutputDto } from './dtos/viacep.dto';
@@ -301,7 +328,7 @@ Fake com estado (Map, lista de envios) é válido para teste. Fake no-op (`debug
 
 Majoridade: `static register(): DynamicModule`. Em `NODE_ENV === Environment.Test` força key `fake`. Fora de test: `process.env.<CAPABILITY>_VENDOR` + type guard + mapa. `fake` **é** valor válido de `*_VENDOR` (dev/staging sem vendor real).
 
-Chave env = capability SCREAMING_SNAKE + `_VENDOR` (ex.: `CEP_LOOKUP_VENDOR`). Valor = kebab em `src/infra/infra-vendors.ts` (`fake` + pastas `adapters/<vendor>/`). Declarar com skill `using-core-config` no mesmo diff.
+Chave env = capability SCREAMING_SNAKE + `_VENDOR` (ex.: `CEP_LOOKUP_VENDOR`). Valor = kebab no registro de vendors (`fake` + pastas `adapters/<vendor>/`). Declarar com skill `using-core-config` no mesmo diff.
 
 Cada entry do mapa é um **binding**:
 
@@ -318,10 +345,10 @@ type XxxAdapterBinding = {
 ```ts
 import { HttpModule } from '@nestjs/axios';
 import { DynamicModule, ForwardReference, Module, Provider, Type } from '@nestjs/common';
-import { ConfigModule } from 'src/core/config/config.module';
-import { Environment } from 'src/core/config/environment.enum';
-import { isCepLookupVendor, CepLookupVendor } from 'src/infra/infra-vendors';
-import { TOKENS } from 'src/core/di/token';
+import { ConfigModule } from '<ConfigModule>';
+import { Environment } from '<Environment>';
+import { isCepLookupVendor, CepLookupVendor } from '<CepLookupVendor>';
+import { TOKENS } from '<TOKENS>';
 import { CepLookupFakeAdapterGateway } from './adapters/fake/cep-lookup-fake.gateway';
 import { CepLookupViacepAdapterGateway } from './adapters/viacep/cep-lookup-viacep.gateway';
 import { ICepLookupGateway } from './cep-lookup.gateway';
@@ -383,12 +410,12 @@ export class CepLookupModule {
 
 **Novo vendor** (ex.: `adapters/brasilapi/` ou `fake` já existe):
 
-1. Chave no objeto em `infra-vendors.ts` (skill `using-core-config` + `requiredWhen` nas credenciais)
+1. Chave no objeto do registro de vendors (skill `using-core-config` + `requiredWhen` nas credenciais)
 2. Pasta `adapters/<vendor>/` + entry no mapa com `class` / `modules` / `providers` usando `XxxVendor.Real`
 
 Compile time: vendor novo sem linha no mapa → erro TS; classe que não implementa a porta → erro TS.
 
-**`@Global()`:** só se dezenas de módulos precisarem do port sem importar (logger, cache). Mesmo global, o binding continua via `register()`. Não colocar capability novo em `InfraModule` por inércia — importar `XxxModule.register()` no módulo Nest que injeta o port.
+**`@Global()`:** só se dezenas de módulos precisarem do port sem importar (logger, cache). Mesmo global, o binding continua via `register()`. Não registrar capability novo num módulo agregador global por inércia — importar `XxxModule.register()` no módulo Nest que injeta o port.
 
 ### 5. Consumo (application / guard / filter)
 
@@ -398,13 +425,13 @@ constructor(
 ) {}
 ```
 
-Importar `ICepLookupGateway` de `src/infra/<kebab>/<kebab>.gateway.ts` e `TOKENS` de `src/core/di/token`.
+Importar `ICepLookupGateway` do arquivo da porta (`src/infra/<kebab>/<kebab>.gateway.ts`) e `TOKENS` do arquivo que o exporta.
 
 **Proibido** no application/domain: importar classe `*AdapterGateway`, DTO de vendor, `redis`, `@aws-sdk/*`, `nodemailer`, URL do vendor, `Express.Multer.File`.
 
 ## Token
 
-Em `src/core/di/token.ts`, **adicionar** uma linha no objeto `TOKENS` (não reordenar o resto):
+No arquivo que exporta `TOKENS` (seção "Bloco base"), **adicionar** uma linha no objeto (não reordenar o resto):
 
 ```ts
 XxxGateway: Symbol.for('XxxGateway'),
@@ -420,7 +447,7 @@ Resumo mínimo (detalhe só naquela skill): adapter real loga falha com `adapter
 
 ## Erros
 
-Integração externa que o cliente precisa saber: `ExternalApiError` (`HttpStatus.SERVICE_UNAVAILABLE`). Reusar.
+Integração externa que o cliente precisa saber: `ExternalApiError` (`HttpStatus.SERVICE_UNAVAILABLE`). Reusar. Se não existir, criar com skill `creating-custom-errors` (seção "Bloco base").
 
 Erro com semântica nova: skill `creating-custom-errors` — localização típica `src/shared/errors/` se for infra compartilhada.
 
@@ -458,12 +485,13 @@ Antes de responder, confirmar **todos**:
 - [ ] Conceito é port de infra compartilhado (não persistência de módulo, não controller)
 - [ ] Pasta `src/infra/<kebab>/` com porta, `register()`, adapter real, adapter fake
 - [ ] Interface `IXxxGateway`; token `TOKENS.XxxGateway` = `Symbol.for('XxxGateway')`
+- [ ] Blocos base (`TOKENS`, `ExternalApiError`, `ConfigService`/`ConfigModule`/`Environment`, registro de vendors, `LogContext`) localizados pelo export ou criados pelo bloco base da skill dona; imports com o caminho real
 - [ ] Application/domain não importam adapter, SDK nem tipo de vendor/Multer
 - [ ] Porta e DTOs da capability: linguagem da aplicação; zero campo/tipo/erro do vendor
 - [ ] Adapter real é ACL: `toPort`/`toVendor` (ou equivalentes privados); falha do vendor traduzida
 - [ ] DTO da porta ≠ DTO do vendor; DTO de vendor só em `adapters/<vendor>/dtos/`
 - [ ] Binding via mapa `{ class, modules, providers }` (inclui entry `fake`); throw se vendor inválido
-- [ ] Vendor via objeto `XxxVendor` em `infra-vendors.ts` (sem literal solto); `*_VENDOR` + `requiredWhen` via `using-core-config`
+- [ ] Vendor via objeto `XxxVendor` no registro de vendors (sem literal solto); `*_VENDOR` + `requiredWhen` via `using-core-config`
 - [ ] Teste força fake via `NODE_ENV === Environment.Test`; `*_VENDOR=fake` válido fora de test
 - [ ] Falha de I/O: `ExternalApiError` ou erro via `creating-custom-errors` (reuso primeiro)
 - [ ] Log (se houver): skill `using-logger` (contexto + mapa; `adapter` no payload; sem segredo)

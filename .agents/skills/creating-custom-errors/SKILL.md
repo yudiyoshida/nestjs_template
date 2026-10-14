@@ -11,7 +11,7 @@ Padroniza erros da aplicação estendendo `AppException`, com localização por 
 
 **Proibido consultar outros erros do projeto para descobrir o formato.** Todo o padrão — base `AppException`, localização, template, nomeação, mensagens e status HTTP — está definido aqui e apenas aqui.
 
-Ler erros existentes é **obrigatório** no passo 1, mas só para achar semântica equivalente e reusar (seção "Reuso antes de criar") — nunca para copiar formato. Se um erro existente contradiz esta skill, **esta skill vence**.
+Ler erros existentes é **obrigatório** no passo 2, mas só para achar semântica equivalente e reusar (seção "Reuso antes de criar") — nunca para copiar formato. Se um erro existente contradiz esta skill, **esta skill vence**.
 
 Exceção: usuário apontar um arquivo como referência, ou pedir edição de um erro que já existe — leia só esse arquivo.
 
@@ -19,10 +19,11 @@ Exceção: usuário apontar um arquivo como referência, ou pedir edição de um
 
 ```
 Progresso:
-- [ ] 1. Procurar erro equivalente já existente (reusar antes de criar)
-- [ ] 2. Decidir localização do arquivo
-- [ ] 3. Escrever o arquivo seguindo o template obrigatório
-- [ ] 4. Rodar o checklist de entrega
+- [ ] 1. Localizar `AppException` pelo export (ausente → criar pela seção "Bloco base")
+- [ ] 2. Procurar erro equivalente já existente (reusar antes de criar)
+- [ ] 3. Decidir localização do arquivo
+- [ ] 4. Escrever o arquivo seguindo o template obrigatório
+- [ ] 5. Rodar o checklist de entrega
 ```
 
 ## Quando usar
@@ -46,7 +47,7 @@ Toda falha esperada que o cliente da API precisa receber como `{ message }` com 
 | `src/app/<modulo>/application/errors/<kebab>.error.ts` | Falha de orquestração na camada de aplicação: credencial, refresh token, conta inativa, permissão no fluxo de auth (ex.: `InvalidCredentialError`, `ForbiddenAccountError`). |
 | `src/shared/value-objects/<vo>/<vo>.error.ts` | Erro disparado **apenas** na construção/validação desse value object (ex.: `InvalidCnpjError` em `cnpj.error.ts`). |
 
-Uma classe por arquivo. Arquivos legados com múltiplas classes (ex.: `utc-date.error.ts`) não precisam ser divididos por esta skill — **novos** erros seguem uma classe por arquivo.
+Uma classe por arquivo. Arquivos legados com múltiplas classes não precisam ser divididos por esta skill — **novos** erros seguem uma classe por arquivo.
 
 ## Nomeação
 
@@ -54,13 +55,59 @@ Uma classe por arquivo. Arquivos legados com múltiplas classes (ex.: `utc-date.
 - **Arquivo:** kebab-case + sufixo `.error.ts` (ex.: `faq-not-found.error.ts`, `invalid-credential.error.ts`).
 - **`this.name`:** string idêntica ao nome da classe.
 
+## Bloco base
+
+Todo erro depende de `AppException`. Falha de integração externa reusa `ExternalApiError`. Localizar cada símbolo pela busca do export antes de escrever. Se não existir, criar pelo template abaixo, no destino indicado.
+
+| Símbolo | Localizar por | Destino se ausente |
+|---------|---------------|--------------------|
+| `AppException` | `export class AppException` | `src/core/filters/app.exception.ts` |
+| `ExternalApiError` | `export class ExternalApiError` | `src/shared/errors/external-api.error.ts` |
+
+```bash
+grep -rn "export class AppException" src
+```
+
+`AppException`:
+
+```ts
+export class AppException extends Error {
+  private readonly _code?: number;
+
+  constructor(message: string, code?: number) {
+    super(message);
+    this._code = code;
+  }
+
+  public get code(): number | undefined {
+    return this._code;
+  }
+}
+```
+
+`ExternalApiError` — criar só quando uma tarefa precisar dele (ex.: adapter de infra), nunca por antecipação:
+
+```ts
+import { HttpStatus } from '@nestjs/common';
+import { AppException } from '<AppException>';
+
+export class ExternalApiError extends AppException {
+  constructor(message: string) {
+    super(message, HttpStatus.SERVICE_UNAVAILABLE);
+    this.name = 'ExternalApiError';
+  }
+}
+```
+
 ## Templates
+
+Import `'<AppException>'`: trocar pelo caminho real do arquivo que exporta `AppException` (seção "Bloco base").
 
 Sem parâmetros:
 
 ```ts
 import { HttpStatus } from '@nestjs/common';
-import { AppException } from 'src/core/filters/app.exception';
+import { AppException } from '<AppException>';
 
 export class FaqNotFoundError extends AppException {
   constructor() {
@@ -74,7 +121,7 @@ Com parâmetro para interpolar identificador ou valor na mensagem:
 
 ```ts
 import { HttpStatus } from '@nestjs/common';
-import { AppException } from 'src/core/filters/app.exception';
+import { AppException } from '<AppException>';
 
 export class EmailAlreadyTakenError extends AppException {
   constructor(email: string) {
@@ -88,11 +135,11 @@ Ordem no `constructor`: `super(message, HttpStatus.…)` → `this.name = 'NomeD
 
 ## Regra base
 
-Todo erro customizado **estende** `AppException` importado de `src/core/filters/app.exception`.
+Todo erro customizado **estende** `AppException` (seção "Bloco base").
 
 **Proibido:** `Error` nativo, `HttpException`, `NotFoundException` ou outras exceções do Nest usadas como erro de domínio/aplicação.
 
-O `HttpExceptionFilter` (`src/core/filters/http-exception/http-exception.filter.ts`) captura `AppException`, registra o erro e responde ao cliente com JSON `{ message }` e status HTTP igual a `exception.code` (ou `400` se `code` não foi definido).
+**Pré-requisito:** filtro global de exceção do Nest que captura `AppException`, registra o erro e responde ao cliente com JSON `{ message }` e status HTTP igual a `exception.code` (ou `400` se `code` não foi definido). Sem esse filtro, o cliente recebe `500`. Nenhum `@Catch(` tratando `AppException` no projeto → avisar o usuário; criar o filtro está fora desta skill.
 
 ## Reuso antes de criar
 
@@ -105,8 +152,6 @@ O objetivo é **centralizar** erros. Antes de criar um arquivo novo:
 **Se já existe** um erro equivalente (mesma regra, mesmo status, mesma mensagem para o cliente): **reusar** e informar o usuário. Não duplicar.
 
 **Promoção:** se um erro de módulo passa a ser usado por um segundo módulo (ou por `src/infra/`), mover/promover para `src/shared/errors/` e atualizar imports — só quando o usuário pedir refatoração; ao criar novo erro compartilhado, colocar direto em `shared`.
-
-Exemplos de erros globais existentes: `EmailAlreadyTakenError`, `DocumentAlreadyTakenError`, `ExternalApiError`.
 
 ## Mensagens
 
@@ -133,6 +178,7 @@ Sempre passar status explícito com `HttpStatus` de `@nestjs/common` (nunca núm
 
 | Artefato | Delegar a |
 |----------|-----------|
+| Filtro global de exceção que traduz `AppException` | Fora (sem skill) — avisar o usuário se não existir |
 | `throw new …` em services, entidades ou gateways | Fora (sem skill) — tarefa separada, só com pedido do usuário |
 | Flags `@Swagger` no controller (`applyNotFound`, `applyConflict`, `applyForbidden`, etc.) | Fora (sem skill; planejada using-swagger-decorator) |
 | Testes unitários | Skill `writing-unit-tests` — tarefa separada, só com pedido do usuário |
@@ -142,6 +188,7 @@ Sempre passar status explícito com `HttpStatus` de `@nestjs/common` (nunca núm
 
 Antes de responder ao usuário, confirmar **todos** os itens:
 
+- [ ] `AppException` localizada pelo export (ou criada pela seção "Bloco base"); import com o caminho real, não o placeholder
 - [ ] Classe estende `AppException`
 - [ ] Import de `HttpStatus` de `@nestjs/common`
 - [ ] `this.name` igual ao nome da classe

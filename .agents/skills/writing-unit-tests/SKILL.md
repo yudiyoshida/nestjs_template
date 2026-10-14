@@ -5,7 +5,7 @@ description: Analisa um arquivo TypeScript e gera todos os cenários de teste po
 
 # Writing Unit Tests
 
-Gera testes unitários Jest (`*.spec.ts`) para um arquivo TypeScript deste projeto,
+Gera testes unitários Jest (`*.spec.ts`) para um arquivo TypeScript,
 cobrindo **todos** os cenários possíveis, com estrutura e formatação fixas.
 
 ## Esta skill é a única fonte da verdade
@@ -50,8 +50,8 @@ Leia o arquivo inteiro, mais o que ele importa e que afeta comportamento:
 classes de erro, tipos/interfaces de entrada e saída, constantes de validação,
 regex e dependências injetadas. Para classes Nest com DI (`@Injectable`, `@Controller`,
 guard, filter, etc.), identifique cada dependência do construtor e o **token de
-injeção** de cada uma (symbol em `src/core/di/token.ts`, classe concreta, ou
-string). Nada além disso — nenhum arquivo de teste.
+injeção** de cada uma (symbol do objeto `TOKENS`, classe concreta, ou
+string). Ler o arquivo que exporta `TOKENS` é permitido. Nada além disso — nenhum arquivo de teste.
 
 ### 2. Listar os cenários
 
@@ -90,7 +90,7 @@ Seguir as seções "Estrutura obrigatória do arquivo", "Hooks" e, para classe N
 ### 4. Rodar e iterar
 
 ```bash
-npm test -- src/path/to/file.spec.ts
+npm test -- <arquivo>.spec.ts
 ```
 
 Se falhar: leia a mensagem, corrija o teste quando a expectativa estiver errada,
@@ -314,7 +314,7 @@ filter, interceptor, gateway). VOs, funções puras e mappers: `new` direto. Ape
 
 **Montagem:** `let sut` + `let` por dependência; `beforeEach(async() => { ... })` com
 `createMock<T>()`, `Test.createTestingModule({ providers: [Sut, { provide: token, useValue: mock }] }).compile()`,
-`sut = module.get(Sut)`. Token symbol → `TOKENS.X` (ler `src/core/di/token.ts` ok);
+`sut = module.get(Sut)`. Token symbol → `TOKENS.X` (ler o arquivo que exporta `TOKENS` é permitido);
 classe concreta → própria classe como token. Controller → `controllers: [X]`, use
 cases em `providers` com `createMock`. **Proibido:** módulos de infra reais, `PrismaService`, I/O.
 
@@ -323,14 +323,15 @@ cases em `providers` com `createMock`. **Proibido:** módulos de infra reais, `P
 No passo 2: `toHaveBeenCalledWith`, dependência não chamada no aborto, `mockRejectedValue` propagado.
 DTO repetido → `makeX(overrides: Partial<T> = {})` no topo do arquivo.
 
-Exemplo (use case com dao mockado):
+Exemplo (use case com dao mockado). Import `'<Símbolo>'`: trocar pelo caminho real
+do arquivo que exporta o símbolo. O alvo (`./find-all-tip.service`) fica ao lado do spec.
 
 ```ts
 import { createMock } from '@golevelup/ts-jest';
 import { Test } from '@nestjs/testing';
-import { TOKENS } from 'src/core/di/token';
-import type { ITipDao } from '../../persistence/dao/tip-dao.interface';
-import { FindAllTipQueryDto } from './dtos/find-all-tip-query.dto';
+import { TOKENS } from '<TOKENS>';
+import type { ITipDao } from '<ITipDao>';
+import { FindAllTipQueryDto } from '<FindAllTipQueryDto>';
 import { FindAllTip } from './find-all-tip.service';
 
 describe('FindAllTip - Unit tests', () => {
@@ -401,7 +402,7 @@ describe('FindAllTip - Unit tests', () => {
 });
 ```
 
-## Convenções deste projeto
+## Convenções
 
 Lista completa. Não verifique nem complemente estas convenções lendo outros
 arquivos do projeto.

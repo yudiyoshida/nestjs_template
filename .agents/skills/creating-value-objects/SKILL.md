@@ -99,7 +99,7 @@ Estado interno do valor: sempre `private readonly` (ex.: `private readonly _valu
 
 ## Templates
 
-Estilo alinhado ao ESLint do projeto: indent 2, aspas simples, `semi`, vírgula final em multiline, `else` em nova linha.
+Estilo: indent 2, aspas simples, `semi`, vírgula final em multiline, `else` em nova linha.
 
 Escolha **um** template conforme o caso.
 
@@ -280,9 +280,11 @@ export class Code {
 
 O valor armazenado é o resultado validado dos VOs filhos; formato inválido lança erro do composto ou do filho conforme a regra.
 
+`CPF` e `CNPJ` são VOs do template B com dígito verificador. Localizar cada um pela busca do export (`export class CPF`); se não existir, criar antes com esta skill. Import `'<Símbolo>'`: trocar pelo caminho real do arquivo que exporta o símbolo.
+
 ```ts
-import { CNPJ } from '../cnpj/cnpj.vo';
-import { CPF } from '../cpf/cpf.vo';
+import { CNPJ } from '<CNPJ>';
+import { CPF } from '<CPF>';
 import { InvalidDocumentError } from './document.error';
 
 export class Document {

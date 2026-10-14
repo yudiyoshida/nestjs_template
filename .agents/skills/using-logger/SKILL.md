@@ -5,7 +5,7 @@ description: Adiciona observabilidade via ILoggerGateway, LogContext e payload t
 
 # Using Logger
 
-Observabilidade **nas fronteiras** do sistema: injetar `ILoggerGateway` (`TOKENS.LoggerGateway`) e gravar `debug`/`error` com `LogContext` tipado. Winston já existe; esta skill **não** recria o módulo de logger.
+Observabilidade **nas fronteiras** do sistema: injetar `ILoggerGateway` (`TOKENS.LoggerGateway`) e gravar `debug`/`error` com `LogContext` tipado. Porta de logger ausente → criar pela seção "Bloco base"; porta existente → **não** recriar.
 
 ## Esta skill é a única fonte da verdade
 
@@ -15,7 +15,7 @@ Todo o padrão — quando logar, `debug` vs `error`, `LogContext`, payload, segr
 
 Antes de escrever, **não**:
 
-- leia adapters, filters ou `logger.gateway.ts` para copiar payload/estilo (exceto o passo 3, só para **inserir** contexto)
+- leia adapters, filters ou o arquivo da porta de logger para copiar payload/estilo (exceto o passo 4, só para **inserir** contexto)
 - rode grep/glob por `logger.debug`, `logger.error`, `LogContext.`
 - copie `console.log`, `Logger` do Nest ou Winston direto
 
@@ -23,9 +23,9 @@ Se código existente contradiz esta skill, **esta skill vence**.
 
 **Obrigatório editar** quando nascer um contexto novo (não para copiar formato):
 
-- `src/infra/logger/logger.gateway.ts` — valor em `LogContext` **e** índice em `LogContextDataMap` **e** o `type` do payload, no mesmo diff
+- arquivo que exporta `LogContext` (busca por `export enum LogContext`) — valor em `LogContext` **e** índice em `LogContextDataMap` **e** o `type` do payload, no mesmo diff
 
-Winston (`LoggerWinstonAdapterGateway`) itera `Object.values(LogContext)`: contexto novo → arquivo `logs/<kebab>.log` sozinho. **Não** editar o adapter Winston só para contexto novo.
+O adapter de arquivo itera `Object.values(LogContext)` (seção "Bloco base"): contexto novo → arquivo `logs/<kebab>.log` sozinho. **Não** editar o adapter só para contexto novo.
 
 Exceção: usuário apontar um arquivo, ou pedir edição de um log que já existe — leia só esse arquivo.
 
@@ -34,12 +34,13 @@ Exceção: usuário apontar um arquivo, ou pedir edição de um log que já exis
 ```
 Progresso:
 - [ ] 1. Confirmar que o ponto é fronteira observável (não entidade, não cada linha de use case)
-- [ ] 2. Reusar LogContext existente se for o mesmo recorte (HTTP, CACHE, …)
-- [ ] 3. Se recorte novo: enum + type + mapa em logger.gateway.ts
-- [ ] 4. Injetar ILoggerGateway e chamar debug ou error com payload do mapa
-- [ ] 5. Sanitizar: zero segredo no payload
-- [ ] 6. Spec do consumidor: expect logger.debug/error via writing-unit-tests
-- [ ] 7. Checklist de entrega
+- [ ] 2. Localizar ILoggerGateway e LogContext pelo export (ausente → seção "Bloco base")
+- [ ] 3. Reusar LogContext existente se for o mesmo recorte (HTTP, CACHE, …)
+- [ ] 4. Se recorte novo: enum + type + mapa no arquivo que exporta LogContext
+- [ ] 5. Injetar ILoggerGateway e chamar debug ou error com payload do mapa
+- [ ] 6. Sanitizar: zero segredo no payload
+- [ ] 7. Spec do consumidor: expect logger.debug/error via writing-unit-tests
+- [ ] 8. Checklist de entrega
 ```
 
 ## Quando usar
@@ -68,7 +69,111 @@ Log existe para **entender o sistema depois**: falha de I/O, request que estouro
 | Novo vendor de logger (pino, …) | Skill `using-ports-and-adapters` + skill `using-core-config` — **não** esta skill |
 | Sentry / APM | Fora (sem skill; planejada using-error-tracking) |
 | Auditoria de use case com interceptor | Fora (sem skill; planejada auditing-with-interceptors) — só com pedido do usuário |
-| Recriar `LoggerModule` / adapter Winston / fake | Proibido |
+| Recriar porta, adapters ou `LoggerModule` que já existem | Proibido |
+
+## Bloco base
+
+Localizar pela busca do export antes de escrever. Se não existir, criar pelos templates abaixo, no destino indicado. Porta existente: **não** recriar nada.
+
+| Peça | Localizar por | Destino se ausente |
+|------|---------------|--------------------|
+| `ILoggerGateway`, `LogContext`, `LogContextDataMap` | `export enum LogContext` | `src/infra/logger/logger.gateway.ts` |
+| Adapter de arquivo (Winston) | `implements ILoggerGateway` | `src/infra/logger/adapters/winston/logger-winston.gateway.ts` |
+| Adapter fake | `implements ILoggerGateway` | `src/infra/logger/adapters/fake/logger-fake.gateway.ts` |
+| `LoggerModule` | `export class LoggerModule` | `src/infra/logger/logger.module.ts` |
+
+```bash
+grep -rn "export enum LogContext" src
+```
+
+Porta — nasce só com `HTTP`; cada recorte novo entra pela seção "Contexto e payload novos":
+
+```ts
+export interface ILoggerGateway {
+  debug<T extends LogContext>(context: T, data: LogContextDataMap[T]): void
+  error<T extends LogContext>(context: T, data: LogContextDataMap[T]): void
+}
+
+export enum LogContext {
+  HTTP = 'http',
+}
+
+export type LogContextDataMap = {
+  [LogContext.HTTP]: HttpData
+}
+
+type CommonData = {
+  accountId?: string;
+  error?: any;
+  adapter?: string;
+}
+
+type HttpData = CommonData & {
+  method: string;
+  url: string;
+  body: any;
+  params: any;
+  query: any;
+  statusCode: number;
+}
+```
+
+Adapter de arquivo (pacote `winston`) — um transport por valor de `LogContext`, em `logs/<contexto>.log`. Por isso contexto novo não exige editar o adapter:
+
+```ts
+import { Injectable } from '@nestjs/common';
+import { createLogger, format, Logger, transports } from 'winston';
+import { ILoggerGateway, LogContext, LogContextDataMap } from '../../logger.gateway';
+
+@Injectable()
+export class LoggerWinstonAdapterGateway implements ILoggerGateway {
+  private readonly logger: Logger;
+
+  constructor() {
+    const fileTransports = Object.values(LogContext).map(context => this.generateTransport(context));
+    this.logger = createLogger({ transports: fileTransports });
+  }
+
+  public debug<T extends LogContext>(context: T, data: LogContextDataMap[T]): void {
+    this.logger.log('debug', { context, data });
+  }
+
+  public error<T extends LogContext>(context: T, data: LogContextDataMap[T]): void {
+    this.logger.log('error', { context, data });
+  }
+
+  private generateTransport(context: LogContext) {
+    return new transports.File({
+      level: 'debug',
+      filename: `logs/${context}.log`,
+      format: this.filterByContext(context),
+    });
+  }
+
+  private filterByContext(context: LogContext) {
+    return format.combine(
+      format(info => info.context === context ? info : false)(),
+      format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+      format.json(),
+    );
+  }
+}
+```
+
+Adapter fake — no-op:
+
+```ts
+import { Injectable } from '@nestjs/common';
+import { ILoggerGateway, LogContext, LogContextDataMap } from '../../logger.gateway';
+
+@Injectable()
+export class LoggerFakeAdapterGateway implements ILoggerGateway {
+  public debug<T extends LogContext>(_context: T, _data: LogContextDataMap[T]): void {}
+  public error<T extends LogContext>(_context: T, _data: LogContextDataMap[T]): void {}
+}
+```
+
+`LoggerModule`: skill `using-ports-and-adapters` (template "4. Módulo"), capability `logger`, vendors `fake` e `winston`, token `TOKENS.LoggerGateway`, com `@Global()`. `LOGGER_VENDOR` via skill `using-core-config`. Registrar `LoggerModule.register()` uma vez no módulo raiz da aplicação.
 
 ## debug vs error
 
@@ -83,7 +188,7 @@ Filter HTTP: só `error` (já é exception). Não duplicar o mesmo HTTP error no
 
 ## Injeção
 
-`LoggerModule` é `@Global()` e já entra via `InfraModule.register()`. Consumidor **não** reimporta o módulo. Só injeta:
+A porta de logger é provida pelo `LoggerModule` `@Global()`, registrado uma vez no módulo raiz (seção "Bloco base"). Consumidor **não** reimporta o módulo. Só injeta:
 
 ```ts
 constructor(
@@ -91,13 +196,13 @@ constructor(
 ) {}
 ```
 
-Imports: `TOKENS` de `src/core/di/token`; `ILoggerGateway` e `LogContext` de `src/infra/logger/logger.gateway`.
+Imports pelo caminho real do arquivo que exporta cada símbolo: `TOKENS` (skill `using-ports-and-adapters`, seção "Bloco base"); `ILoggerGateway` e `LogContext` (seção "Bloco base").
 
 Modificadores: `private readonly logger`. Construtor público **sem** a palavra `public`.
 
 ## Contexto e payload novos
 
-Mesmo diff, três peças. `CommomData` já tem `accountId?`, `error?`, `adapter?` — **reusar**, não duplicar.
+Mesmo diff, três peças. O tipo base comum do payload (`CommonData` no bloco base) já tem `accountId?`, `error?`, `adapter?` — **reusar** com o nome que estiver no arquivo, não duplicar.
 
 ```ts
 export enum LogContext {
@@ -110,7 +215,7 @@ export type LogContextDataMap = {
   [LogContext.QUEUE]: QueueData
 }
 
-type QueueData = CommomData & {
+type QueueData = CommonData & {
   action: string;
   jobId?: string;
 };
@@ -164,7 +269,7 @@ Skill `writing-unit-tests`. No spec do **consumidor** (adapter, filter):
 - debug path: idem em `logger.debug`
 - payload **não** contém campo sensível
 
-Não reescrever spec do Winston/Fake/LoggerModule só porque nasceu um `LogContext` — o Winston já cobre “um file transport por valor do enum”.
+Não reescrever spec do adapter de arquivo, do fake ou do `LoggerModule` só porque nasceu um `LogContext` — o adapter de arquivo já cobre “um file transport por valor do enum”.
 
 ## Fora do escopo
 
@@ -172,16 +277,17 @@ Não reescrever spec do Winston/Fake/LoggerModule só porque nasceu um `LogConte
 |----------|-----------|
 | Spec do consumidor (adapter, filter) | Skill `writing-unit-tests` (**obrigatório**) |
 | `LOGGER_VENDOR` e demais env | Skill `using-core-config` |
-| Spec do Winston, do fake e do `LoggerModule` | Não reescrever só porque nasceu um `LogContext` |
+| Spec do adapter de arquivo, do fake e do `LoggerModule` | Não reescrever só porque nasceu um `LogContext`; ao criar pelo bloco base, skill `writing-unit-tests` |
 
 ## Checklist de entrega
 
 Antes de responder, confirmar **todos**:
 
 - [ ] Ponto é fronteira (adapter real, filter HTTP, ou recorte novo pedido). Não domínio, não `console.log`
+- [ ] Porta de logger localizada pelo export (ou criada pela seção "Bloco base"); imports com o caminho real
 - [ ] `debug` vs `error` correto; happy path de lookup HTTP sem debug obrigatório
 - [ ] Contexto: reuso **ou** enum + type + `LogContextDataMap` no mesmo diff
-- [ ] Winston **não** editado só por contexto novo
+- [ ] Adapter de arquivo **não** editado só por contexto novo
 - [ ] `@Inject(TOKENS.LoggerGateway)`; payload bate no mapa; `adapter` no log de infra
 - [ ] Zero segredo; SMTP sem `code`/HTML; cache sem value
 - [ ] Spec do consumidor cobre chamada ao logger (`writing-unit-tests`), suíte passando
