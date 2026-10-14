@@ -1,6 +1,6 @@
 /**
  * Converts OpenAPI/Swagger JSON to Postman Collection v2.1 format.
- * Usage: npx ts-node scripts/swagger-to-postman.ts
+ * Usage: npx ts-node postman/swagger-to-postman.ts
  */
 
 import * as fs from 'fs';
@@ -52,6 +52,35 @@ function buildExampleBody(spec: OpenAPISpec, schemaRef?: string): string {
   return getExampleFromSchema(schema);
 }
 
+const bearerAuth = {
+  type: 'bearer',
+  bearer: [{ key: 'token', value: '{{accessToken}}', type: 'string' }],
+};
+
+function tokenScript(exec: string[]) {
+  return {
+    listen: 'test',
+    script: { exec, type: 'text/javascript' },
+  };
+}
+
+const saveTokensScript = tokenScript([
+  'const json = pm.response.json();',
+  'if (json.accessToken) {',
+  '  pm.collectionVariables.set("accessToken", json.accessToken);',
+  '}',
+  'if (json.refreshToken) {',
+  '  pm.collectionVariables.set("refreshToken", json.refreshToken);',
+  '}',
+]);
+
+const clearTokensScript = tokenScript([
+  'if (pm.response.code === 200) {',
+  '  pm.collectionVariables.set("accessToken", "");',
+  '  pm.collectionVariables.set("refreshToken", "");',
+  '}',
+]);
+
 function swaggerToPostman(spec: OpenAPISpec): object {
   const folders: Record<string, { name: string; item: object[] }> = {};
   const httpMethods = ['get', 'post', 'put', 'patch', 'delete'];
@@ -89,6 +118,15 @@ function swaggerToPostman(spec: OpenAPISpec): object {
       }
 
       const needsAuth = op.security?.some((s) => 'bearer' in s);
+      const isLogin = pathStr === '/auth/login' && method === 'post';
+      const isRefresh = pathStr === '/auth/refresh' && method === 'post';
+      const isLogout = pathStr === '/auth/logout' && method === 'post';
+
+      if (isRefresh && body) {
+        const parsed = JSON.parse(body) as Record<string, unknown>;
+        parsed.refreshToken = '{{refreshToken}}';
+        body = JSON.stringify(parsed, null, 2);
+      }
 
       const request: Record<string, unknown> = {
         name: op.summary || op.operationId || `${method.toUpperCase()} ${pathStr}`,
@@ -109,29 +147,16 @@ function swaggerToPostman(spec: OpenAPISpec): object {
         },
       };
 
-      // Script para salvar token automaticamente após login
       // event fica no nível do item (irmão de request), não dentro de request — spec Postman v2.1
-      if (pathStr === '/auth/login' && method === 'post') {
-        request.event = [
-          {
-            listen: 'test',
-            script: {
-              exec: [
-                'const json = pm.response.json();',
-                'if (json.accessToken) {',
-                '  pm.collectionVariables.set("accessToken", json.accessToken);',
-                '}',
-              ],
-              type: 'text/javascript',
-            },
-          },
-        ];
-        (request.request as Record<string, unknown>).auth = { type: 'noauth' };
+      const itemRequest = request.request as Record<string, unknown>;
+      if (isLogin || isRefresh) {
+        request.event = [saveTokensScript];
+        itemRequest.auth = { type: 'noauth' };
+      } else if (isLogout) {
+        request.event = [clearTokensScript];
+        itemRequest.auth = bearerAuth;
       } else if (needsAuth) {
-        (request.request as Record<string, unknown>).auth = {
-          type: 'bearer',
-          bearer: [{ key: 'token', value: '{{accessToken}}', type: 'string' }],
-        };
+        itemRequest.auth = bearerAuth;
       }
 
       folders[tag].item.push(request);
@@ -149,13 +174,11 @@ function swaggerToPostman(spec: OpenAPISpec): object {
       description: spec.info.description || 'API REST - Postman Collection',
       schema: 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
     },
-    auth: {
-      type: 'bearer',
-      bearer: [{ key: 'token', value: '{{accessToken}}', type: 'string' }],
-    },
+    auth: bearerAuth,
     variable: [
       { key: 'baseUrl', value: 'http://localhost:3000', type: 'string' },
       { key: 'accessToken', value: '', type: 'string' },
+      { key: 'refreshToken', value: '', type: 'string' },
     ],
     item: items,
   };
