@@ -173,7 +173,7 @@ export class LoggerFakeAdapterGateway implements ILoggerGateway {
 }
 ```
 
-`LoggerModule`: skill `using-ports-and-adapters` (template "4. Módulo"), capability `logger`, vendors `fake` e `winston`, token `TOKENS.LoggerGateway`, com `@Global()`. `LOGGER_VENDOR` via skill `using-core-config`. Registrar `LoggerModule.register()` uma vez no módulo raiz da aplicação.
+`LoggerModule`: skill `using-ports-and-adapters`, arquivo `references/templates.md` dessa skill (template "4. Módulo"), capability `logger`, vendors `fake` e `winston`, token `TOKENS.LoggerGateway`, com `@Global()`. `LOGGER_VENDOR` via skill `using-core-config`. Registrar `LoggerModule.register()` uma vez no módulo raiz da aplicação.
 
 ## debug vs error
 

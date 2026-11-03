@@ -84,8 +84,9 @@ Omita um describe de path que não tenha nenhum cenário.
 
 ### 3. Escrever o arquivo
 
-Seguir as seções "Estrutura obrigatória do arquivo", "Hooks" e, para classe Nest com DI,
-"Classes com injeção de dependência (NestJS)".
+Seguir as seções "Estrutura obrigatória do arquivo" e "Hooks". Classe Nest com DI
+(`@Injectable`, `@Controller`, guard, filter, interceptor, gateway): leia
+`references/nestjs-di.md` antes de escrever o spec.
 
 ### 4. Rodar e iterar
 
@@ -106,7 +107,7 @@ Arquivo TypeScript do projeto com comportamento a verificar em isolamento:
 | Alvo | Montagem |
 |------|----------|
 | VO, função pura, mapper | `new` direto |
-| Classe Nest com DI no construtor (`@Injectable`, `@Controller`, guard, filter, interceptor, gateway) | `Test.createTestingModule` + `createMock` — seção "Classes com injeção de dependência (NestJS)" |
+| Classe Nest com DI no construtor (`@Injectable`, `@Controller`, guard, filter, interceptor, gateway) | `Test.createTestingModule` + `createMock` — leia `references/nestjs-di.md` antes de escrever o spec |
 
 ### Quando não usar
 
@@ -308,99 +309,7 @@ describe('Error path', () => {
 
 ## Classes com injeção de dependência (NestJS)
 
-Use para classes Nest com DI no construtor (`@Injectable`, `@Controller`, guard,
-filter, interceptor, gateway). VOs, funções puras e mappers: `new` direto. Apenas
-**unitário** com mocks — não gere `*.integration.spec.ts` (módulo real, Prisma).
-
-**Montagem:** `let sut` + `let` por dependência; `beforeEach(async() => { ... })` com
-`createMock<T>()`, `Test.createTestingModule({ providers: [Sut, { provide: token, useValue: mock }] }).compile()`,
-`sut = module.get(Sut)`. Token symbol → `TOKENS.X` (ler o arquivo que exporta `TOKENS` é permitido);
-classe concreta → própria classe como token. Controller → `controllers: [X]`, use
-cases em `providers` com `createMock`. **Proibido:** módulos de infra reais, `PrismaService`, I/O.
-
-**Por cenário:** `jest.spyOn(dep, 'm').mockResolvedValue` / `mockRejectedValue` no Arrange;
-`afterEach(() => jest.restoreAllMocks())` se usar `spyOn`. **Não gere** `it('should be defined')`.
-No passo 2: `toHaveBeenCalledWith`, dependência não chamada no aborto, `mockRejectedValue` propagado.
-DTO repetido → `makeX(overrides: Partial<T> = {})` no topo do arquivo.
-
-Exemplo (use case com dao mockado). Import `'<Símbolo>'`: trocar pelo caminho real
-do arquivo que exporta o símbolo. O alvo (`./find-all-tip.service`) fica ao lado do spec.
-
-```ts
-import { createMock } from '@golevelup/ts-jest';
-import { Test } from '@nestjs/testing';
-import { TOKENS } from '<TOKENS>';
-import type { ITipDao } from '<ITipDao>';
-import { FindAllTipQueryDto } from '<FindAllTipQueryDto>';
-import { FindAllTip } from './find-all-tip.service';
-
-describe('FindAllTip - Unit tests', () => {
-  let sut: FindAllTip;
-  let tipDao: ITipDao;
-
-  beforeEach(async() => {
-    tipDao = createMock<ITipDao>();
-
-    const module = await Test.createTestingModule({
-      providers: [
-        FindAllTip,
-        { provide: TOKENS.TipDao, useValue: tipDao },
-      ],
-    }).compile();
-
-    sut = module.get(FindAllTip);
-  });
-
-  afterEach(() => {
-    jest.restoreAllMocks();
-  });
-
-  describe('execute', () => {
-    describe('Happy path', () => {
-      it('should return a paginated dto built from the dao result', async() => {
-        // Arrange
-        const tips = [{ id: 'tip-id' }];
-        const query: FindAllTipQueryDto = { page: 1, size: 10 };
-        jest.spyOn(tipDao, 'findAll').mockResolvedValue([tips, 1]);
-
-        // Act
-        const result = await sut.execute(query);
-
-        // Assert
-        expect(tipDao.findAll).toHaveBeenCalledWith(query);
-        expect(result.totalItems).toBe(1);
-        expect(result.data).toEqual(tips);
-      });
-    });
-
-    describe('Error path', () => {
-      it('should propagate when the dao rejects', async() => {
-        // Arrange
-        const query: FindAllTipQueryDto = { page: 1, size: 10 };
-        jest.spyOn(tipDao, 'findAll').mockRejectedValue(new Error('db down'));
-
-        // Act & Assert
-        await expect(sut.execute(query)).rejects.toThrow('db down');
-      });
-    });
-
-    describe('Edge cases', () => {
-      it('should return empty data when the dao returns no rows', async() => {
-        // Arrange
-        const query: FindAllTipQueryDto = { page: 1, size: 10 };
-        jest.spyOn(tipDao, 'findAll').mockResolvedValue([[], 0]);
-
-        // Act
-        const result = await sut.execute(query);
-
-        // Assert
-        expect(result.data).toEqual([]);
-        expect(result.totalItems).toBe(0);
-      });
-    });
-  });
-});
-```
+Classe Nest com DI (`@Injectable`, `@Controller`, guard, filter, interceptor, gateway): leia `references/nestjs-di.md` antes de escrever o spec. VOs, funções puras e mappers: `new` direto, sem esse arquivo.
 
 ## Convenções
 
@@ -502,7 +411,7 @@ o arquivo de teste e volte ao início do checklist.
 - [ ] Hooks sem comentários AAA
 - [ ] Entrada e resultado esperado do cenário permanecem visíveis no `it`
 
-### NestJS / DI (seção "Classes com injeção de dependência")
+### NestJS / DI (`references/nestjs-di.md`)
 
 Aplicável somente quando o alvo usa injeção de dependência do Nest.
 

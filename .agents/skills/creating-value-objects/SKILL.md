@@ -173,7 +173,7 @@ export class ZipCode {
 }
 ```
 
-Para dígitos verificadores (CPF/CNPJ): constantes `LENGTH`, `FORMAT`, métodos `private allDigitsAreEqual`, `private calculateDigit`; comentário opcional com link da fonte do algoritmo.
+Dígito verificador (CPF, CNPJ ou outro documento com dígito): leia `references/check-digits.md` antes de escrever a classe. Se `export class CPF` ou `export class CNPJ` já existir, importe pelo caminho real. Se não existir, crie a partir desse arquivo. Proibido abrir outro `.vo.ts` para copiar o cálculo. `InvalidCpfError` e `InvalidCnpjError`: skill `creating-custom-errors`.
 
 ### C — Geração ou factory estática
 
@@ -280,7 +280,7 @@ export class Code {
 
 O valor armazenado é o resultado validado dos VOs filhos; formato inválido lança erro do composto ou do filho conforme a regra.
 
-`CPF` e `CNPJ` são VOs do template B com dígito verificador. Localizar cada um pela busca do export (`export class CPF`); se não existir, criar antes com esta skill. Import `'<Símbolo>'`: trocar pelo caminho real do arquivo que exporta o símbolo.
+`CPF` e `CNPJ` são VOs do template B com dígito verificador. Se o export já existir, importe pelo caminho real. Se não existir, crie a partir de `references/check-digits.md` (leia esse arquivo antes). Proibido abrir outro `.vo.ts` para copiar o cálculo. Import `'<Símbolo>'`: trocar pelo caminho real do arquivo que exporta o símbolo.
 
 ```ts
 import { CNPJ } from '<CNPJ>';
