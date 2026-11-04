@@ -57,7 +57,7 @@ No passo 2, arquivo novo sai do template. Edição de adapter que já existe: al
 | Enum TypeScript | Skill `creating-domain-enum` |
 | DTO | Skill `creating-application-dtos` |
 | Use case | Skill `creating-use-case` |
-| Spec | Skill `writing-unit-tests` |
+| Spec | Skill `writing-integration-tests` |
 | Recriar `PrismaService` | Fora (sem skill). Esta skill só importa |
 
 ## Lei
@@ -392,7 +392,7 @@ export class XxxRepositoryAdapterPrisma implements IXxxRepository {
 | Enum TypeScript | Skill `creating-domain-enum` |
 | DTO | Skill `creating-application-dtos` |
 | Use case | Skill `creating-use-case` |
-| Spec | Skill `writing-unit-tests` |
+| Spec | Skill `writing-integration-tests` |
 
 ## Checklist de entrega
 

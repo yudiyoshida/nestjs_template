@@ -55,6 +55,8 @@ string). Ler o arquivo que exporta `TOKENS` é permitido. Nada além disso — n
 
 ### 2. Listar os cenários
 
+Inventário de `inventorying-test-scenarios` para este arquivo na mesma tarefa: a lista é a seção unitária. Não acrescentar, omitir nem trocar de path. Seção ausente: não criar o spec. Sem inventário, derivar como abaixo. O inventário não muda estrutura, AAA, hooks nem harness.
+
 Antes de escrever, enumere os cenários. Cada **fonte de teste** é uma função
 exportada ou um método público da classe (inclui o `constructor` quando ele
 valida ou transforma dados). Getters com lógica também contam.
@@ -113,7 +115,8 @@ Arquivo TypeScript do projeto com comportamento a verificar em isolamento:
 
 | Situação | Onde vai |
 |----------|----------|
-| Teste com módulo real ou Prisma (`*.integration.spec.ts`) | Fora (sem skill; planejada writing-integration-tests) |
+| DAO ou repository Prisma | Skill `writing-integration-tests`. Sem spec unitário com mock |
+| Teste com módulo real ou Prisma (`*.integration.spec.ts`) | Skill `writing-integration-tests` |
 | Teste HTTP ponta a ponta | Fora (sem skill; planejada writing-e2e-tests) |
 
 ## Estrutura obrigatória do arquivo
@@ -363,7 +366,7 @@ it.each([
 
 | Artefato | Delegar a |
 |----------|-----------|
-| `*.integration.spec.ts` (módulo real, Prisma) | Fora (sem skill; planejada writing-integration-tests) |
+| `*.integration.spec.ts` (módulo real, Prisma), DAO ou repository Prisma | Skill `writing-integration-tests` |
 | Código de produção | Não alterar para o teste passar sem confirmar; bug → reportar ao usuário |
 
 ## Checklist de entrega
@@ -372,6 +375,8 @@ Percorra **todos** os itens antes de responder ao usuário. Se algum falhar, cor
 o arquivo de teste e volte ao início do checklist.
 
 ### Cobertura (passo 2)
+
+Com inventário de `inventorying-test-scenarios` para este arquivo, os itens abaixo não se aplicam: o spec contém só a seção unitária, sem cenário a mais nem a menos. Sem inventário, valem os itens.
 
 - [ ] Toda fonte de teste tem cenários: funções exportadas, métodos públicos,
       `constructor` que valida/transforma, getters com lógica

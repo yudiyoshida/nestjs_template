@@ -91,7 +91,7 @@ Progresso:
 - [ ] 3. Delegar os arquivos na ordem da tabela
 - [ ] 4. Escrever <modulo>.module.ts pelo template
 - [ ] 5. Inserir XxxModule em AppModule
-- [ ] 6. Delegar writing-unit-tests
+- [ ] 6. Inventariar cenários e delegar os specs
 - [ ] 7. Checklist de entrega
 ```
 
@@ -142,7 +142,7 @@ Superfície user. Só os endpoints que o pedido nomear. Lista pública: `GET` em
 
 5. Localizar `AppModule` (seção "Bloco base") e inserir `XxxModule` no array `imports`, mantendo os imports que já existem. Não registrar módulo de `_examples`.
 
-6. Delegar `writing-unit-tests` em cada use case, no DAO e em cada controller. Sem spec de integração. Sem spec de DTO.
+6. Spec só aqui, não no meio da tabela. Em cada use case, em cada controller e no DAO, ler `inventorying-test-scenarios`. Bug possível: parar e perguntar. Sem pendência: `writing-unit-tests` se o inventário tiver seção unitária (use case e controller); `writing-integration-tests` se tiver seção de integração (use case e DAO). DAO sem spec unitário. Sem spec de DTO. Sem inventário, sem spec.
 
 7. Checklist de entrega.
 
@@ -277,7 +277,8 @@ O bloco mostra a linha nova dentro do `AppModule` que já existe. O comentário 
 | Seed | Skill `writing-prisma-seed` |
 | Cache de leitura | Skill `caching-a-read` |
 | Collection Postman | Skill `syncing-postman-collection` |
-| Spec de integração ou e2e | Fora (sem skill) |
+| Spec de integração de use case, DAO ou repository Prisma | Skill `writing-integration-tests` |
+| Teste e2e | Fora (sem skill) |
 
 ## Checklist de entrega
 
@@ -292,5 +293,5 @@ Antes de responder, confirmar **todos**:
 - [ ] Admin com `RequiredRoles(AccountRole.ADMIN)`, `PATCH` na edição, sem `actorId`; user só se o pedido pediu, sem controller vazio
 - [ ] `<modulo>.module.ts` com import absoluto `src/...`, providers dos cinco use cases, sem `exports`
 - [ ] `AppModule` importa `XxxModule` e conserva os imports que já existiam
-- [ ] `writing-unit-tests` rodou em cada use case, no DAO e em cada controller; sem spec de integração e sem spec de DTO
+- [ ] `inventorying-test-scenarios` rodou em cada use case, em cada controller e no DAO antes do spec; bug possível parou e perguntou; `writing-unit-tests` implementou só a seção unitária; `writing-integration-tests` só a de integração; DAO sem spec unitário; sem spec de DTO
 - [ ] Nenhum padrão copiado de outros arquivos — apenas esta skill

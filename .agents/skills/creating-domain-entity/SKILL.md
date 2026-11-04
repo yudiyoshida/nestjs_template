@@ -35,7 +35,7 @@ Progresso:
 - [ ] 1. Confirmar módulo rico (estado inválido não pode existir). Anêmico: parar, sem entidade
 - [ ] 2. Localizar enum, classe de erro e UTCDate pelo export (ausente → Fora do escopo; não recriar)
 - [ ] 3. Escrever a entidade pelo template. Trocar Example e os campos pelo módulo do pedido
-- [ ] 4. Delegar o spec à skill writing-unit-tests
+- [ ] 4. Spec não nasce aqui dentro de scaffold (passo 6 dela). Peça única: inventorying-test-scenarios, depois writing-unit-tests na seção unitária
 - [ ] 5. Checklist de entrega
 ```
 
@@ -179,5 +179,5 @@ Antes de responder, confirmar **todos**:
 - [ ] Sem `new AppException('texto')` e sem `HttpException`
 - [ ] Enum comparado pelo membro `ACTIVE` / `EXPIRED` (`SCREAMING_SNAKE`)
 - [ ] Data comparada com `UTCDate`, quando o pedido tem data
-- [ ] Spec delegado à skill `writing-unit-tests`, com arrange em `_instantiate`
+- [ ] Scaffold: spec não escrito aqui. Peça única: `inventorying-test-scenarios` na entidade; bug possível parou e perguntou; `writing-unit-tests` só na seção unitária, com arrange em `_instantiate`
 - [ ] Nenhum padrão copiado de outros arquivos — apenas esta skill

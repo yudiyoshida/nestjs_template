@@ -40,7 +40,7 @@ Progresso:
       leia references/query.md antes de escrever a query
       leia references/comando-interno.md antes de escrever o comando interno
 - [ ] 4. Registrar a classe em providers. Módulo sem HTTP: também em exports
-- [ ] 5. Spec fica com a skill writing-unit-tests. Esta skill não escreve o spec
+- [ ] 5. Spec não nasce aqui dentro de scaffold (passo 6 dela). Peça única: inventorying-test-scenarios, depois as skills de spec. Esta skill não escreve o spec
 - [ ] 6. Checklist de entrega
 ```
 
@@ -63,7 +63,8 @@ Leitura, anêmica ou rica, usa Query no DAO. Comando anêmico e comando rico nã
 | Árvore inteira do módulo | Skill `scaffolding-anemic-module`, `scaffolding-rich-module` ou `scaffolding-internal-module` |
 | DTO, porta, token, module de persistência, entidade, factory, enum, classe de erro, controller | Seção "Fora do escopo" |
 | Gateway de Redis, SMTP, S3 ou HTTP de terceiro | Skill `using-ports-and-adapters` |
-| Arquivo `*.spec.ts` | Skill `writing-unit-tests` |
+| Arquivo `*.spec.ts` unitário | Skill `writing-unit-tests` |
+| Arquivo `*.integration.spec.ts` | Skill `writing-integration-tests` |
 
 ## Bloco base
 
@@ -151,7 +152,8 @@ Módulo sem HTTP: a classe entra também em `exports`. Se `providers` e `exports
 | `ExampleNotFoundError` e demais erros | Skill `creating-custom-errors` |
 | Controller | Skill `creating-controllers` |
 | Árvore do módulo | Skill `scaffolding-anemic-module`, `scaffolding-rich-module` ou `scaffolding-internal-module` |
-| `*.spec.ts` | Skill `writing-unit-tests` |
+| `*.spec.ts` unitário | Skill `writing-unit-tests` |
+| `*.integration.spec.ts` | Skill `writing-integration-tests` |
 
 ## Checklist de entrega
 
@@ -169,5 +171,5 @@ Antes de responder, confirmar **todos**:
 - [ ] Comando interno sem controller. Registro ausente não lança `NotFound`
 - [ ] Sem Prisma, sem `process.env`, sem `HttpException`, sem `new AppException('texto')`, sem log no happy path
 - [ ] Classe em `providers`. Módulo sem HTTP: também em `exports`
-- [ ] Spec delegado a `writing-unit-tests`
+- [ ] Scaffold: spec não escrito aqui. Peça única: `inventorying-test-scenarios` neste service; bug possível parou e perguntou; `writing-unit-tests` só na seção unitária; `writing-integration-tests` só na de integração
 - [ ] Nenhum padrão copiado de outros arquivos — apenas esta skill

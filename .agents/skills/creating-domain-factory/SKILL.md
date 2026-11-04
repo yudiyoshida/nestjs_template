@@ -35,7 +35,7 @@ Progresso:
 - [ ] 1. Confirmar módulo rico (estado inválido não pode existir). Anêmico: parar, sem factory
 - [ ] 2. Localizar entidade, enum, classes de erro, UUID e UTCDate pelo export (ausente → Fora do escopo; não recriar)
 - [ ] 3. Escrever a factory pelo template. Trocar Example, createWithPlace e os campos pelo módulo do pedido
-- [ ] 4. Delegar o spec à skill writing-unit-tests
+- [ ] 4. Spec não nasce aqui dentro de scaffold (passo 6 dela). Peça única: inventorying-test-scenarios, depois writing-unit-tests na seção unitária
 - [ ] 5. Checklist de entrega
 ```
 
@@ -195,5 +195,5 @@ Antes de responder, confirmar **todos**:
 - [ ] `ExampleEditProps` sem `id` e sem `status`
 - [ ] Falha de validação é classe de erro. Sem `new AppException('texto')` e sem `HttpException`
 - [ ] Sem Prisma, sem Nest, sem chamada a `expire()`
-- [ ] Spec delegado à skill `writing-unit-tests`
+- [ ] Scaffold: spec não escrito aqui. Peça única: `inventorying-test-scenarios` na factory; bug possível parou e perguntou; `writing-unit-tests` só na seção unitária
 - [ ] Nenhum padrão copiado de outros arquivos — apenas esta skill

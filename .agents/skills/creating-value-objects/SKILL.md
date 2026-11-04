@@ -34,7 +34,7 @@ Progresso:
 - [ ] 2. Decidir localização (shared vs módulo)
 - [ ] 3. Escrever <kebab>.vo.ts seguindo o template adequado
 - [ ] 4. Criar <kebab>.error.ts via skill creating-custom-errors (quando o VO lança erro customizado)
-- [ ] 5. Criar <kebab>.vo.spec.ts via skill writing-unit-tests (obrigatório)
+- [ ] 5. inventorying-test-scenarios no VO; bug possível para e pergunta; sem pendência, writing-unit-tests na seção unitária (obrigatório)
 - [ ] 6. Rodar a suíte do `.vo.spec.ts` e o checklist de entrega
 ```
 
@@ -406,6 +406,6 @@ Antes de responder ao usuário, confirmar **todos** os itens:
 - [ ] Modificador explícito em todo membro, exceto `constructor` público sem `public`
 - [ ] Sem decorators ou dependências de framework Nest no `.vo.ts`
 - [ ] `<kebab>.error.ts` existe na pasta do VO **quando aplicável** (o `.vo.ts` lança `AppException` na validação/construção): criado via skill `creating-custom-errors`, uma classe por arquivo, `HttpStatus` explícito
-- [ ] `<kebab>.vo.spec.ts` existe ao lado do VO: escrito **obrigatoriamente** com a skill `writing-unit-tests` (não improvisar formato de teste)
+- [ ] `<kebab>.vo.spec.ts` existe ao lado do VO: `inventorying-test-scenarios` antes; bug possível parou e perguntou; escrito **obrigatoriamente** com `writing-unit-tests` só na seção unitária (não improvisar formato de teste)
 - [ ] Suíte do `<kebab>.vo.spec.ts` executada e passando
 - [ ] Nenhum padrão copiado de outros VOs do repositório — apenas esta skill

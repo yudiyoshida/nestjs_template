@@ -80,7 +80,7 @@ Progresso:
 - [ ] 3. Delegar os arquivos na ordem da tabela
 - [ ] 4. Escrever <modulo>.module.ts pelo template
 - [ ] 5. Inserir XxxModule no consumidor
-- [ ] 6. Delegar writing-unit-tests
+- [ ] 6. Inventariar cenários e delegar os specs
 - [ ] 7. Checklist de entrega
 ```
 
@@ -114,7 +114,7 @@ Use cases. Classe sem sufixo `Service`. Uma pasta por verbo que o pedido nomear.
 
 5. Localizar o consumidor (seção "Bloco base") e inserir `XxxModule` no array `imports`, mantendo os imports que já existem. Não editar `src/app.module.ts`. Não registrar este módulo no `AppModule`.
 
-6. Delegar `writing-unit-tests` em cada use case e no DAO. Com agregado, também na entidade, na factory e no repository. Um spec por arquivo. Sem spec de integração, sem spec de DTO e sem spec de enum.
+6. Spec só aqui, não no meio da tabela. Em cada use case e no DAO, ler `inventorying-test-scenarios`. Com agregado, também na entidade, na factory e no repository. Bug possível: parar e perguntar. Sem pendência: `writing-unit-tests` se o inventário tiver seção unitária (use case; com agregado, entidade e factory); `writing-integration-tests` se tiver seção de integração (use case e DAO; com agregado, repository). DAO e repository sem spec unitário. Sem spec de DTO e sem spec de enum. Sem inventário, sem spec.
 
 7. Checklist de entrega.
 
@@ -206,7 +206,8 @@ O bloco mostra a linha nova dentro do consumidor que já existe. O comentário m
 | Seed | Skill `writing-prisma-seed` |
 | Cache de leitura | Skill `caching-a-read` |
 | Collection Postman | Skill `syncing-postman-collection` |
-| Spec de integração ou e2e | Fora (sem skill) |
+| Spec de integração de use case, DAO ou repository Prisma | Skill `writing-integration-tests` |
+| Teste e2e | Fora (sem skill) |
 
 ## Checklist de entrega
 
@@ -222,5 +223,5 @@ Antes de responder, confirmar **todos**:
 - [ ] Cada arquivo da tabela do fluxo foi escrito pela skill citada, não por template copiado para cá
 - [ ] `<modulo>.module.ts` com import absoluto `src/...`, um array só em `providers` e `exports`, sem `controllers`
 - [ ] O consumidor importa `XxxModule` e conserva os imports que já existiam
-- [ ] `writing-unit-tests` rodou em cada use case e no DAO; com agregado, também na entidade, na factory e no repository; um spec por arquivo; sem spec de integração, de DTO ou de enum
+- [ ] `inventorying-test-scenarios` rodou em cada use case e no DAO antes do spec; com agregado, também na entidade, na factory e no repository; bug possível parou e perguntou; `writing-unit-tests` implementou só a seção unitária; `writing-integration-tests` só a de integração; DAO e repository sem spec unitário; sem spec de DTO ou de enum
 - [ ] Nenhum padrão copiado de outros arquivos — apenas esta skill

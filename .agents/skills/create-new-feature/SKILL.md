@@ -99,7 +99,7 @@ Sem receita:
 - Autorização CASL ou claims
 - Auditoria por interceptor
 - Sentry ou outro error tracking
-- Teste de integração ou e2e
+- Teste e2e
 - Gateway WebSocket
 - Forgot ou reset password
 - Segundo exception filter, pipe global novo ou interceptor novo
@@ -147,11 +147,13 @@ Nomear a skill no recap. Não abrir o arquivo antes do sim.
 | Variável de ambiente | `using-core-config` |
 | Log | `using-logger` |
 | Redis, SMTP, S3 ou HTTP de terceiro | `using-ports-and-adapters` |
-| Spec da entrega | `writing-unit-tests`, só no passo em que a skill da entrega mandar |
+| Inventário de cenários do arquivo que vai ganhar spec | `inventorying-test-scenarios`, imediatamente antes da skill de spec |
+| Spec unitário da entrega | `writing-unit-tests`, só a seção unitária do inventário |
+| Spec de integração de use case ou adapter Prisma | `writing-integration-tests`, só a seção de integração do inventário |
 
-Módulo inteiro cujo recap já nomeou uma scaffold: depois do sim, ler essa scaffold. Não ler `choosing-module-shape` de novo. Cada arquivo abre a skill que a scaffold cita naquela linha. `writing-unit-tests` entra no passo em que a scaffold manda. Não ler as outras skills de uma vez.
+Módulo inteiro cujo recap já nomeou uma scaffold: depois do sim, ler essa scaffold. Não ler `choosing-module-shape` de novo. Cada arquivo de produção abre a skill que a scaffold cita naquela linha. Spec não nasce no meio dessa tabela. No passo em que a scaffold manda spec, a ordem é `inventorying-test-scenarios` em cada arquivo alvo (use case e controller; entidade e factory no rico e no interno com agregado; DAO e repository na integração). Bug possível: parar e perguntar; não escrever spec desse arquivo. Sem bug pendente: `writing-unit-tests` implementa a seção unitária; `writing-integration-tests` implementa a de integração. Seção ausente no inventário: não chamar a skill daquela camada. DAO e repository não recebem `writing-unit-tests`. Não ler as outras skills de uma vez.
 
-Peça única: ler a skill daquela peça e, no momento em que ela delegar, a skill delegada. Nada além disso.
+Peça única: ler a skill daquela peça até o arquivo de produção. O passo em que ela delega spec começa por `inventorying-test-scenarios` nesse arquivo. Mesma regra de bug e de seção. Nada além disso.
 
 ## Fatos
 
