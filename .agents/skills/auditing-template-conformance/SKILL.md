@@ -1,6 +1,6 @@
 ---
 name: auditing-template-conformance
-description: Audita o código contra as leis do template em duas partes — um script de checagens exatas e aproximadas e uma leitura guiada, feita pelo agente, para o que busca de texto não decide — e entrega um relatório lei por lei, com arquivo, linha, evidência e a skill que corrige, sem corrigir nada. Use quando o usuário pedir auditoria, revisão de conformidade, checar drift, conferir se o código segue o template ou as leis, revisar um módulo ou um diff contra o padrão, ou auditing-template-conformance.
+description: Audita o código contra as leis do template em duas partes — um script de checagens exatas e aproximadas e uma leitura guiada, feita pelo agente um módulo por vez, para o que busca de texto não decide — e entrega um relatório lei por lei, com arquivo, linha, evidência e a skill que corrige, sem corrigir nada. Use quando o usuário pedir auditoria, revisão de conformidade, checar drift, conferir se o código segue o template ou as leis, revisar um módulo ou um diff contra o padrão, ou auditing-template-conformance.
 ---
 
 # Auditoria de conformidade
@@ -28,13 +28,16 @@ Se código existente contradiz esta skill, **esta skill vence**: é desvio.
 
 ### Leis
 
-- A skill só lê e relata. Corrigir é outro pedido, na skill da linha.
+- A skill só lê e relata. Corrigir é outro pedido, na skill da linha. No portão da `verifying-delivery`, a regra de correção é a dela.
 - Duas partes, sempre as duas: o script (`references/checks.sh`, rodado na raiz, como está) e a leitura (tabela "Leitura por tipo de arquivo"). O script só lê arquivos e não imprime segredo.
 - Checagem sem "verificar" no título é exata: a ocorrência é desvio. Com "verificar", é aproximada: o agente abre o arquivo e decide.
 - A leitura é do agente, não do usuário. O agente abre cada arquivo do escopo e confere as leis do tipo dele. Cada lei da leitura sai no relatório com resultado e evidência: desvio (arquivo e linha), conforme (arquivo e linha que provam) ou não se aplica (o motivo).
 - Fato de produto que o código não mostra (o recurso tem dono? o e-mail é essencial?) vira pergunta no relatório. Proibido decidir no lugar do usuário.
-- A leitura é julgamento e pode deixar passar um caso. A evidência por lei deixa o usuário conferir por amostra, sem refazer a revisão.
-- Escopo: o repositório inteiro (padrão), um módulo nomeado ou um diff. No diff, desvios e leitura ficam com os arquivos do `git diff --name-only <base>` e os ainda fora do git.
+- A leitura é julgamento e pode deixar passar um caso. A evidência por lei deixa o usuário conferir por amostra, sem refazer a revisão. Sem arquivo e linha, o resultado é "não lido", nunca "conforme".
+- Escopo: o diff da entrega, um módulo nomeado ou o repositório inteiro. Pedido sem escopo: o diff, quando o `git status` mostra mudança em `src/` ou `prisma/`; sem mudança, o repositório inteiro. No diff, desvios e leitura ficam com os arquivos do `git diff --name-only <base>` e os ainda fora do git.
+- O script roda sempre no repositório inteiro: é barato e dá sempre o mesmo resultado. O escopo filtra o relatório e define o que a leitura abre.
+- Leitura longa perde qualidade: o contexto do agente é resumido no meio e a leitura fica rasa. Por isso a leitura vai um módulo por vez (`src/shared`, `src/infra` e `src/core` contam como módulos) e fecha a tabela do módulo antes de abrir o próximo.
+- Limite de 40 arquivos de produção na leitura de uma rodada. Ordem fixa: módulos de `src/app` em ordem alfabética, depois `src/core`, `src/shared` e `src/infra`. Antes de abrir um módulo, somar os arquivos dele aos já lidos: passou de 40 e a rodada já tem módulo lido, parar e entregar o relatório com os módulos lidos e os que faltam. A rodada seguinte começa no primeiro módulo que falta. Módulo sozinho com mais de 40 arquivos é lido inteiro, numa rodada só dele.
 - Ocorrência listada em "Drift conhecido" do `AGENTS.md`: situação "conhecido". Confirmada e fora do `AGENTS.md`: "novo".
 - Dispensa conhecida: `@relation` de `Account`, `Role` e `Admin` (tabela no lugar de enum); guard que só herda `AuthGuard` e fake sem ramo, que não têm decisão e dispensam spec; plural irregular certo na URL; nome de módulo singular terminado em "s".
 - Testes, lint e build ficam com a skill `verifying-delivery`. A auditoria não roda nenhum dos três.
@@ -114,23 +117,24 @@ O agente abre cada arquivo do escopo e confere as leis da linha do tipo dele. M2
 
 ```
 Progresso:
-- [ ] 1. Fixar o escopo: repositório inteiro, um módulo ou um diff contra uma base
-- [ ] 2. Rodar references/checks.sh na raiz do repositório
-- [ ] 3. Triar cada ocorrência do script: conhecido, novo, ou "verificar" (abrir o arquivo e decidir)
-- [ ] 4. Leitura: abrir cada arquivo do escopo e conferir as leis do tipo dele
-- [ ] 5. Escrever o relatório no template: desvios, script, leitura lei por lei, perguntas
-- [ ] 6. Perguntar quais desvios corrigir. A correção é outro pedido, na skill da linha
-- [ ] 7. Checklist de entrega
+- [ ] 1. Fixar o escopo: diff da entrega, um módulo ou o repositório inteiro
+- [ ] 2. Rodar references/checks.sh na raiz do repositório (sempre o repositório inteiro)
+- [ ] 3. Triar cada ocorrência do script no escopo: conhecido, novo, ou "verificar" (abrir o arquivo e decidir)
+- [ ] 4. Planejar a leitura: arquivos por módulo; até 40 arquivos nesta rodada
+- [ ] 5. Leitura, um módulo por vez: abrir cada arquivo, conferir as leis do tipo dele e fechar a tabela do módulo antes do próximo
+- [ ] 6. Escrever o relatório no template: desvios, script, leitura (módulos lidos e os que faltam), perguntas
+- [ ] 7. Perguntar quais desvios corrigir e, se faltou módulo, se segue no próximo. A correção é outro pedido, na skill da linha
+- [ ] 8. Checklist de entrega
 ```
 
 ## Quando usar
 
 | Sintoma | Ação |
 |---------|------|
-| Auditoria, conformidade, drift, "o código segue o template?" | Fluxo inteiro, repositório |
+| Auditoria, conformidade, drift, "o código segue o template?" | Fluxo inteiro, repositório, um módulo por vez |
 | Revisar um módulo | Fluxo inteiro, escopo no módulo |
-| Revisar um diff ou uma branch contra o padrão | Fluxo inteiro, escopo no diff |
-| Antes de apagar código de exemplo ou de fechar uma leva de mudanças | Fluxo inteiro, repositório |
+| Portão da `verifying-delivery`, fim de uma entrega, ou revisar um diff ou uma branch | Fluxo inteiro, escopo no diff |
+| Antes de apagar código de exemplo ou de fechar uma leva de mudanças | Fluxo inteiro, repositório, um módulo por vez |
 
 ### Quando não usar
 
@@ -145,6 +149,12 @@ Progresso:
 
 ```bash
 bash .agents/skills/auditing-template-conformance/references/checks.sh
+```
+
+Arquivos de produção por módulo, para planejar a leitura:
+
+```bash
+for dir in src/app/*/ src/shared/ src/infra/ src/core/; do echo "$(find "$dir" -name '*.ts' ! -name '*.spec.ts' | wc -l | tr -d ' ') $dir"; done
 ```
 
 Revisão de diff, para fixar o escopo:
@@ -173,6 +183,8 @@ Verificadas e dispensadas: B8 (`Account`, `Role` e `Admin` são tabela no lugar 
 
 ### Leitura
 
+Módulos lidos: `<modulo>`, `<modulo>`. Faltam: `<modulo>` (próxima rodada).
+
 | Id | Resultado | Evidência |
 |---|---|---|
 | M2 | conforme | `src/app/<modulo>/.../<acao>.service.ts:<linha>`: `actorId` comparado com `createdBy` |
@@ -200,7 +212,8 @@ Antes de responder, confirmar **todos**:
 - [ ] Escopo fixado; no diff, desvios e leitura só em arquivo do diff
 - [ ] `references/checks.sh` rodou como está, na raiz
 - [ ] Cada ocorrência do script triada: conhecido, novo ou dispensada após abrir o arquivo
-- [ ] Leitura feita em cada arquivo do escopo; cada lei da leitura com resultado e evidência
+- [ ] Leitura um módulo por vez, até 40 arquivos na rodada; módulos lidos e os que faltam no relatório
+- [ ] Cada lei da leitura com resultado e evidência; nenhum "conforme" sem arquivo e linha
 - [ ] Fato de produto que o código não mostra virou pergunta, não decisão
 - [ ] Relatório com desvios, script sem ocorrência, dispensas, leitura e perguntas
 - [ ] Nenhum arquivo corrigido; a pergunta de quais corrigir ficou com o usuário

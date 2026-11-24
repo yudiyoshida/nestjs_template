@@ -1,6 +1,6 @@
 ---
 name: verifying-delivery
-description: Confere a entrega antes de declarar pronto — lint e tipos, spec dos arquivos novos, testes unitários e de integração, build e collection Postman quando o contrato HTTP mudou — e entrega um relatório do que passou, do que falhou e do que não rodou. Use quando o usuário pedir para verificar, validar ou conferir a entrega, rodar lint, testes, tipos ou build, saber se está pronto para commit ou PR, ou ao fim de qualquer skill que gerou ou mudou código.
+description: Confere a entrega antes de declarar pronto — lint e tipos, spec dos arquivos novos, auditoria das leis do template nos arquivos da entrega, testes unitários e de integração, build e collection Postman quando o contrato HTTP mudou — e entrega um relatório do que passou, do que falhou e do que não rodou. Use quando o usuário pedir para verificar, validar ou conferir a entrega, rodar lint, testes, tipos ou build, saber se está pronto para commit ou PR, ou ao fim de qualquer skill que gerou ou mudou código.
 ---
 
 # Conferência da entrega
@@ -15,7 +15,7 @@ Antes de executar, **não**:
 
 - leia `package.json`, config de lint ou do Jest para descobrir comando
 - rode grep/glob para inferir convenção
-- abra skill vizinha
+- abra skill vizinha, salvo a `auditing-template-conformance` no portão da auditoria
 
 Se arquivo existente contradiz esta skill, **esta skill vence**.
 
@@ -23,14 +23,18 @@ Se arquivo existente contradiz esta skill, **esta skill vence**.
 
 - a lista de arquivos da entrega e a saída de cada comando
 - o arquivo que um portão acusou, para corrigir
+- no portão da auditoria, a skill `auditing-template-conformance` e os arquivos da entrega, pelo fluxo dela
 - host, porta e database da `DATABASE_URL` dos dois `.env`, pelo comando da seção "Templates". Proibido imprimir segredo
 
 ### Leis
 
 - A entrega é o que o `git status --porcelain --untracked-files=all` mostra: modificado, novo e removido.
-- Ordem fixa: lint → tipos → spec presente → bancos separados → unitário → integração → build → Postman. Portão vermelho: corrigir e rodar de novo a partir dele.
+- Ordem fixa: lint → tipos → spec presente → auditoria → bancos separados → unitário → integração → build → Postman. Portão vermelho: corrigir e rodar de novo a partir dele.
 - Lint só nos `.ts` da entrega dentro de `src/`: `--fix`, depois sem `--fix` até zero erro. A lista vai ao `eslint` por `xargs`: no zsh, `$FILES` sem aspas não se divide e o `eslint` recebe tudo como um caminho só. Lista vazia: o portão não se aplica. Não rodar `eslint` sem arquivo, que sai verde sem checar nada. Não usar `npm run lint` como portão: ele aplica `--fix` em todo o `src/`.
 - Tipos no projeto inteiro com `tsc --noEmit`: pega spec, seed e script do Postman, que o build não compila.
+- Auditoria pela skill `auditing-template-conformance`, com escopo nos arquivos da entrega: o script e a leitura dos arquivos de produção da entrega. Roda antes dos testes, porque corrigir um desvio mexe em código. Entrega sem arquivo de produção em `src/` ou `prisma/`: o portão não se aplica.
+- Desvio novo em arquivo da entrega cuja forma a lei já dá (import, nome, decorator, retorno, caso de spec): corrigir pela skill da linha e rodar os portões de novo a partir do lint. Desvio que muda comportamento, ou pergunta da auditoria sobre fato de produto: reportar e perguntar; a entrega não fica pronta. Desvio "conhecido" do `AGENTS.md`: só relatar.
+- Leitura da auditoria parcial (passou de 40 arquivos): o portão fica "parcial" com os módulos que faltam, até a rodada seguinte terminar. Parcial não é verde.
 - **Bancos separados antes de qualquer `npm test`.** `.env.test` e `.env.development` com o mesmo host, porta e database: parar. Nenhum teste roda até a skill `running-local-environment` separar os bancos. Teste de integração apaga tabelas, e spec com nome errado roda até no lote unitário.
 - Teste roda só por `npm test`, que define `NODE_ENV=test`. Proibido `npx jest` direto: sem `NODE_ENV`, o `ConfigModule` carrega o `.env.development` e o spec de integração apaga o banco de desenvolvimento.
 - Unitário: tudo menos `*.integration.spec.ts`, sem banco. Spec desse lote que falha por "Can't reach database" ou que chama `deleteMany` é integração com nome errado: apontar como drift no relatório.
@@ -60,12 +64,13 @@ Progresso:
 - [ ] 2. Lint nos .ts da entrega em src/
 - [ ] 3. Tipos no projeto inteiro
 - [ ] 4. Spec presente para cada arquivo novo que pede spec
-- [ ] 5. Conferir que o banco de teste é outro
-- [ ] 6. Testes unitários
-- [ ] 7. Testes de integração
-- [ ] 8. Build de produção
-- [ ] 9. Contrato HTTP mudou: swagger.json e Postman
-- [ ] 10. Relatório e checklist de entrega
+- [ ] 5. Auditoria dos arquivos da entrega pela skill auditing-template-conformance
+- [ ] 6. Conferir que o banco de teste é outro
+- [ ] 7. Testes unitários
+- [ ] 8. Testes de integração
+- [ ] 9. Build de produção
+- [ ] 10. Contrato HTTP mudou: swagger.json e Postman
+- [ ] 11. Relatório e checklist de entrega
 ```
 
 ## Quando usar
@@ -74,7 +79,7 @@ Progresso:
 |---------|------|
 | Fim de skill que gerou ou mudou código | Fluxo inteiro |
 | "Verifica", "roda os testes", "está pronto?", antes de commit ou PR | Fluxo inteiro |
-| Só um portão nomeado (lint, tipos, testes, build) | O portão pedido; os outros entram como "não rodou: fora do pedido" |
+| Só um portão nomeado (lint, tipos, auditoria, testes, build) | O portão pedido; os outros entram como "não rodou: fora do pedido" |
 
 ### Quando não usar
 
@@ -84,7 +89,7 @@ Progresso:
 | Subir API, banco ou separar o banco de teste | Skill `running-local-environment` |
 | Regerar a collection | Skill `syncing-postman-collection` |
 | Commit, push ou PR | Fora (sem skill) |
-| Desvio das leis do template no código | Skill `auditing-template-conformance` |
+| Auditoria do repositório inteiro ou de um módulo | Skill `auditing-template-conformance` |
 | Revisão de arquitetura ou de regra de negócio | Fora (sem skill) |
 
 ## Templates
@@ -100,19 +105,22 @@ FILES=$(git status --porcelain --untracked-files=all | grep -vE '^( D|D )' | awk
 # 3. tipos
 npx tsc --noEmit -p tsconfig.json
 
-# 5. bancos: o database do .env.test tem que ser outro
+# 5. auditoria: o script; a triagem e a leitura seguem a skill auditing-template-conformance
+bash .agents/skills/auditing-template-conformance/references/checks.sh
+
+# 6. bancos: o database do .env.test tem que ser outro
 grep -E '^DATABASE_URL=' .env.development .env.test | sed -E 's#=.*@#=#'
 
-# 6. unitário, sem banco
+# 7. unitário, sem banco
 npm test -- --testPathIgnorePatterns '\.integration\.spec\.ts$'
 
-# 7. integração, com o banco de teste
+# 8. integração, com o banco de teste
 npm test -- '\.integration\.spec\.ts$'
 
-# 8. build de produção
+# 9. build de produção
 npm run build
 
-# 9. contrato HTTP mudou, com a API no ar
+# 10. contrato HTTP mudou, com a API no ar
 curl -s http://localhost:<PORT>/swagger-json -o postman/swagger.json
 ```
 
@@ -123,6 +131,7 @@ Relatório, um portão por linha:
 | Lint | `npx eslint <arquivos>` | passou · falhou · não se aplica |
 | Tipos | `npx tsc --noEmit -p tsconfig.json` | passou · falhou |
 | Spec presente | tabela "Spec esperado" | completo · faltou `<arquivo>` |
+| Auditoria | skill `auditing-template-conformance`, escopo na entrega | sem desvio novo · corrigido · pergunta aberta · parcial: faltam `<módulos>` · não se aplica |
 | Bancos separados | `grep DATABASE_URL` | separados · mesmo banco (testes não rodaram) |
 | Unitário | `npm test -- --testPathIgnorePatterns ...` | `<n>` suítes, `<n>` testes · falhou |
 | Integração | `npm test -- '\.integration\.spec\.ts$'` | passou · falhou · não rodou: `<motivo>` |
@@ -139,6 +148,7 @@ Fecha com uma linha: pronto para commit, ou não e por quê.
 | API, banco de teste, `.env` | Skill `running-local-environment` |
 | Collection Postman | Skill `syncing-postman-collection` |
 | Commit, push, PR | Fora (sem skill) |
+| Auditoria fora da entrega (repositório, módulo) | Skill `auditing-template-conformance` |
 
 ## Checklist de entrega
 
@@ -148,6 +158,7 @@ Antes de responder, confirmar **todos**:
 - [ ] Lint só nos `.ts` da entrega em `src/`, zero erro; lista vazia marcada como "não se aplica"; `npm run lint` não usado
 - [ ] `tsc --noEmit` sem erro
 - [ ] Cada arquivo novo que pede spec tem o spec
+- [ ] Auditoria dos arquivos da entrega rodou; desvio novo corrigido ou perguntado; leitura completa, ou "parcial" com os módulos que faltam
 - [ ] Bancos conferidos antes de qualquer `npm test`; nenhum teste rodou contra o banco de desenvolvimento
 - [ ] Unitário verde; spec com nome errado apontado como drift
 - [ ] Integração verde, ou "não rodou" com o motivo
