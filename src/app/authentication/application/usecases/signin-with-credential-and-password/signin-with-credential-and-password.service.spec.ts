@@ -5,7 +5,7 @@ import { AccountRole } from 'src/app/account/domain/enums/account-role.enum';
 import { AccountStatus } from 'src/app/account/domain/enums/account-status.enum';
 import { FindAccountByCredential } from 'src/app/account/application/usecases/find-account-by-credential/find-account-by-credential.service';
 import { AccountWithSensitiveDataDto } from 'src/app/account/application/dtos/account.dto';
-import { RefreshTokenSession } from 'src/app/authentication/application/usecases/refresh-token-session/refresh-token-session.service';
+import { IssueRefreshTokenSession } from 'src/app/authentication/application/usecases/issue-refresh-token-session/issue-refresh-token-session.service';
 import { Password } from 'src/shared/value-objects/password/password.vo';
 import { ForbiddenAccountError } from '../../errors/forbidden-account.error';
 import { InactiveAccountError } from '../../errors/inactive-account.error';
@@ -29,19 +29,19 @@ describe('SignInWithCredentialAndPassword - Unit tests', () => {
   let sut: SignInWithCredentialAndPassword;
   let jwtService: JwtService;
   let findAccountByCredential: FindAccountByCredential;
-  let refreshTokenSession: RefreshTokenSession;
+  let issueRefreshTokenSession: IssueRefreshTokenSession;
 
   beforeEach(async() => {
     jwtService = createMock<JwtService>();
     findAccountByCredential = createMock<FindAccountByCredential>();
-    refreshTokenSession = createMock<RefreshTokenSession>();
+    issueRefreshTokenSession = createMock<IssueRefreshTokenSession>();
 
     const module = await Test.createTestingModule({
       providers: [
         SignInWithCredentialAndPassword,
         { provide: JwtService, useValue: jwtService },
         { provide: FindAccountByCredential, useValue: findAccountByCredential },
-        { provide: RefreshTokenSession, useValue: refreshTokenSession },
+        { provide: IssueRefreshTokenSession, useValue: issueRefreshTokenSession },
       ],
     }).compile();
 
@@ -117,7 +117,7 @@ describe('SignInWithCredentialAndPassword - Unit tests', () => {
     jest.spyOn(findAccountByCredential, 'execute').mockResolvedValue(account);
     jest.spyOn(Password, 'compare').mockReturnValue(true);
     jest.spyOn(jwtService, 'sign').mockReturnValue('new-access-token');
-    jest.spyOn(refreshTokenSession, 'issue').mockResolvedValue('new-refresh-token');
+    jest.spyOn(issueRefreshTokenSession, 'execute').mockResolvedValue('new-refresh-token');
     const data: SigninWithCredentialAndPasswordInputDto = { credential: account.email, password: '123456' };
 
     // Act
@@ -125,7 +125,7 @@ describe('SignInWithCredentialAndPassword - Unit tests', () => {
 
     // Assert
     expect(jwtService.sign).toHaveBeenCalledWith({ sub: account.id, roles: account.roles });
-    expect(refreshTokenSession.issue).toHaveBeenCalledWith({ sub: account.id, roles: account.roles });
+    expect(issueRefreshTokenSession.execute).toHaveBeenCalledWith({ sub: account.id, roles: account.roles });
     expect(result).toEqual({ accessToken: 'new-access-token', refreshToken: 'new-refresh-token' });
   });
 });

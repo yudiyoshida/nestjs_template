@@ -2,20 +2,20 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { FindAccountByCredential } from 'src/app/account/application/usecases/find-account-by-credential/find-account-by-credential.service';
 import { Account } from 'src/app/account/domain/value-objects/account.vo';
-import { RefreshTokenSession } from 'src/app/authentication/application/usecases/refresh-token-session/refresh-token-session.service';
+import { ForbiddenAccountError } from 'src/app/authentication/application/errors/forbidden-account.error';
+import { InactiveAccountError } from 'src/app/authentication/application/errors/inactive-account.error';
+import { InvalidCredentialError } from 'src/app/authentication/application/errors/invalid-credential.error';
+import { IssueRefreshTokenSession } from 'src/app/authentication/application/usecases/issue-refresh-token-session/issue-refresh-token-session.service';
+import { SigninWithCredentialAndPasswordInputDto, SigninWithCredentialAndPasswordOutputDto } from 'src/app/authentication/application/usecases/signin-with-credential-and-password/dtos/signin-with-credential-and-password.dto';
 import { Payload } from 'src/app/authentication/domain/types/payload.type';
 import { Password } from 'src/shared/value-objects/password/password.vo';
-import { ForbiddenAccountError } from '../../errors/forbidden-account.error';
-import { InactiveAccountError } from '../../errors/inactive-account.error';
-import { InvalidCredentialError } from '../../errors/invalid-credential.error';
-import { SigninWithCredentialAndPasswordInputDto, SigninWithCredentialAndPasswordOutputDto } from './dtos/signin-with-credential-and-password.dto';
 
 @Injectable()
 export class SignInWithCredentialAndPassword {
   constructor(
     private readonly jwtService: JwtService,
     private readonly findAccountByCredential: FindAccountByCredential,
-    private readonly refreshTokenSession: RefreshTokenSession,
+    private readonly issueRefreshTokenSession: IssueRefreshTokenSession,
   ) {}
 
   public async execute(data: SigninWithCredentialAndPasswordInputDto): Promise<SigninWithCredentialAndPasswordOutputDto> {
@@ -42,7 +42,7 @@ export class SignInWithCredentialAndPassword {
       roles: accountData.roles,
     };
     const accessToken = this.jwtService.sign(payload);
-    const refreshToken = await this.refreshTokenSession.issue(payload);
+    const refreshToken = await this.issueRefreshTokenSession.execute(payload);
 
     return { accessToken, refreshToken };
   }

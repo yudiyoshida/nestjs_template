@@ -2,12 +2,12 @@ import { CanActivate, ExecutionContext, Inject, Injectable } from '@nestjs/commo
 import { AccountDto } from 'src/app/account/application/dtos/account.dto';
 import { FindAccountById } from 'src/app/account/application/usecases/find-account-by-id/find-account-by-id.service';
 import { Account } from 'src/app/account/domain/value-objects/account.vo';
+import { ForbiddenAccountError } from 'src/app/authentication/application/errors/forbidden-account.error';
+import { InactiveAccountError } from 'src/app/authentication/application/errors/inactive-account.error';
 import { Payload } from 'src/app/authentication/domain/types/payload.type';
 import { TOKENS } from 'src/core/di/token';
 import type { ICacheGateway } from 'src/infra/cache/cache.gateway';
 import { CacheKeyBuilder } from 'src/infra/cache/helpers/cache-key/cache-key.builder';
-import { ForbiddenAccountError } from '../../errors/forbidden-account.error';
-import { InactiveAccountError } from '../../errors/inactive-account.error';
 
 @Injectable()
 export class AuthenticationGuard implements CanActivate {

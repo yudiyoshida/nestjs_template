@@ -171,9 +171,63 @@ describe('CacheFakeAdapterGateway - Unit tests', () => {
         expect(await sut.get('user:2:profile')).toBeNull();
         expect(await sut.get('order:1')).toBe('c');
       });
+
+      it('should treat * inside the key as a wildcard, like the redis match', async() => {
+        // Arrange
+        await sut.set('cache:global:example:list', 'a');
+        await sut.set('cache:global:example:detail:1', 'b');
+        await sut.set('cache:global:other:list', 'c');
+
+        // Act
+        await sut.deleteContaining('cache:global:example:*');
+
+        // Assert
+        expect(await sut.get('cache:global:example:list')).toBeNull();
+        expect(await sut.get('cache:global:example:detail:1')).toBeNull();
+        expect(await sut.get('cache:global:other:list')).toBe('c');
+      });
+
+      it('should treat ? inside the key as exactly one character', async() => {
+        // Arrange
+        await sut.set('user:1:profile', 'a');
+        await sut.set('user:10:profile', 'b');
+
+        // Act
+        await sut.deleteContaining('user:?:profile');
+
+        // Assert
+        expect(await sut.get('user:1:profile')).toBeNull();
+        expect(await sut.get('user:10:profile')).toBe('b');
+      });
     });
 
     describe('Edge cases', () => {
+      it('should match a literal * when it is escaped with a backslash', async() => {
+        // Arrange
+        await sut.set('search:a*b', 'a');
+        await sut.set('search:axxb', 'b');
+
+        // Act
+        await sut.deleteContaining('a\\*b');
+
+        // Assert
+        expect(await sut.get('search:a*b')).toBeNull();
+        expect(await sut.get('search:axxb')).toBe('b');
+      });
+
+      it('should treat regex metacharacters in the key as literal text', async() => {
+        // Arrange
+        await sut.set('cache:a.b', 'a');
+        await sut.set('cache:axb', 'b');
+
+        // Act
+        await sut.deleteContaining('a.b');
+
+        // Assert
+        expect(await sut.get('cache:a.b')).toBeNull();
+        expect(await sut.get('cache:axb')).toBe('b');
+      });
+
       it('should not throw when no key matches', async() => {
         // Act & Assert
         await expect(sut.deleteContaining('nothing')).resolves.toBeUndefined();

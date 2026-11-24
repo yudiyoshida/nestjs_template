@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { AccountDto } from 'src/app/account/application/dtos/account.dto';
+import type { IAccountDao } from 'src/app/account/application/persistence/dao/account-dao.interface';
 import { TOKENS } from 'src/core/di/token';
-import { AccountDto } from '../../dtos/account.dto';
-import type { IAccountDao } from '../../persistence/dao/account-dao.interface';
 
 @Injectable()
 export class FindAccountById {

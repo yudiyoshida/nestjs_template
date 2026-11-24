@@ -25,7 +25,7 @@ export class CPF {
     const cpf = this.sanitize(rawCpf);
 
     if (!this.validate(cpf)) {
-      throw new InvalidCpfError(rawCpf);
+      throw new InvalidCpfError();
     }
     this._value = cpf;
   }
@@ -92,7 +92,7 @@ export class CNPJ {
     const cnpj = this.sanitize(rawCnpj);
 
     if (!this.validate(cnpj)) {
-      throw new InvalidCnpjError(rawCnpj);
+      throw new InvalidCnpjError();
     }
     this._value = cnpj;
   }

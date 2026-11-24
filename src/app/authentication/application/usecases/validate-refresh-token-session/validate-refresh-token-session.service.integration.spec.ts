@@ -1,14 +1,16 @@
 import { Test } from '@nestjs/testing';
 import { AccountRole } from 'src/app/account/domain/enums/account-role.enum';
+import { InvalidRefreshTokenError } from 'src/app/authentication/application/errors/invalid-refresh-token.error';
+import { IssueRefreshTokenSession } from 'src/app/authentication/application/usecases/issue-refresh-token-session/issue-refresh-token-session.service';
 import { AuthenticationModule } from 'src/app/authentication/authentication.module';
 import { Payload } from 'src/app/authentication/domain/types/payload.type';
 import { ConfigModule } from 'src/core/config/config.module';
 import { PrismaService } from 'src/infra/database/prisma/prisma.service';
-import { InvalidRefreshTokenError } from '../../errors/invalid-refresh-token.error';
-import { RefreshTokenSession } from './refresh-token-session.service';
+import { ValidateRefreshTokenSession } from './validate-refresh-token-session.service';
 
-describe('RefreshTokenSession - Integration tests', () => {
-  let sut: RefreshTokenSession;
+describe('ValidateRefreshTokenSession - Integration tests', () => {
+  let sut: ValidateRefreshTokenSession;
+  let issueRefreshTokenSession: IssueRefreshTokenSession;
   let prisma: PrismaService;
 
   beforeAll(async() => {
@@ -19,7 +21,8 @@ describe('RefreshTokenSession - Integration tests', () => {
       ],
     }).compile();
 
-    sut = module.get(RefreshTokenSession);
+    sut = module.get(ValidateRefreshTokenSession);
+    issueRefreshTokenSession = module.get(IssueRefreshTokenSession);
     prisma = module.get(PrismaService);
   });
 
@@ -32,43 +35,27 @@ describe('RefreshTokenSession - Integration tests', () => {
     expect(sut).toBeDefined();
   });
 
-  it('should issue a refresh token and validate it back to the original payload', async() => {
+  it('should return the original payload for a token issued by IssueRefreshTokenSession', async() => {
     // Arrange
     const payload: Payload = { sub: 'account-id', roles: [AccountRole.STUDENT] };
+    const refreshToken = await issueRefreshTokenSession.execute(payload);
 
     // Act
-    const refreshToken = await sut.issue(payload);
-    const result = await sut.validate(refreshToken);
+    const result = await sut.execute(refreshToken);
 
     // Assert
-    expect(refreshToken).toEqual(expect.any(String));
     expect(result).toEqual(expect.objectContaining(payload));
   });
 
-  it('should reject a refresh token that was rotated/revoked (cached hash no longer matches)', async() => {
+  it('should reject a token that a newer issue for the same account rotated', async() => {
     // Arrange
     const payload: Payload = { sub: 'account-id-2', roles: [AccountRole.STUDENT] };
-    const firstToken = await sut.issue(payload);
-    await sut.issue(payload);
+    const firstToken = await issueRefreshTokenSession.execute(payload);
+    await issueRefreshTokenSession.execute(payload);
 
     // Act & Assert
     expect.assertions(1);
-    return sut.validate(firstToken).catch((error) => {
-      expect(error).toBeInstanceOf(InvalidRefreshTokenError);
-    });
-  });
-
-  it('should reject a refresh token after it has been revoked', async() => {
-    // Arrange
-    const payload: Payload = { sub: 'account-id-3', roles: [AccountRole.STUDENT] };
-    const refreshToken = await sut.issue(payload);
-
-    // Act
-    await sut.revoke(payload.sub);
-
-    // Assert
-    expect.assertions(1);
-    return sut.validate(refreshToken).catch((error) => {
+    return sut.execute(firstToken).catch((error) => {
       expect(error).toBeInstanceOf(InvalidRefreshTokenError);
     });
   });

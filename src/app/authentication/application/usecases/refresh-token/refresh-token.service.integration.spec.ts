@@ -1,11 +1,14 @@
+import { JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
 import { createHash } from 'crypto';
 import { AccountRole } from 'src/app/account/domain/enums/account-role.enum';
 import { AccountStatus } from 'src/app/account/domain/enums/account-status.enum';
-import { RefreshTokenSession } from 'src/app/authentication/application/usecases/refresh-token-session/refresh-token-session.service';
 import { AuthenticationModule } from 'src/app/authentication/authentication.module';
 import { Payload } from 'src/app/authentication/domain/types/payload.type';
 import { ConfigModule } from 'src/core/config/config.module';
+import { ConfigService } from 'src/core/config/config.service';
+import { TOKENS } from 'src/core/di/token';
+import type { ICacheGateway } from 'src/infra/cache/cache.gateway';
 import { PrismaService } from 'src/infra/database/prisma/prisma.service';
 import { ForbiddenAccountError } from '../../errors/forbidden-account.error';
 import { InactiveAccountError } from '../../errors/inactive-account.error';
@@ -15,20 +18,19 @@ import { RefreshToken } from './refresh-token.service';
 
 describe('RefreshToken - Integration tests', () => {
   let sut: RefreshToken;
-  let refreshTokenSession: RefreshTokenSession;
+  let jwtService: JwtService;
+  let configService: ConfigService;
+  let cacheGateway: ICacheGateway;
   let prisma: PrismaService;
 
   function hash(token: string): string {
     return createHash('sha256').update(token).digest('hex');
   }
 
-  function signRefreshToken(
-    payload: Payload,
-    secret = refreshTokenSession['configService'].refreshTokenSecret,
-  ): string {
-    return refreshTokenSession['jwtService'].sign(payload, {
+  function signRefreshToken(payload: Payload, secret = configService.refreshTokenSecret): string {
+    return jwtService.sign(payload, {
       secret,
-      expiresIn: refreshTokenSession['configService'].refreshTokenExpiresIn,
+      expiresIn: configService.refreshTokenExpiresIn,
     });
   }
 
@@ -41,7 +43,9 @@ describe('RefreshToken - Integration tests', () => {
     }).compile();
 
     sut = module.get(RefreshToken);
-    refreshTokenSession = module.get(RefreshTokenSession);
+    jwtService = module.get(JwtService);
+    configService = module.get(ConfigService);
+    cacheGateway = module.get<ICacheGateway>(TOKENS.CacheGateway);
     prisma = module.get(PrismaService);
   });
 
@@ -87,7 +91,7 @@ describe('RefreshToken - Integration tests', () => {
     });
     const payload: Payload = { sub: account.id, roles: [AccountRole.STUDENT] };
     const refreshToken = signRefreshToken(payload);
-    jest.spyOn(refreshTokenSession['cacheGateway'], 'get').mockResolvedValue(null);
+    jest.spyOn(cacheGateway, 'get').mockResolvedValue(null);
     const data: RefreshTokenInputDto = { refreshToken };
 
     // Act & Assert
@@ -109,7 +113,7 @@ describe('RefreshToken - Integration tests', () => {
     });
     const payload: Payload = { sub: account.id, roles: [AccountRole.STUDENT] };
     const refreshToken = signRefreshToken(payload);
-    jest.spyOn(refreshTokenSession['cacheGateway'], 'get').mockResolvedValue(hash('some-other-token'));
+    jest.spyOn(cacheGateway, 'get').mockResolvedValue(hash('some-other-token'));
     const data: RefreshTokenInputDto = { refreshToken };
 
     // Act & Assert
@@ -123,7 +127,7 @@ describe('RefreshToken - Integration tests', () => {
     // Arrange
     const payload: Payload = { sub: 'ghost-id', roles: [AccountRole.STUDENT] };
     const refreshToken = signRefreshToken(payload);
-    jest.spyOn(refreshTokenSession['cacheGateway'], 'get').mockResolvedValue(hash(refreshToken));
+    jest.spyOn(cacheGateway, 'get').mockResolvedValue(hash(refreshToken));
     const data: RefreshTokenInputDto = { refreshToken };
 
     // Act & Assert
@@ -145,7 +149,7 @@ describe('RefreshToken - Integration tests', () => {
     });
     const payload: Payload = { sub: account.id, roles: [AccountRole.STUDENT] };
     const refreshToken = signRefreshToken(payload);
-    jest.spyOn(refreshTokenSession['cacheGateway'], 'get').mockResolvedValue(hash(refreshToken));
+    jest.spyOn(cacheGateway, 'get').mockResolvedValue(hash(refreshToken));
     const data: RefreshTokenInputDto = { refreshToken };
 
     // Act & Assert
@@ -167,7 +171,7 @@ describe('RefreshToken - Integration tests', () => {
     });
     const payload: Payload = { sub: account.id, roles: [AccountRole.STUDENT] };
     const refreshToken = signRefreshToken(payload);
-    jest.spyOn(refreshTokenSession['cacheGateway'], 'get').mockResolvedValue(hash(refreshToken));
+    jest.spyOn(cacheGateway, 'get').mockResolvedValue(hash(refreshToken));
     const data: RefreshTokenInputDto = { refreshToken };
 
     // Act & Assert
@@ -189,8 +193,8 @@ describe('RefreshToken - Integration tests', () => {
     });
     const payload: Payload = { sub: account.id, roles: [AccountRole.STUDENT] };
     const refreshToken = signRefreshToken(payload);
-    jest.spyOn(refreshTokenSession['cacheGateway'], 'get').mockResolvedValue(hash(refreshToken));
-    const cacheSetSpy = jest.spyOn(refreshTokenSession['cacheGateway'], 'set');
+    jest.spyOn(cacheGateway, 'get').mockResolvedValue(hash(refreshToken));
+    const cacheSetSpy = jest.spyOn(cacheGateway, 'set');
     const data: RefreshTokenInputDto = { refreshToken };
 
     // Act

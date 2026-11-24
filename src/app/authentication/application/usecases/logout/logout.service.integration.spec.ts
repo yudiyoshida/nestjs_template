@@ -1,6 +1,7 @@
 import { Test } from '@nestjs/testing';
 import { AccountRole } from 'src/app/account/domain/enums/account-role.enum';
-import { RefreshTokenSession } from 'src/app/authentication/application/usecases/refresh-token-session/refresh-token-session.service';
+import { IssueRefreshTokenSession } from 'src/app/authentication/application/usecases/issue-refresh-token-session/issue-refresh-token-session.service';
+import { ValidateRefreshTokenSession } from 'src/app/authentication/application/usecases/validate-refresh-token-session/validate-refresh-token-session.service';
 import { AuthenticationModule } from 'src/app/authentication/authentication.module';
 import { Payload } from 'src/app/authentication/domain/types/payload.type';
 import { ConfigModule } from 'src/core/config/config.module';
@@ -10,7 +11,8 @@ import { Logout } from './logout.service';
 
 describe('Logout - Integration tests', () => {
   let sut: Logout;
-  let refreshTokenSession: RefreshTokenSession;
+  let issueRefreshTokenSession: IssueRefreshTokenSession;
+  let validateRefreshTokenSession: ValidateRefreshTokenSession;
   let prisma: PrismaService;
 
   beforeAll(async() => {
@@ -22,7 +24,8 @@ describe('Logout - Integration tests', () => {
     }).compile();
 
     sut = module.get(Logout);
-    refreshTokenSession = module.get(RefreshTokenSession);
+    issueRefreshTokenSession = module.get(IssueRefreshTokenSession);
+    validateRefreshTokenSession = module.get(ValidateRefreshTokenSession);
     prisma = module.get(PrismaService);
   });
 
@@ -42,14 +45,14 @@ describe('Logout - Integration tests', () => {
   it('should revoke the cached refresh token session for the account', async() => {
     // Arrange
     const payload: Payload = { sub: 'account-id', roles: [AccountRole.STUDENT] };
-    const refreshToken = await refreshTokenSession.issue(payload);
+    const refreshToken = await issueRefreshTokenSession.execute(payload);
 
     // Act
     await sut.execute(payload.sub);
 
     // Assert
     expect.assertions(1);
-    return refreshTokenSession.validate(refreshToken).catch((error) => {
+    return validateRefreshTokenSession.execute(refreshToken).catch((error) => {
       expect(error).toBeInstanceOf(InvalidRefreshTokenError);
     });
   });
@@ -57,7 +60,7 @@ describe('Logout - Integration tests', () => {
   it('should return the success message', async() => {
     // Arrange
     const payload: Payload = { sub: 'account-id', roles: [AccountRole.STUDENT] };
-    await refreshTokenSession.issue(payload);
+    await issueRefreshTokenSession.execute(payload);
 
     // Act
     const result = await sut.execute(payload.sub);

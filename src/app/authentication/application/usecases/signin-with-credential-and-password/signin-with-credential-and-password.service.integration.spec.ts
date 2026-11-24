@@ -1,9 +1,10 @@
 import { Test } from '@nestjs/testing';
 import { AccountRole } from 'src/app/account/domain/enums/account-role.enum';
 import { AccountStatus } from 'src/app/account/domain/enums/account-status.enum';
-import { RefreshTokenSession } from 'src/app/authentication/application/usecases/refresh-token-session/refresh-token-session.service';
 import { AuthenticationModule } from 'src/app/authentication/authentication.module';
 import { ConfigModule } from 'src/core/config/config.module';
+import { TOKENS } from 'src/core/di/token';
+import type { ICacheGateway } from 'src/infra/cache/cache.gateway';
 import { PrismaService } from 'src/infra/database/prisma/prisma.service';
 import { Password } from 'src/shared/value-objects/password/password.vo';
 import { ForbiddenAccountError } from '../../errors/forbidden-account.error';
@@ -14,7 +15,7 @@ import { SignInWithCredentialAndPassword } from './signin-with-credential-and-pa
 
 describe('SignInWithCredentialAndPassword - Integration tests', () => {
   let sut: SignInWithCredentialAndPassword;
-  let refreshTokenSession: RefreshTokenSession;
+  let cacheGateway: ICacheGateway;
   let prisma: PrismaService;
 
   beforeAll(async() => {
@@ -26,7 +27,7 @@ describe('SignInWithCredentialAndPassword - Integration tests', () => {
     }).compile();
 
     sut = module.get(SignInWithCredentialAndPassword);
-    refreshTokenSession = module.get(RefreshTokenSession);
+    cacheGateway = module.get<ICacheGateway>(TOKENS.CacheGateway);
     prisma = module.get(PrismaService);
   });
 
@@ -190,7 +191,7 @@ describe('SignInWithCredentialAndPassword - Integration tests', () => {
       credential: email,
       password,
     };
-    const cacheSetSpy = jest.spyOn(refreshTokenSession['cacheGateway'], 'set');
+    const cacheSetSpy = jest.spyOn(cacheGateway, 'set');
 
     // Act
     const result = await sut.execute(data);

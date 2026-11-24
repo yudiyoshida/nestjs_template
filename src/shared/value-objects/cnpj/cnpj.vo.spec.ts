@@ -42,6 +42,11 @@ describe('CNPJ - Unit tests', () => {
       expect(() => new CNPJ('11222333000180')).toThrow(InvalidCnpjError);
     });
 
+    it('should throw InvalidCnpjError without the cnpj in the message', () => {
+      // Act & Assert
+      expect(() => new CNPJ('11.222.333/0001-80')).toThrow(/^CNPJ inválido\.$/);
+    });
+
     it.each([
       null,
       undefined,

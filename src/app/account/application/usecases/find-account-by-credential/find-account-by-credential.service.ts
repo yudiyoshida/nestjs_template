@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { AccountWithSensitiveDataDto } from 'src/app/account/application/dtos/account.dto';
+import type { IAccountDao } from 'src/app/account/application/persistence/dao/account-dao.interface';
 import { TOKENS } from 'src/core/di/token';
-import { AccountWithSensitiveDataDto } from '../../dtos/account.dto';
-import type { IAccountDao } from '../../persistence/dao/account-dao.interface';
 
 @Injectable()
 export class FindAccountByCredential {

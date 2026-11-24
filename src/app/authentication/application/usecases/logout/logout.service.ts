@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { RefreshTokenSession } from 'src/app/authentication/application/usecases/refresh-token-session/refresh-token-session.service';
+import { RevokeRefreshTokenSession } from 'src/app/authentication/application/usecases/revoke-refresh-token-session/revoke-refresh-token-session.service';
 import { SuccessMessage } from 'src/core/dtos/success-message.dto';
 
 @Injectable()
 export class Logout {
   constructor(
-    private readonly refreshTokenSession: RefreshTokenSession,
+    private readonly revokeRefreshTokenSession: RevokeRefreshTokenSession,
   ) {}
 
   public async execute(accountId: string): Promise<SuccessMessage> {
-    await this.refreshTokenSession.revoke(accountId);
+    await this.revokeRefreshTokenSession.execute(accountId);
 
     return { message: 'Sessão encerrada com sucesso.' };
   }

@@ -5,7 +5,7 @@ Valem para código novo e para mudança em código que já existe. Toda geraçã
 - Código novo e mudança em módulo que já existe começam pela skill `create-new-feature`, que nomeia a skill de cada peça.
 - Toda entrega termina na skill `verifying-delivery`, com o relatório dos portões.
 - Ambiente local e banco de teste: skill `running-local-environment`. O `.env.test` nunca aponta para o banco de desenvolvimento: teste de integração apaga tabelas. Teste roda só por `npm test`, que define `NODE_ENV=test`; `npx jest` direto carrega o `.env.development`.
-- Skills moram em `.agents/skills/<kebab>/SKILL.md`. Skill nova ganha symlink em `.claude/skills/` e em `.cursor/skills/` apontando para `../../.agents/skills/<kebab>`.
+- Skills moram em `.agents/skills/<kebab>/SKILL.md`. Skill nova ganha symlink em `.claude/skills/` e em `.cursor/skills/` apontando para `../../.agents/skills/<kebab>`. Skill nova ou editada: conferir o catálogo pela skill `validating-project-skills`.
 - O formato de cada arquivo mora na skill da peça. Aqui ficam só as decisões que valem para todas.
 - Código existente que diverge destas leis é drift: não copiar o trecho.
 
@@ -47,6 +47,8 @@ Valem para código novo e para mudança em código que já existe. Toda geraçã
 | Índice | `@@index` em id de outro módulo e em coluna filtrada da lista. `@unique` só quando o pedido disser único |
 | Unicidade | Checagem prévia no use case pela porta (`existsBy<Campo>`), com o valor já normalizado pelo VO; 409 pelo erro do campo e `applyConflict` na rota. Sem tradução do `P2002`: gravação simultânea sai como 500 |
 | E-mail transacional | Um método por e-mail na porta `ISmtpGateway`; corpo `.hbs` dentro de `layouts/default.hbs`, com o rodapé. E-mail essencial propaga o 503; informativo segue sem erro |
+| Consumo entre módulos | Só módulo interno é consumido. O consumidor importa o módulo dele e injeta o use case pela classe; `null` vira erro do consumidor. Proibido importar porta, DAO, adapter ou entidade do outro módulo |
+| Invalidação de cache | O use case que escreve apaga, depois de gravar, o detalhe do registro (`delete`) e as listas do recurso (`deleteContaining` do prefixo `list`). Lote: um `deleteContaining` de `setCommand('*')` |
 | Edição parcial | Campo ausente chega do `ValidationPipe` como `undefined` e não sobrescreve o valor atual. Proibido mesclar com `{ ...atual, ...dto }` |
 | Spec de DTO | Input e query têm spec via `ValidationPipe(pipeOptions)`. Read model e output não |
 
@@ -66,7 +68,7 @@ Valem para código novo e para mudança em código que já existe. Toda geraçã
 
 ## Drift conhecido
 
-Arquivos que já existem e divergem da lei. Não copiar o trecho.
+Arquivos que já existem e divergem da lei. Não copiar o trecho. Para achar desvio novo: skill `auditing-template-conformance`, que confere cada lei por script ou por leitura do agente, com evidência no relatório.
 
 | Arquivo | O que ignorar | No lugar |
 |---|---|---|

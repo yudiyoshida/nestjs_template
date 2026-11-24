@@ -1,26 +1,19 @@
 import { createMock } from '@golevelup/ts-jest';
-import { JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
-import { RefreshTokenSession } from 'src/app/authentication/application/usecases/refresh-token-session/refresh-token-session.service';
-import { ConfigService } from 'src/core/config/config.service';
-import { TOKENS } from 'src/core/di/token';
-import type { ICacheGateway } from 'src/infra/cache/cache.gateway';
+import { RevokeRefreshTokenSession } from 'src/app/authentication/application/usecases/revoke-refresh-token-session/revoke-refresh-token-session.service';
 import { Logout } from './logout.service';
 
 describe('Logout - Unit tests', () => {
   let sut: Logout;
-  let cacheGateway: ICacheGateway;
+  let revokeRefreshTokenSession: RevokeRefreshTokenSession;
 
   beforeEach(async() => {
-    cacheGateway = createMock<ICacheGateway>();
+    revokeRefreshTokenSession = createMock<RevokeRefreshTokenSession>();
 
     const module = await Test.createTestingModule({
       providers: [
         Logout,
-        RefreshTokenSession,
-        { provide: TOKENS.CacheGateway, useValue: cacheGateway },
-        { provide: JwtService, useValue: createMock<JwtService>() },
-        { provide: ConfigService, useValue: createMock<ConfigService>() },
+        { provide: RevokeRefreshTokenSession, useValue: revokeRefreshTokenSession },
       ],
     }).compile();
 
@@ -32,21 +25,22 @@ describe('Logout - Unit tests', () => {
     expect(sut).toBeDefined();
   });
 
-  it('should delete the cached refresh token for the account', async() => {
+  it('should revoke the refresh token session of the account', async() => {
     // Arrange
     const accountId = '123';
-    const deleteSpy = jest.spyOn(cacheGateway, 'delete');
+    const revokeSpy = jest.spyOn(revokeRefreshTokenSession, 'execute').mockResolvedValue();
 
     // Act
     await sut.execute(accountId);
 
     // Assert
-    expect(deleteSpy).toHaveBeenCalledWith(`cache:global:refresh-token:detail:${accountId}`);
+    expect(revokeSpy).toHaveBeenCalledWith(accountId);
   });
 
   it('should return a success message', async() => {
     // Arrange
     const accountId = '123';
+    jest.spyOn(revokeRefreshTokenSession, 'execute').mockResolvedValue();
 
     // Act
     const result = await sut.execute(accountId);

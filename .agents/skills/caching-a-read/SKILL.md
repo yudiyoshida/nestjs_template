@@ -58,7 +58,7 @@ Progresso:
 | Logger, log de hit ou de miss | Skill `using-logger` |
 | Spec da leitura com cache, ou spec do builder quando a union mudar | Skill `writing-unit-tests` |
 | `AppException` ausente no momento de recriar `CacheKeyBuilderError` | Skill `creating-custom-errors` |
-| Invalidar cache numa escrita | Fora (sem skill) |
+| Invalidar cache numa escrita | Skill `invalidating-cache-on-write` |
 
 ## Lei do cache-aside
 
@@ -84,7 +84,7 @@ O único uso existente (`getAccount`) passa ttl `30` e skipLog `true`. Pedido qu
 
 `null` e ausente não entram no cache. O `if (fresh)` do template é a condição de gravação.
 
-`delete` e `deleteContaining` existem no contrato e aparecem na interface. A skill não ensina receita de invalidar em escrita.
+`delete` e `deleteContaining` existem no contrato e aparecem na interface. A receita de invalidar numa escrita é da skill `invalidating-cache-on-write`.
 
 ## Gramática da chave
 
@@ -166,7 +166,6 @@ import { CacheKeyBuilderError } from 'src/infra/cache/helpers/cache-key/cache-ke
 type Resource =
   | 'account'
   | 'refresh-token'
-  | 'text'
   | '*'
 
 type Command =
@@ -329,7 +328,7 @@ A chamada que produz `fresh` já existe. Esta skill não cria o use case. Pedido
 | Logger | Skill `using-logger` |
 | Spec da leitura com cache e do builder quando a union `Resource` mudar | Skill `writing-unit-tests` |
 | `AppException` | Skill `creating-custom-errors` |
-| Invalidação com `delete` ou `deleteContaining` | Fora (sem skill) |
+| Invalidação com `delete` ou `deleteContaining` | Skill `invalidating-cache-on-write` |
 | TTL ou skipLog inventados quando o pedido omite os dois (o par é `30` e `true`) | Fora (sem skill) |
 | Fila | Fora (sem skill) |
 | WebSocket | Fora (sem skill) |

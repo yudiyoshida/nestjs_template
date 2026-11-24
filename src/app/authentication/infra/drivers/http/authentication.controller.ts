@@ -5,10 +5,10 @@ import { RefreshToken } from 'src/app/authentication/application/usecases/refres
 import { SigninWithCredentialAndPasswordInputDto, SigninWithCredentialAndPasswordOutputDto } from 'src/app/authentication/application/usecases/signin-with-credential-and-password/dtos/signin-with-credential-and-password.dto';
 import { SignInWithCredentialAndPassword } from 'src/app/authentication/application/usecases/signin-with-credential-and-password/signin-with-credential-and-password.service';
 import type { Payload } from 'src/app/authentication/domain/types/payload.type';
+import { RequiredRoles } from 'src/app/authentication/infra/decorators/required-role.decorator';
+import { User } from 'src/app/authentication/infra/decorators/user.decorator';
 import { SuccessMessage } from 'src/core/dtos/success-message.dto';
 import { Swagger } from 'src/infra/openapi/swagger';
-import { RequiredRoles } from '../../decorators/required-role.decorator';
-import { User } from '../../decorators/user.decorator';
 
 @Controller('auth')
 export class AuthenticationController {

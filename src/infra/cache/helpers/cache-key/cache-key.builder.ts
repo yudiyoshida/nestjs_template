@@ -3,7 +3,6 @@ import { CacheKeyBuilderError } from 'src/infra/cache/helpers/cache-key/cache-ke
 type Resource =
   | 'account'
   | 'refresh-token'
-  | 'text'
   | '*'
 
 type Command =

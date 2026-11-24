@@ -87,6 +87,8 @@ O recap lista, nesta ordem:
 |---|---|
 | Bug ou refactor sem campo novo, alterado ou removido e sem rota nova | Fora (sem skill) |
 | Formato de skill do repositório | Skill `creating-project-skills` |
+| Auditoria de conformidade do código | Skill `auditing-template-conformance` |
+| Conferir o catálogo de skills | Skill `validating-project-skills` |
 | Pedido da lista "Fora de receita" | Parar. Sem arquivo |
 
 ## Fora de receita
@@ -146,9 +148,11 @@ Nomear a skill no recap. Não abrir o arquivo antes do sim.
 | Decorator `Transform` compartilhado | `creating-class-validator-decorator` |
 | Seed | `writing-prisma-seed` |
 | Cache de uma leitura | `caching-a-read` |
+| Invalidar cache depois de uma escrita | `invalidating-cache-on-write` |
 | Campo único, valor que não pode repetir, conflito 409 | `handling-unique-constraints` |
 | Remover módulo inteiro ou sobras de módulo apagado | `removing-module` |
 | E-mail transacional (boas-vindas, aviso, código, contato) | `sending-transactional-email` |
+| Usar use case de outro módulo, ligar dois módulos | `consuming-internal-module` |
 | Collection Postman | `syncing-postman-collection` |
 | Value object | `creating-value-objects` |
 | Classe de erro | `creating-custom-errors` |
@@ -240,6 +244,7 @@ Um DTO só: não criar decorator. Dizer que a transformação fica nesse DTO e p
 - E-mail: o que dispara, destinatário (usuário ou equipe), dados do corpo, assunto, e se é essencial ou informativo.
 - Seed: model e campos de cada registro. Senha, token ou outro segredo não entra no arquivo commitado. Se o registro precisa de segredo, perguntar de onde o valor vem na execução, sem gravar o valor.
 - Cache: qual leitura. Sem leitura nomeada, não há escopo.
+- Invalidação: qual escrita e qual leitura cacheada ela deixa velha.
 - Postman: caminho da entrada (`postman/swagger.json` ou `SWAGGER_PATH`). O usuário confirma que o JSON já está nesse caminho. Sem o JSON, não há escopo e não se inventa gerador.
 
 ## Depois do sim
@@ -249,6 +254,16 @@ Ler a skill. Escrever só o que ela manda, na ordem dela. Trocar o exemplo pelo 
 Módulo ou peça que já existe: ler só o arquivo de registro em que a skill manda inserir (`*.module.ts`, `src/core/di/token.ts`, `AppModule` ou o módulo consumidor). O formato do arquivo novo sai da skill. Evolução: os arquivos que `evolving-existing-module` manda editar, um por vez.
 
 Não declarar a entrega pronta com item do checklist da skill ainda aberto.
+
+## Fora do escopo
+
+| Artefato | Delegar a |
+|----------|-----------|
+| Corpo de cada arquivo | A skill nomeada no recap |
+| Conferência da entrega | Skill `verifying-delivery` |
+| Ambiente local e banco de teste | Skill `running-local-environment` |
+| Pedido da lista "Fora de receita" | Fora (sem skill) |
+| Bug ou refactor sem campo, rota ou comando novo | Fora (sem skill) |
 
 ## Checklist de entrega
 

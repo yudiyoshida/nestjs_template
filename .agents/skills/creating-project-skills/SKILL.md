@@ -24,7 +24,8 @@ Progresso:
 - [ ] 3. Colocar na pasta da skill todo código que ela manda recriar
 - [ ] 4. Se SKILL.md passar de 500 linhas, mover o bloco pesado para references/
 - [ ] 5. Criar os symlinks em .claude/skills e .cursor/skills (seção "Symlinks")
-- [ ] 6. Rodar o checklist de entrega
+- [ ] 6. Conferir o catálogo pela skill validating-project-skills
+- [ ] 7. Rodar o checklist de entrega
 ```
 
 ## Quando usar
@@ -42,6 +43,7 @@ Progresso:
 | Implementar VO, erro, config, logger, port, teste | Skill de domínio correspondente |
 | Documentação de produto, ADR, README | Fora (sem skill) |
 | Skill pessoal fora deste repositório | Fora (sem skill) |
+| Conferir o catálogo inteiro | Skill `validating-project-skills` |
 
 ## Autocontenção
 
@@ -187,5 +189,6 @@ Antes de responder, confirmar **todos**:
 - [ ] Nenhum ponteiro manda abrir `src/` ou outra skill para aprender formato ou algoritmo
 - [ ] `SKILL.md` com menos de 500 linhas; se havia estouro, `references/` com "leia este arquivo quando for escrever X"
 - [ ] Symlinks `.claude/skills/<kebab>` e `.cursor/skills/<kebab>` apontam para `../../.agents/skills/<kebab>`; nenhuma cópia da pasta
+- [ ] `validating-project-skills` rodou sem ocorrência desta skill
 - [ ] Texto em português
 - [ ] Nenhum formato copiado de outra skill — apenas esta skill

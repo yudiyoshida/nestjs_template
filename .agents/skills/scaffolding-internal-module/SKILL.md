@@ -200,6 +200,7 @@ O bloco mostra a linha nova dentro do consumidor que já existe. O comentário m
 | Módulo HTTP anêmico | Skill `scaffolding-anemic-module` |
 | Módulo HTTP rico | Skill `scaffolding-rich-module` |
 | Controller | Skill `creating-controllers` |
+| Usar o use case exportado no consumidor | Skill `consuming-internal-module` |
 | Env | Skill `using-core-config` |
 | Logger | Skill `using-logger` |
 | Gateway de vendor (Redis, SMTP, S3, HTTP de terceiro) | Skill `using-ports-and-adapters` |

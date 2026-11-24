@@ -50,6 +50,11 @@ describe('CPF - Unit tests', () => {
       expect(() => new CPF('111.444.777-30')).toThrow(InvalidCpfError);
     });
 
+    it('should throw InvalidCpfError without the cpf in the message', () => {
+      // Act & Assert
+      expect(() => new CPF('111.444.777-45')).toThrow(/^CPF inválido\.$/);
+    });
+
     it.each([
       '1234567890',
       '123456789012',

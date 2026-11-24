@@ -3,9 +3,10 @@ import { ExecutionContext } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { AccountDto } from 'src/app/account/application/dtos/account.dto';
 import { AccountStatus } from 'src/app/account/domain/enums/account-status.enum';
+import { ForbiddenAccountError } from 'src/app/authentication/application/errors/forbidden-account.error';
+import { InactiveAccountError } from 'src/app/authentication/application/errors/inactive-account.error';
+import { AuthenticationGuardsModule } from 'src/app/authentication/application/guards/guards.module';
 import { Payload } from 'src/app/authentication/domain/types/payload.type';
-import { InactiveAccountError } from '../../errors/inactive-account.error';
-import { AuthenticationGuardsModule } from '../guards.module';
 import { AuthenticationGuard } from './authentication.guard';
 
 function contextMockFactory(user: Payload | null, type: 'http' | 'ws'): ExecutionContext {
@@ -98,6 +99,21 @@ describe('AuthenticationGuard - Unit tests', () => {
       expect.assertions(1);
       return guard.canActivate(context).catch((error) => {
         expect(error).toBeInstanceOf(InactiveAccountError);
+      });
+    });
+
+    it('should throw ForbiddenAccountError when account is pending', async() => {
+      // Arrange
+      const user = createMock<Payload>({ sub: '123' });
+      const context = contextMockFactory(user, type);
+
+      const account = createMock<AccountDto>({ status: AccountStatus.PENDING });
+      jest.spyOn(AuthenticationGuard.prototype as any, 'getAccount').mockResolvedValue(account);
+
+      // Act & Assert
+      expect.assertions(1);
+      return guard.canActivate(context).catch((error) => {
+        expect(error).toBeInstanceOf(ForbiddenAccountError);
       });
     });
 

@@ -50,7 +50,7 @@ Exceção: usuário apontar um arquivo — leia só esse arquivo.
 - Controller não muda por campo novo: o campo viaja no DTO, e o Swagger lê o `@ApiProperty` dele.
 - Spec: cada arquivo de produção que mudou passa por `inventorying-test-scenarios`. O spec que já existe é estendido, não reescrito. Arrange que grava linha ganha a coluna obrigatória nova.
 - Contrato HTTP mudou (campo em body, resposta ou query, ou rota nova): Postman pela skill `syncing-postman-collection`.
-- Leitura com cache (`caching-a-read`): o read model antigo pode sair do cache até o TTL vencer.
+- Leitura com cache (`caching-a-read`): o read model antigo pode sair do cache até o TTL vencer. Escrita em recurso cacheado invalida pela skill `invalidating-cache-on-write`.
 
 ## Fluxo
 
@@ -204,7 +204,7 @@ Conferência no fim: skill `verifying-delivery`.
 | Cada arquivo das tabelas | A skill da linha |
 | Converter anêmico em rico | Fora (sem skill) |
 | Remover o módulo inteiro | Skill `removing-module` |
-| Invalidar cache numa escrita | Fora (sem skill) |
+| Invalidar cache numa escrita | Skill `invalidating-cache-on-write` |
 | Teste e2e | Fora (sem skill) |
 
 ## Checklist de entrega

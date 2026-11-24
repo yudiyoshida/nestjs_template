@@ -1,5 +1,5 @@
-import { AccountRole } from '../../domain/enums/account-role.enum';
-import { AccountStatus } from '../../domain/enums/account-status.enum';
+import { AccountRole } from 'src/app/account/domain/enums/account-role.enum';
+import { AccountStatus } from 'src/app/account/domain/enums/account-status.enum';
 
 export class AccountDto {
   id: string;

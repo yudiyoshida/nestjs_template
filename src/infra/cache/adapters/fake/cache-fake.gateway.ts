@@ -34,10 +34,42 @@ export class CacheFakeAdapterGateway implements ICacheGateway {
   }
 
   public async deleteContaining(key: string): Promise<void> {
+    const pattern = this.toRedisMatch(`*${key}*`);
+
     for (const storedKey of this.store.keys()) {
-      if (storedKey.includes(key)) {
+      if (pattern.test(storedKey)) {
         this.store.delete(storedKey);
       }
     }
+  }
+
+  // Mesmo padrão do MATCH do SCAN do Redis: `*` casa qualquer sequência, `?` casa um caractere e `\` escapa o próximo.
+  // Classe `[...]` do Redis não entra.
+  private toRedisMatch(glob: string): RegExp {
+    let source = '';
+
+    for (let index = 0; index < glob.length; index++) {
+      const char = glob[index];
+
+      if (char === '*') {
+        source += '.*';
+      }
+      else if (char === '?') {
+        source += '.';
+      }
+      else if (char === '\\' && index + 1 < glob.length) {
+        index++;
+        source += this.escapeRegExp(glob[index]);
+      }
+      else {
+        source += this.escapeRegExp(char);
+      }
+    }
+
+    return new RegExp(`^${source}$`, 's');
+  }
+
+  private escapeRegExp(char: string): string {
+    return char.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&');
   }
 }

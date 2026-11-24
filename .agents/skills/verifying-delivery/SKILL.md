@@ -84,6 +84,7 @@ Progresso:
 | Subir API, banco ou separar o banco de teste | Skill `running-local-environment` |
 | Regerar a collection | Skill `syncing-postman-collection` |
 | Commit, push ou PR | Fora (sem skill) |
+| Desvio das leis do template no código | Skill `auditing-template-conformance` |
 | Revisão de arquitetura ou de regra de negócio | Fora (sem skill) |
 
 ## Templates

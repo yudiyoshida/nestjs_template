@@ -1,4 +1,4 @@
-import { AccountDto, AccountWithSensitiveDataDto } from '../../dtos/account.dto';
+import { AccountDto, AccountWithSensitiveDataDto } from 'src/app/account/application/dtos/account.dto';
 
 export interface IAccountDao {
   findByCredential(credential: string): Promise<AccountWithSensitiveDataDto | null>;

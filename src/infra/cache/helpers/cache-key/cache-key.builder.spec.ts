@@ -53,7 +53,7 @@ describe('CacheKeyBuilder - Unit tests', () => {
     describe('Happy path', () => {
       it('should return the same instance to allow chaining', () => {
         // Act
-        const result = sut.setResource('text');
+        const result = sut.setResource('account');
 
         // Assert
         expect(result).toBe(sut);
@@ -61,10 +61,10 @@ describe('CacheKeyBuilder - Unit tests', () => {
 
       it('should place the resource after the scope', () => {
         // Act
-        const result = sut.setResource('text').setCommand('list').build();
+        const result = sut.setResource('account').setCommand('list').build();
 
         // Assert
-        expect(result).toBe('cache:global:text:list');
+        expect(result).toBe('cache:global:account:list');
       });
     });
 
@@ -79,7 +79,7 @@ describe('CacheKeyBuilder - Unit tests', () => {
 
       it('should keep the last resource when called twice', () => {
         // Act
-        const result = sut.setResource('text').setResource('refresh-token').setCommand('list').build();
+        const result = sut.setResource('account').setResource('refresh-token').setCommand('list').build();
 
         // Assert
         expect(result).toBe('cache:global:refresh-token:list');
@@ -99,36 +99,36 @@ describe('CacheKeyBuilder - Unit tests', () => {
 
       it('should append the serialized query when the command is list', () => {
         // Act
-        const result = sut.setResource('text').setCommand('list', { page: 1, size: 10 }).build();
+        const result = sut.setResource('account').setCommand('list', { page: 1, size: 10 }).build();
 
         // Assert
-        expect(result).toBe('cache:global:text:list:{"page":1,"size":10}');
+        expect(result).toBe('cache:global:account:list:{"page":1,"size":10}');
       });
 
       it('should append the raw id when the command is detail', () => {
         // Act
-        const result = sut.setResource('text').setCommand('detail', 'text-1').build();
+        const result = sut.setResource('account').setCommand('detail', 'account-1').build();
 
         // Assert
-        expect(result).toBe('cache:global:text:detail:text-1');
+        expect(result).toBe('cache:global:account:detail:account-1');
       });
     });
 
     describe('Edge cases', () => {
       it('should accept the wildcard command without data', () => {
         // Act
-        const result = sut.setResource('text').setCommand('*').build();
+        const result = sut.setResource('account').setCommand('*').build();
 
         // Assert
-        expect(result).toBe('cache:global:text:*');
+        expect(result).toBe('cache:global:account:*');
       });
 
       it('should keep the last command and data when called twice', () => {
         // Act
-        const result = sut.setResource('text').setCommand('detail', 'id').setCommand('list').build();
+        const result = sut.setResource('account').setCommand('detail', 'id').setCommand('list').build();
 
         // Assert
-        expect(result).toBe('cache:global:text:list');
+        expect(result).toBe('cache:global:account:list');
       });
     });
   });
@@ -139,19 +139,16 @@ describe('CacheKeyBuilder - Unit tests', () => {
         ['cache:global:account:list', undefined, 'account', 'list', undefined],
         ['cache:global:account:list:{"page":1,"size":10}', undefined, 'account', 'list', { page: 1, size: 10 }],
         ['cache:global:account:detail:123', undefined, 'account', 'detail', '123'],
-        ['cache:global:text:list', '', 'text', 'list', undefined],
-        ['cache:global:text:detail:abc123', '', 'text', 'detail', 'abc123'],
-        ['cache:global:text:list:{"search":"xpto"}', undefined, 'text', 'list', { search: 'xpto' }],
+        ['cache:global:refresh-token:detail:abc123', '', 'refresh-token', 'detail', 'abc123'],
+        ['cache:global:refresh-token:list:{"search":"xpto"}', undefined, 'refresh-token', 'list', { search: 'xpto' }],
         ['cache:global:refresh-token:detail:account-123', undefined, 'refresh-token', 'detail', 'account-123'],
         ['cache:acc-id:account:list', 'acc-id', 'account', 'list', undefined],
         ['cache:acc-id:account:list:{"page":1,"size":10}', 'acc-id', 'account', 'list', { page: 1, size: 10 }],
         ['cache:acc-id:account:detail:123', 'acc-id', 'account', 'detail', '123'],
-        ['cache:acc-id:text:list', 'acc-id', 'text', 'list', undefined],
-        ['cache:acc-id:text:list:{"search":"xpto"}', 'acc-id', 'text', 'list', { search: 'xpto' }],
-        ['cache:acc-id:text:detail:random-id', 'acc-id', 'text', 'detail', 'random-id'],
+        ['cache:acc-id:refresh-token:list:{"search":"xpto"}', 'acc-id', 'refresh-token', 'list', { search: 'xpto' }],
+        ['cache:acc-id:refresh-token:detail:random-id', 'acc-id', 'refresh-token', 'detail', 'random-id'],
         ['cache:acc-id:refresh-token:list', 'acc-id', 'refresh-token', 'list', undefined],
         ['cache:global:refresh-token:list', undefined, 'refresh-token', 'list', undefined],
-        ['cache:global:text:detail:text-id', undefined, 'text', 'detail', 'text-id'],
       ])('should build %s', (expected: string, accountId: any, resource: any, command: any, data: any) => {
         // Act
         const result = sut

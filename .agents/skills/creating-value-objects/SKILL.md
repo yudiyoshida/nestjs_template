@@ -306,7 +306,7 @@ export class Document {
       this._value = new CNPJ(document).value;
     }
     else {
-      throw new InvalidDocumentError(raw);
+      throw new InvalidDocumentError();
     }
   }
 

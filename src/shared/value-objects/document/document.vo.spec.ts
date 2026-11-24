@@ -77,5 +77,10 @@ describe('Document - Unit tests', () => {
       // Act & Assert
       expect(() => new Document('11111111111111')).toThrow(InvalidCnpjError);
     });
+
+    it('should throw InvalidDocumentError without the document in the message', () => {
+      // Act & Assert
+      expect(() => new Document('123.456.789')).toThrow(/^CPF\/CNPJ inválido\.$/);
+    });
   });
 });

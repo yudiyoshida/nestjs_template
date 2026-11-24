@@ -111,6 +111,8 @@ grep -rn "export class Pagination" src/shared/value-objects/pagination/paginatio
 - Campo com formato (e-mail, CPF, CNPJ, telefone, CEP) no anêmico: o use case passa o valor pelo VO antes da porta e grava o `.value`. No rico, quem faz é a factory. Forma em `references/comando-anemico.md`.
 - Edição anêmica: campo ausente segue `undefined` até a porta. O `update` do Prisma ignora `undefined`; não preencher com o valor atual.
 - Campo único: checagem prévia pela porta antes de gravar, com o valor já normalizado. Forma na skill `handling-unique-constraints`.
+- Use case de outro módulo: injeção pela classe, sem token, só quando o outro é módulo interno e exporta o use case. Forma na skill `consuming-internal-module`.
+- Recurso com leitura cacheada: a escrita invalida o cache depois de gravar. Forma na skill `invalidating-cache-on-write`.
 - Comando interno: sem controller. Pode injetar DAO e repository. Registro ausente segue em frente, sem `NotFound`.
 - Erro de domínio escapa. Proibido `try/catch` em volta de factory ou método da entidade.
 - Proibido Prisma no use case, `process.env`, log no happy path.
@@ -131,7 +133,7 @@ Trocar `Example` / `example` pelo recurso. Campos ilustrativos saem explícitos,
 Quando `src/app/<modulo>/<modulo>.module.ts` já existe, importar a classe e incluí-la em `providers`.
 
 ```ts
-import { CreateExample } from './application/usecases/create-example/create-example.service';
+import { CreateExample } from 'src/app/example/application/usecases/create-example/create-example.service';
 ```
 
 ```ts

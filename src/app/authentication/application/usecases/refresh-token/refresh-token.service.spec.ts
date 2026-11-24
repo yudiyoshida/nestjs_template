@@ -5,7 +5,8 @@ import { AccountRole } from 'src/app/account/domain/enums/account-role.enum';
 import { AccountStatus } from 'src/app/account/domain/enums/account-status.enum';
 import { AccountDto } from 'src/app/account/application/dtos/account.dto';
 import { FindAccountById } from 'src/app/account/application/usecases/find-account-by-id/find-account-by-id.service';
-import { RefreshTokenSession } from 'src/app/authentication/application/usecases/refresh-token-session/refresh-token-session.service';
+import { IssueRefreshTokenSession } from 'src/app/authentication/application/usecases/issue-refresh-token-session/issue-refresh-token-session.service';
+import { ValidateRefreshTokenSession } from 'src/app/authentication/application/usecases/validate-refresh-token-session/validate-refresh-token-session.service';
 import { Payload } from 'src/app/authentication/domain/types/payload.type';
 import { ForbiddenAccountError } from '../../errors/forbidden-account.error';
 import { InactiveAccountError } from '../../errors/inactive-account.error';
@@ -27,19 +28,22 @@ describe('RefreshToken - Unit tests', () => {
   let sut: RefreshToken;
   let jwtService: JwtService;
   let findAccountById: FindAccountById;
-  let refreshTokenSession: RefreshTokenSession;
+  let validateRefreshTokenSession: ValidateRefreshTokenSession;
+  let issueRefreshTokenSession: IssueRefreshTokenSession;
 
   beforeEach(async() => {
     jwtService = createMock<JwtService>();
     findAccountById = createMock<FindAccountById>();
-    refreshTokenSession = createMock<RefreshTokenSession>();
+    validateRefreshTokenSession = createMock<ValidateRefreshTokenSession>();
+    issueRefreshTokenSession = createMock<IssueRefreshTokenSession>();
 
     const module = await Test.createTestingModule({
       providers: [
         RefreshToken,
         { provide: JwtService, useValue: jwtService },
         { provide: FindAccountById, useValue: findAccountById },
-        { provide: RefreshTokenSession, useValue: refreshTokenSession },
+        { provide: ValidateRefreshTokenSession, useValue: validateRefreshTokenSession },
+        { provide: IssueRefreshTokenSession, useValue: issueRefreshTokenSession },
       ],
     }).compile();
 
@@ -54,7 +58,7 @@ describe('RefreshToken - Unit tests', () => {
   it('should throw InvalidRefreshTokenError when the account no longer exists', async() => {
     // Arrange
     const payload: Payload = { sub: 'ghost-id', roles: [AccountRole.STUDENT] };
-    jest.spyOn(refreshTokenSession, 'validate').mockResolvedValue(payload);
+    jest.spyOn(validateRefreshTokenSession, 'execute').mockResolvedValue(payload);
     jest.spyOn(findAccountById, 'execute').mockResolvedValue(null);
     const data: RefreshTokenInputDto = { refreshToken: 'some-refresh-token' };
 
@@ -68,7 +72,7 @@ describe('RefreshToken - Unit tests', () => {
   it('should throw InactiveAccountError when the account is inactive', async() => {
     // Arrange
     const account = makeAccount({ status: AccountStatus.INACTIVE });
-    jest.spyOn(refreshTokenSession, 'validate').mockResolvedValue({ sub: account.id, roles: account.roles });
+    jest.spyOn(validateRefreshTokenSession, 'execute').mockResolvedValue({ sub: account.id, roles: account.roles });
     jest.spyOn(findAccountById, 'execute').mockResolvedValue(account);
     const data: RefreshTokenInputDto = { refreshToken: 'some-refresh-token' };
 
@@ -82,7 +86,7 @@ describe('RefreshToken - Unit tests', () => {
   it('should throw ForbiddenAccountError when the account is pending', async() => {
     // Arrange
     const account = makeAccount({ status: AccountStatus.PENDING });
-    jest.spyOn(refreshTokenSession, 'validate').mockResolvedValue({ sub: account.id, roles: account.roles });
+    jest.spyOn(validateRefreshTokenSession, 'execute').mockResolvedValue({ sub: account.id, roles: account.roles });
     jest.spyOn(findAccountById, 'execute').mockResolvedValue(account);
     const data: RefreshTokenInputDto = { refreshToken: 'some-refresh-token' };
 
@@ -96,10 +100,10 @@ describe('RefreshToken - Unit tests', () => {
   it('should return a new access/refresh token pair for an active account', async() => {
     // Arrange
     const account = makeAccount();
-    jest.spyOn(refreshTokenSession, 'validate').mockResolvedValue({ sub: account.id, roles: account.roles });
+    jest.spyOn(validateRefreshTokenSession, 'execute').mockResolvedValue({ sub: account.id, roles: account.roles });
     jest.spyOn(findAccountById, 'execute').mockResolvedValue(account);
     jest.spyOn(jwtService, 'sign').mockReturnValue('new-access-token');
-    jest.spyOn(refreshTokenSession, 'issue').mockResolvedValue('new-refresh-token');
+    jest.spyOn(issueRefreshTokenSession, 'execute').mockResolvedValue('new-refresh-token');
     const data: RefreshTokenInputDto = { refreshToken: 'some-refresh-token' };
 
     // Act
@@ -107,7 +111,7 @@ describe('RefreshToken - Unit tests', () => {
 
     // Assert
     expect(jwtService.sign).toHaveBeenCalledWith({ sub: account.id, roles: account.roles });
-    expect(refreshTokenSession.issue).toHaveBeenCalledWith({ sub: account.id, roles: account.roles });
+    expect(issueRefreshTokenSession.execute).toHaveBeenCalledWith({ sub: account.id, roles: account.roles });
     expect(result).toEqual({ accessToken: 'new-access-token', refreshToken: 'new-refresh-token' });
   });
 });
