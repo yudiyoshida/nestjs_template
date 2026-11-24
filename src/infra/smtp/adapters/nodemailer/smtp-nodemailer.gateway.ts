@@ -13,7 +13,7 @@ import type { NodemailerMailOptions, NodemailerTransportOptions } from './dtos/n
 
 @Injectable()
 export class SmtpNodemailerAdapterGateway implements ISmtpGateway {
-  private readonly FORGOT_PASSWORD_TEMPLATE = 'resources/templates/email/forgot-password.hbs';
+  private readonly TEMPLATES_DIR = 'resources/templates/email';
 
   private transporter: nodemailer.Transporter | null = null;
 
@@ -24,9 +24,9 @@ export class SmtpNodemailerAdapterGateway implements ISmtpGateway {
 
   public async sendForgotPasswordEmail(input: SendForgotPasswordEmailInput): Promise<void> {
     try {
-      const html = this.renderForgotPasswordTemplate(input.code);
+      const html = this.render('forgot-password', { code: input.code });
 
-      await this.getTransporter().sendMail(this.toVendorMail(input, html));
+      await this.getTransporter().sendMail(this.toVendorMail(input.to, 'Recuperação de senha', html));
     }
     catch (error) {
       this.logger.error(LogContext.SMTP, {
@@ -39,12 +39,15 @@ export class SmtpNodemailerAdapterGateway implements ISmtpGateway {
     }
   }
 
-  private renderForgotPasswordTemplate(code: string): string {
-    const templatePath = path.join(process.cwd(), this.FORGOT_PASSWORD_TEMPLATE);
-    const templateSource = fs.readFileSync(templatePath, 'utf-8');
-    const template = handlebars.compile(templateSource);
+  private render(name: string, context: Record<string, unknown>): string {
+    handlebars.registerPartial('footer', this.readTemplate('partials/footer.hbs'));
+    const body = handlebars.compile(this.readTemplate(`${name}.hbs`))(context);
 
-    return template({ code });
+    return handlebars.compile(this.readTemplate('layouts/default.hbs'))({ body });
+  }
+
+  private readTemplate(file: string): string {
+    return fs.readFileSync(path.join(process.cwd(), this.TEMPLATES_DIR, file), 'utf-8');
   }
 
   private getTransporter(): nodemailer.Transporter {
@@ -66,11 +69,11 @@ export class SmtpNodemailerAdapterGateway implements ISmtpGateway {
     };
   }
 
-  private toVendorMail(input: SendForgotPasswordEmailInput, html: string): NodemailerMailOptions {
+  private toVendorMail(to: string, subject: string, html: string): NodemailerMailOptions {
     return {
       from: this.config.smtpFrom,
-      to: input.to,
-      subject: 'Recuperação de senha — Kalpay',
+      to,
+      subject,
       html,
     };
   }

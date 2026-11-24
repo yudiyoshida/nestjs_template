@@ -77,6 +77,7 @@ No passo 3, porta nova sai do template. Edição de porta que já existe: altera
 - `save` do DAO anêmico devolve `Promise<string>`.
 - A interface não importa Prisma nem Nest e não tem regra de negócio.
 - A interface não tem spec.
+- Campo único ganha `existsBy<Campo>(valor): Promise<boolean>`: no `IXxxDao` do anêmico e no `IXxxRepository` do rico. Forma na skill `handling-unique-constraints`.
 
 Nomes:
 

@@ -2,7 +2,9 @@
 
 Valem para código novo e para mudança em código que já existe. Toda geração de código segue receita fechada: sem Nest genérico, sem Prisma no use case, sem regra no controller, sem `@Roles()` inventado, sem um controller único, sem repository para leitura.
 
-- Código novo começa pela skill `create-new-feature`, que nomeia a skill de cada peça.
+- Código novo e mudança em módulo que já existe começam pela skill `create-new-feature`, que nomeia a skill de cada peça.
+- Toda entrega termina na skill `verifying-delivery`, com o relatório dos portões.
+- Ambiente local e banco de teste: skill `running-local-environment`. O `.env.test` nunca aponta para o banco de desenvolvimento: teste de integração apaga tabelas. Teste roda só por `npm test`, que define `NODE_ENV=test`; `npx jest` direto carrega o `.env.development`.
 - Skills moram em `.agents/skills/<kebab>/SKILL.md`. Skill nova ganha symlink em `.claude/skills/` e em `.cursor/skills/` apontando para `../../.agents/skills/<kebab>`.
 - O formato de cada arquivo mora na skill da peça. Aqui ficam só as decisões que valem para todas.
 - Código existente que diverge destas leis é drift: não copiar o trecho.
@@ -43,6 +45,8 @@ Valem para código novo e para mudança em código que já existe. Toda geraçã
 | Lista de valores simples | `String[]` no Prisma. `@IsArray` e validadores com `{ each: true }` |
 | `Json` e objeto aninhado | Fora da receita |
 | Índice | `@@index` em id de outro módulo e em coluna filtrada da lista. `@unique` só quando o pedido disser único |
+| Unicidade | Checagem prévia no use case pela porta (`existsBy<Campo>`), com o valor já normalizado pelo VO; 409 pelo erro do campo e `applyConflict` na rota. Sem tradução do `P2002`: gravação simultânea sai como 500 |
+| E-mail transacional | Um método por e-mail na porta `ISmtpGateway`; corpo `.hbs` dentro de `layouts/default.hbs`, com o rodapé. E-mail essencial propaga o 503; informativo segue sem erro |
 | Edição parcial | Campo ausente chega do `ValidationPipe` como `undefined` e não sobrescreve o valor atual. Proibido mesclar com `{ ...atual, ...dto }` |
 | Spec de DTO | Input e query têm spec via `ValidationPipe(pipeOptions)`. Read model e output não |
 

@@ -40,7 +40,7 @@ O comando único é `npm run generate:postman`. O script dessa chave é exatamen
 
 Entrada: `postman/swagger.json`, ou o caminho em `process.env.SWAGGER_PATH`. O script resolve `process.env.SWAGGER_PATH || path.join(__dirname, './swagger.json')`. Saída: `postman/api.postman_collection.json`.
 
-Atualizar a entrada é pré-requisito: exportar ou substituir o JSON do swagger. A skill não cria exportador e não inventa script que grave `swagger.json`.
+Atualizar a entrada é pré-requisito: exportar ou substituir o JSON do swagger. A skill não cria exportador e não inventa script que grave `swagger.json`. Com a API no ar (skill `running-local-environment`), o JSON sai de `GET /swagger-json`: `curl -s http://localhost:<PORT>/swagger-json -o postman/swagger.json`.
 
 ## Fluxo
 

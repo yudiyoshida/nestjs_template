@@ -35,7 +35,7 @@ Progresso:
 - [ ] 2. Localizar ConfigModule e PrismaService pelo export (ausente → parar)
 - [ ] 3. Listar os cenários de cada método público e classificar em path
 - [ ] 4. Escrever o *.integration.spec.ts do caso. Trocar Example pelo recurso
-- [ ] 5. Rodar npm test no arquivo. Banco inacessível: reportar e parar
+- [ ] 5. Conferir que o banco de teste é outro e rodar npm test no arquivo. Banco inacessível ou igual ao de desenvolvimento: skill running-local-environment; sem conseguir, reportar e parar
 - [ ] 6. Checklist de entrega
 ```
 
@@ -55,7 +55,7 @@ Id inexistente é o UUID `00000000-0000-0000-0000-000000000000`, porque a coluna
 
 4. Template da seção do caso. Campos do `create` são as colunas do model, sem inventar coluna. Os `it` de cada fonte ficam dentro do describe do path do passo 3.
 
-5. `npm test -- <arquivo>.integration.spec.ts`. `NODE_ENV=test` já vem do script e carrega `.env.test` via `ConfigModule`. Falha de conexão: reportar. Proibido trocar o spec para mock. Proibido alterar código de produção para o teste passar sem confirmar; bug de produção → reportar.
+5. `npm test -- <arquivo>.integration.spec.ts`. `NODE_ENV=test` já vem do script e carrega `.env.test` via `ConfigModule`. Antes de rodar, o database do `.env.test` tem que ser outro que o do `.env.development`: o `deleteMany` apagaria os dados de desenvolvimento. Banco inacessível ou igual: skill `running-local-environment`. Sem conseguir: reportar. Proibido trocar o spec para mock. Proibido alterar código de produção para o teste passar sem confirmar; bug de produção → reportar.
 
 ## Quando usar
 

@@ -3,6 +3,7 @@ import { Test } from '@nestjs/testing';
 import * as fs from 'fs';
 import * as handlebars from 'handlebars';
 import * as nodemailer from 'nodemailer';
+import * as path from 'path';
 import { ConfigService } from 'src/core/config/config.service';
 import { TOKENS } from 'src/core/di/token';
 import { LogContext, type ILoggerGateway } from 'src/infra/logger/logger.gateway';
@@ -63,6 +64,47 @@ describe('SmtpNodemailerAdapterGateway - Unit tests', () => {
         expect(mockTemplate).toHaveBeenCalledWith({ code: '123456' });
       });
 
+      it('should read the body, the layout and the footer from resources/templates/email', async() => {
+        // Arrange
+        const dir = path.join(process.cwd(), 'resources/templates/email');
+
+        // Act
+        await sut.sendForgotPasswordEmail({ to: 'user@example.com', code: '123456' });
+
+        // Assert
+        expect(fs.readFileSync).toHaveBeenCalledWith(path.join(dir, 'forgot-password.hbs'), 'utf-8');
+        expect(fs.readFileSync).toHaveBeenCalledWith(path.join(dir, 'layouts/default.hbs'), 'utf-8');
+        expect(fs.readFileSync).toHaveBeenCalledWith(path.join(dir, 'partials/footer.hbs'), 'utf-8');
+      });
+
+      it('should register the footer partial with the footer template', async() => {
+        // Arrange
+        jest.mocked(fs.readFileSync).mockImplementation((file: any) => `source of ${path.basename(file)}`);
+
+        // Act
+        await sut.sendForgotPasswordEmail({ to: 'user@example.com', code: '123456' });
+
+        // Assert
+        expect(handlebars.registerPartial).toHaveBeenCalledWith('footer', 'source of footer.hbs');
+      });
+
+      it('should wrap the rendered body in the default layout and send the layout html', async() => {
+        // Arrange
+        const bodyTemplate = jest.fn().mockReturnValue('<p>body</p>');
+        const layoutTemplate = jest.fn().mockReturnValue('<div><p>body</p></div>');
+        jest.mocked(fs.readFileSync).mockImplementation((file: any) => `source of ${path.basename(file)}`);
+        jest.mocked(handlebars.compile).mockImplementation((source: any) => (
+          source === 'source of default.hbs' ? layoutTemplate : bodyTemplate
+        ) as any);
+
+        // Act
+        await sut.sendForgotPasswordEmail({ to: 'user@example.com', code: '123456' });
+
+        // Assert
+        expect(layoutTemplate).toHaveBeenCalledWith({ body: '<p>body</p>' });
+        expect(mockSendMail).toHaveBeenCalledWith(expect.objectContaining({ html: '<div><p>body</p></div>' }));
+      });
+
       it('should create the transport with the configured credentials', async() => {
         // Act
         await sut.sendForgotPasswordEmail({ to: 'user@example.com', code: '123456' });
@@ -83,7 +125,7 @@ describe('SmtpNodemailerAdapterGateway - Unit tests', () => {
         expect(mockSendMail).toHaveBeenCalledWith({
           from: 'noreply@example.com',
           to: 'user@example.com',
-          subject: 'Recuperação de senha — Kalpay',
+          subject: 'Recuperação de senha',
           html: '<html>rendered</html>',
         });
       });

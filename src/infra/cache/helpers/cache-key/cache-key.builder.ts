@@ -2,12 +2,7 @@ import { CacheKeyBuilderError } from 'src/infra/cache/helpers/cache-key/cache-ke
 
 type Resource =
   | 'account'
-  | 'banner'
-  | 'category'
-  | 'faq'
-  | 'product'
   | 'refresh-token'
-  | 'store'
   | 'text'
   | '*'
 
@@ -67,7 +62,7 @@ export class CacheKeyBuilder {
       }
     }
 
-    // example: cache:global:product:list:{"page":1,"limit":10}
+    // example: cache:global:account:list:{"page":1,"size":10}
     return keyParts.join(':');
   }
 }

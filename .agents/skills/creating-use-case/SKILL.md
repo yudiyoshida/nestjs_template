@@ -110,6 +110,7 @@ grep -rn "export class Pagination" src/shared/value-objects/pagination/paginatio
 - Lista: a porta devolve `[Dto[], number]`. Use case faz `new Pagination(items, total, page, size).getDto()`.
 - Campo com formato (e-mail, CPF, CNPJ, telefone, CEP) no anêmico: o use case passa o valor pelo VO antes da porta e grava o `.value`. No rico, quem faz é a factory. Forma em `references/comando-anemico.md`.
 - Edição anêmica: campo ausente segue `undefined` até a porta. O `update` do Prisma ignora `undefined`; não preencher com o valor atual.
+- Campo único: checagem prévia pela porta antes de gravar, com o valor já normalizado. Forma na skill `handling-unique-constraints`.
 - Comando interno: sem controller. Pode injetar DAO e repository. Registro ausente segue em frente, sem `NotFound`.
 - Erro de domínio escapa. Proibido `try/catch` em volta de factory ou método da entidade.
 - Proibido Prisma no use case, `process.env`, log no happy path.

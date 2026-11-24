@@ -67,7 +67,7 @@ No passo 3, arquivo novo sai do template. Edição de `.prisma` que já existe: 
 - Campo opcional leva `?`. Lista não leva `?`; lista opcional no pedido leva `@default([])`.
 - Id de outro módulo é `String` ou `String?` solto, sem `@relation`, com `@@index([campoId])`.
 - `@@index([campo])` também em coluna que a lista filtra (status, booleano). Busca de texto não ganha índice.
-- `@unique` numa coluna só quando o pedido disser que o valor é único. O tratamento do conflito (409) não nasce aqui.
+- `@unique` numa coluna só quando o pedido disser que o valor é único. O tratamento do conflito (409) é da skill `handling-unique-constraints`.
 - `@relation`, `@@unique` e `@@id` composto ficam no template "Tabela no lugar de enum".
 - Nesse template, `Account` e `Role` não têm `createdAt` nem `updatedAt`. `Admin` usa `@@id([accountId])`.
 - `Role` e `Admin` ficam no arquivo do dono.

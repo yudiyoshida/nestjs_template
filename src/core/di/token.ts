@@ -7,10 +7,6 @@ const TOKENS = {
   UploadFileGateway: Symbol.for('UploadFileGateway'),
 
   AccountDao: Symbol.for('AccountDao'),
-
-  FaqDao: Symbol.for('FaqDao'),
-  TipDao: Symbol.for('TipDao'),
-  TipRepository: Symbol.for('TipRepository'),
 };
 
 export { TOKENS };

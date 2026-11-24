@@ -101,6 +101,7 @@ Mudou o JSON da ViaCEP / a API do S3 / o comando Redis? **Só** o adapter real e
 | `PrismaService` / `DatabaseModule` | Cliente compartilhado, não é `IXxxGateway` |
 | Helper puro in-process (montar chave de cache) | Função/classe no próprio recorte, sem porta |
 | Primitivo ou VO | Skill `creating-value-objects` |
+| E-mail novo no SMTP que já existe | Skill `sending-transactional-email` |
 
 ## Estrutura de pastas
 

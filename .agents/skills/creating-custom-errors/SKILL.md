@@ -158,7 +158,7 @@ O objetivo é **centralizar** erros. Antes de criar um arquivo novo:
 - Idioma: **pt-BR**.
 - Frase completa voltada ao consumidor da API, com **ponto final**.
 - **Não incluir:** stack trace, SQL, nome de tabela/coluna, senha, token, hash ou qualquer dado sensível.
-- Interpolar identificador (id, e-mail, documento) só quando ajuda quem chama a corrigir o request.
+- Interpolar identificador (id, e-mail) só quando ajuda quem chama a corrigir o request. Documento (CPF, CNPJ) nunca entra na mensagem: o filter grava a mensagem em `logs/http.log`.
 
 ## Status HTTP
 
