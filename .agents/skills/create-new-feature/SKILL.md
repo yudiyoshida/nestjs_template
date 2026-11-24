@@ -39,7 +39,7 @@ Se código existente contradiz a skill que for lida depois do sim, **aquela skil
 - "Você decide", "o padrão", "tanto faz" ou silêncio não fecham item. Perguntar de novo, nomeando o que falta.
 - Não inventar coluna, rota, verbo, papel, filtro, enum, use case, comando extra ou comando interno.
 - Lei de skill não é pergunta. Vem da skill na hora de gerar: delete físico, `PATCH` quando o body é parcial, `PUT` quando o body substitui o recurso, `findById` da porta devolve `null` e o use case HTTP lança not found, `Promise.all` na lista, pasta do módulo em kebab singular, URL em inglês no plural, enum `SCREAMING_SNAKE` com coluna Prisma `String`, uma tag Swagger, create devolve `{ id }`, update e delete devolvem `SuccessMessage`, `:id` usa `Params`, lista estende `Queries`. O que se pergunta é o fato que a lei consome.
-- Proibido editar skill ou `.agents/plano-de-skills.md` durante a geração.
+- Proibido editar skill ou `AGENTS.md` durante a geração.
 - Proibido copiar formato de arquivo vizinho. Em módulo que já existe, a leitura depois do sim serve só para inserir no registro que a skill indicar.
 
 ## Fluxo
