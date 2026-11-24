@@ -24,6 +24,7 @@ Se código existente contradiz esta skill, **esta skill vence**.
 **Obrigatório editar** quando nascer um contexto novo (não para copiar formato):
 
 - arquivo que exporta `LogContext` (busca por `export enum LogContext`) — valor em `LogContext` **e** índice em `LogContextDataMap` **e** o `type` do payload, no mesmo diff
+- `docker-compose.dev.yml` — serviço `log-<kebab>` do contexto novo (seção "Watcher de log no Docker")
 
 O adapter de arquivo itera `Object.values(LogContext)` (seção "Bloco base"): contexto novo → arquivo `logs/<kebab>.log` sozinho. **Não** editar o adapter só para contexto novo.
 
@@ -36,7 +37,7 @@ Progresso:
 - [ ] 1. Confirmar que o ponto é fronteira observável (não entidade, não cada linha de use case)
 - [ ] 2. Localizar ILoggerGateway e LogContext pelo export (ausente → seção "Bloco base")
 - [ ] 3. Reusar LogContext existente se for o mesmo recorte (HTTP, CACHE, …)
-- [ ] 4. Se recorte novo: enum + type + mapa no arquivo que exporta LogContext
+- [ ] 4. Se recorte novo: enum + type + mapa no arquivo que exporta LogContext, e o serviço log-<kebab> no docker-compose.dev.yml
 - [ ] 5. Injetar ILoggerGateway e chamar debug ou error com payload do mapa
 - [ ] 6. Sanitizar: zero segredo no payload
 - [ ] 7. Spec do consumidor: expect logger.debug/error via writing-unit-tests
@@ -245,6 +246,22 @@ TypeScript obriga o objeto a bater com o mapa. Não passar payload genérico `Re
 
 `ILoggerGateway` só tem `debug` e `error`. Não inventar `info`/`warn` na porta.
 
+## Watcher de log no Docker
+
+O `docker-compose.dev.yml` tem um serviço por contexto: ele faz `tail -F` do arquivo `logs/<kebab>.log` e joga no stdout, que o Dozzle exibe. Contexto novo ganha um serviço novo no mesmo diff, junto dos outros `log-*`. Não editar os serviços que já existem.
+
+```yaml
+  log-<kebab>:
+    image: alpine:3.21
+    container_name: template-log-<kebab>
+    restart: unless-stopped
+    volumes:
+      - ./logs:/logs:ro
+    command: ["tail", "-n", "50", "-F", "/logs/<kebab>.log"]
+```
+
+`<kebab>` é o valor do enum: `LogContext.CNPJ_LOOKUP = 'cnpj-lookup'` vira `log-cnpj-lookup` e `/logs/cnpj-lookup.log`. O prefixo de `container_name` é o mesmo dos outros serviços do arquivo (`template-` neste repositório). `docker-compose.dev.yml` ausente: não criar.
+
 ## Segredos
 
 Nunca no payload (nem em `error.message` se a mensagem carregar secret):
@@ -288,6 +305,7 @@ Antes de responder, confirmar **todos**:
 - [ ] `debug` vs `error` correto; happy path de lookup HTTP sem debug obrigatório
 - [ ] Contexto: reuso **ou** enum + type + `LogContextDataMap` no mesmo diff
 - [ ] Adapter de arquivo **não** editado só por contexto novo
+- [ ] Contexto novo tem o serviço `log-<kebab>` no `docker-compose.dev.yml`; serviços existentes intocados
 - [ ] `@Inject(TOKENS.LoggerGateway)`; payload bate no mapa; `adapter` no log de infra
 - [ ] Zero segredo; SMTP sem `code`/HTML; cache sem value
 - [ ] Spec do consumidor cobre chamada ao logger (`writing-unit-tests`), suíte passando

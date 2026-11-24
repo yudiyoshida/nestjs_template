@@ -22,7 +22,7 @@ Se código existente contradiz esta skill, **esta skill vence**.
 **Permitido ler apenas para executar a tarefa (não para formato):**
 
 - o que o usuário indicou como entrada
-- arquivo que exporta a entidade, o enum, a classe de erro, `UUID` ou `UTCDate` — só para o import apontar esse arquivo. Não copiar o corpo
+- arquivo que exporta a entidade, o enum, a classe de erro, `UUID`, `UTCDate` ou o VO do campo com formato — só para o import apontar esse arquivo. Não copiar o corpo
 
 Exceção: usuário apontar um arquivo, ou pedir edição de um arquivo que já existe — leia só esse arquivo.
 
@@ -87,9 +87,12 @@ grep -rn "export class UTCDate" src
 - `createWithPlace` repete a validação comum e aplica a invariante deste método: `placeId` ausente lança `ExamplePlaceIdRequiredError`. `expiresAt` fica `null`. O pedido troca o nome do método e o campo. `createWeather` e `createLocal` são nomes desse tipo, não um segundo formato.
 - Invariante exclusiva de um `create*` fica nesse método. `edit` não a reaplica.
 - `load` chama `_instantiate(props)` sem validar regra de criação e sem gerar UUID.
-- `edit` faz merge `{ ...entity.props, ...props }`, chama só `validateCreateProps` e devolve `_instantiate(merged)`. Status não muda aqui. Transição de status é método da entidade.
+- `edit` parte de `entity.props` e troca só o campo que veio: `props.campo !== undefined ? props.campo : current.campo`, um campo por linha. Proibido `{ ...entity.props, ...props }`: o DTO do `ValidationPipe` traz o campo ausente como `undefined`, e o spread apagaria o valor atual. Depois chama só `validateCreateProps` e devolve `_instantiate(merged)`. Status não muda aqui. Transição de status é método da entidade.
 - Quando um `create*` fixa tipo discriminador, o valor é membro `SCREAMING_SNAKE` do enum. O arquivo do enum não nasce aqui.
 - Data de domínio só via `UTCDate`. UUID só via `new UUID().value`.
+- Data e hora que veio do pedido chega como `Date` e é gravada como veio. Comparar ou derivar: `UTCDate.from(props.campo)`.
+- Data sem hora chega como `string` `AAAA-MM-DD` e é gravada como veio. Comparar com hoje pede o fuso do negócio e um VO de data de calendário (skill `creating-value-objects`), só quando o pedido tiver essa regra.
+- Campo com formato (e-mail, CPF, CNPJ, telefone, CEP): `create*` e `edit` gravam `new Vo(valor).value`. O VO valida e lança o erro dele; a factory não repete a regra de formato. `load` não passa pelo VO.
 - Falha de validação é classe de erro sem argumento no `throw`. Proibido `new AppException('texto')`. Proibido `HttpException` do Nest.
 - A factory não chama `expire()` nem outro método de transição. Não importa Prisma nem Nest.
 - Símbolo de `src/shared` ou `src/core` usa import absoluto `src/...`. Símbolo do mesmo módulo usa import relativo.
@@ -151,9 +154,10 @@ export class ExampleFactory {
   }
 
   static edit(entity: Example, props: ExampleEditProps): Example {
+    const current = entity.props;
     const merged: ExampleProps = {
-      ...entity.props,
-      ...props,
+      ...current,
+      title: props.title !== undefined ? props.title : current.title,
     };
 
     this.validateCreateProps(merged);
@@ -165,6 +169,18 @@ export class ExampleFactory {
 export type ExampleEditProps = {
   title?: string;
 };
+```
+
+Campo com formato, quando o pedido tiver. O VO vem de `src/shared/value-objects/<vo>/<vo>.vo.ts` (`Email` no exemplo):
+
+```ts
+import { Email } from 'src/shared/value-objects/email/email.vo';
+
+// create*: depois do spread de props
+email: new Email(props.email).value,
+
+// edit: um campo por linha, como o title
+email: props.email !== undefined ? new Email(props.email).value : current.email,
 ```
 
 ## Fora do escopo
@@ -180,7 +196,7 @@ export type ExampleEditProps = {
 | Controller | Skill `creating-controllers` |
 | `*.spec.ts` da factory | Skill `writing-unit-tests` |
 
-O spec cobre: `create` feliz (`id`, `ACTIVE`, data), título vazio, `createWithPlace` sem `placeId`, `load` com título vazio sem lançar, `edit` que troca só o campo enviado, `edit` com título vazio. Esta skill não traz o spec.
+O spec cobre: `create` feliz (`id`, `ACTIVE`, data), título vazio, `createWithPlace` sem `placeId`, `load` com título vazio sem lançar, `edit` que troca só o campo enviado, inclusive com o campo ausente chegando como `undefined`, `edit` com título vazio. Esta skill não traz o spec.
 
 ## Checklist de entrega
 
@@ -191,7 +207,8 @@ Antes de responder, confirmar **todos**:
 - [ ] `create` valida, gera `UUID`, fixa `ACTIVE` e data via `UTCDate`, com spread de `props` antes desses campos
 - [ ] `createWithPlace` (ou o `create*` do pedido) aplica a invariante exclusiva e não a coloca em `validateCreateProps`
 - [ ] `load` não valida e não gera UUID
-- [ ] `edit` faz merge, revalida só `validateCreateProps` e não muda status
+- [ ] `edit` troca só o campo diferente de `undefined`, sem spread de `props`; revalida só `validateCreateProps` e não muda status
+- [ ] Campo com formato gravado por `new Vo(valor).value` no `create*` e no `edit`; `load` sem VO
 - [ ] `ExampleEditProps` sem `id` e sem `status`
 - [ ] Falha de validação é classe de erro. Sem `new AppException('texto')` e sem `HttpException`
 - [ ] Sem Prisma, sem Nest, sem chamada a `expire()`

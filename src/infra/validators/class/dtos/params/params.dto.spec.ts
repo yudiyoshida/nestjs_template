@@ -63,7 +63,7 @@ describe('Params', () => {
       // Act & Assert
       expect.assertions(1);
       return target.transform(data, metadata).catch((error) => {
-        expect(error.getResponse().message).toContain(`${field} deve ser um texto`);
+        expect(error.getResponse().message).toContain(`${field} deve ser uma string`);
       });
     });
   });

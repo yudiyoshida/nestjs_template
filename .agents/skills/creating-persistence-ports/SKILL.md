@@ -59,7 +59,8 @@ No passo 3, porta nova sai do template. Edição de porta que já existe: altera
 | `XxxPersistenceModule`, `provide`, `exports` | Skill `creating-persistence-module` |
 | Model Prisma | Skill `writing-prisma-model` |
 | Gateway de vendor (Redis, SMTP, S3, CEP, CNPJ) | Skill `using-ports-and-adapters` |
-| Spec de use case ou de adapter | Skill `writing-unit-tests` |
+| Spec de use case | Skills `writing-unit-tests` e `writing-integration-tests` |
+| Spec de adapter Prisma | Skill `writing-integration-tests`. Sem spec unitário |
 | Controller | Skill `creating-controllers` |
 
 ## Lei
@@ -112,10 +113,6 @@ const TOKENS = {
   UploadFileGateway: Symbol.for('UploadFileGateway'),
 
   AccountDao: Symbol.for('AccountDao'),
-
-  FaqDao: Symbol.for('FaqDao'),
-  TipDao: Symbol.for('TipDao'),
-  TipRepository: Symbol.for('TipRepository'),
 };
 
 export { TOKENS };
@@ -182,12 +179,12 @@ export interface IXxxRepository {
 Só quando o pedido pede senha, token ou documento. O método entra em `IXxxDao` (anêmico ou rico), além dos métodos do template.
 
 ```ts
-import { XxxWithSensitiveDataDto } from 'src/app/<modulo>/application/dtos/<modulo>-with-sensitive-data.dto';
+import { XxxWithSensitiveDataDto } from 'src/app/<modulo>/application/dtos/<modulo>.dto';
 
 findByIdWithSensitiveData(id: string): Promise<XxxWithSensitiveDataDto | null>;
 ```
 
-A classe `XxxWithSensitiveDataDto` fica na skill `creating-application-dtos`.
+A classe `XxxWithSensitiveDataDto` mora no mesmo arquivo do read model e nasce na skill `creating-application-dtos`.
 
 ### Token
 
@@ -218,7 +215,8 @@ Rico, as duas:
 | `XxxPersistenceModule` | Skill `creating-persistence-module` |
 | Model Prisma | Skill `writing-prisma-model` |
 | Gateway de vendor | Skill `using-ports-and-adapters` |
-| Spec de use case e de adapter | Skill `writing-unit-tests` |
+| Spec de use case | Skills `writing-unit-tests` e `writing-integration-tests` |
+| Spec de adapter Prisma | Skill `writing-integration-tests`. Sem spec unitário |
 
 ## Checklist de entrega
 

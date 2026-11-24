@@ -62,7 +62,7 @@ Progresso:
 | `*.spec.ts` | Skill `writing-unit-tests` |
 | Login, refresh, logout, módulo `authentication` | Já existe. Não recriar. Ver "Matriz auth" |
 | Filter, pipe ou interceptor novo | Fora (sem skill) |
-| Collection Postman | Fora (sem skill) |
+| Collection Postman | Skill `syncing-postman-collection` |
 
 ## Lei
 
@@ -292,7 +292,7 @@ import { ExampleUserController } from 'src/app/example/infra/drivers/http/user/e
 })
 ```
 
-Módulo novo com HTTP, fora de `src/app/_examples`, entra em `src/app.module.ts`:
+Módulo novo com HTTP entra em `src/app.module.ts`:
 
 ```ts
 import { ExampleModule } from 'src/app/example/example.module';
@@ -303,8 +303,6 @@ imports: [
   ExampleModule,
 ],
 ```
-
-Módulo de `_examples` fica fora do `AppModule`.
 
 ## Fora do escopo
 
@@ -320,7 +318,8 @@ Módulo de `_examples` fica fora do `AppModule`.
 | `*.spec.ts` | Skill `writing-unit-tests` |
 | `Swagger`, `RequiredRoles`, `User`, `Params`, `SuccessMessage`, guards | Já existem. Não recriar |
 | Módulo `authentication` | Já existe. Não recriar |
-| Filter, pipe, interceptor, collection Postman | Fora (sem skill) |
+| Filter, pipe, interceptor | Fora (sem skill) |
+| Collection Postman | Skill `syncing-postman-collection` |
 
 ## Checklist de entrega
 
@@ -332,6 +331,6 @@ Antes de responder, confirmar **todos**:
 - [ ] `:id` com `Params`. Create com `createdResponse`. Update e delete com `SuccessMessage`. Lista com `okPaginatedResponse`. `GET :id` devolve `Promise<Dto>`
 - [ ] Doc só com `Swagger`. Flags só as que a tabela manda
 - [ ] `@Patch` para body parcial. `@Put` só quando o body substitui o recurso
-- [ ] Classe em `controllers` do módulo. `AuthenticationGuardsModule` só se há `RequiredRoles`. Módulo HTTP novo no `AppModule`. `_examples` de fora
+- [ ] Classe em `controllers` do módulo. `AuthenticationGuardsModule` só se há `RequiredRoles`. Módulo HTTP novo no `AppModule`
 - [ ] Authentication não foi recriado
 - [ ] Nenhum padrão copiado de outros arquivos — apenas esta skill

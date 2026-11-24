@@ -63,11 +63,32 @@ No passo 3, arquivo novo sai do template. Edição de `.prisma` que já existe: 
 - Texto longo: `@db.Text`. Título: `@db.VarChar(n)`. Sem `n` no pedido, `256`.
 - Título, texto longo e `status` só entram quando o pedido tem esse campo. A trilha entra sempre no model simples.
 - Enum de domínio é coluna `String`. Sem bloco `enum` do Prisma.
-- Campo opcional leva `?`. Id solto é `String` ou `String?`, sem `@relation`.
+- Tipo de cada coluna: tabela "Tipo do campo" abaixo.
+- Campo opcional leva `?`. Lista não leva `?`; lista opcional no pedido leva `@default([])`.
+- Id de outro módulo é `String` ou `String?` solto, sem `@relation`, com `@@index([campoId])`.
+- `@@index([campo])` também em coluna que a lista filtra (status, booleano). Busca de texto não ganha índice.
+- `@unique` numa coluna só quando o pedido disser que o valor é único. O tratamento do conflito (409) não nasce aqui.
 - `@relation`, `@@unique` e `@@id` composto ficam no template "Tabela no lugar de enum".
 - Nesse template, `Account` e `Role` não têm `createdAt` nem `updatedAt`. `Admin` usa `@@id([accountId])`.
 - `Role` e `Admin` ficam no arquivo do dono.
 - `package.json` → `prisma.schema` = `prisma/schema`. A chave `seed` permanece como está.
+
+Tipo do campo:
+
+| Campo | Coluna |
+|---|---|
+| Texto curto (título, nome) | `String @db.VarChar(n)`. Sem `n` no pedido, `256` |
+| Texto longo | `String @db.Text` |
+| Texto com formato (e-mail, CPF, CNPJ, telefone, CEP) | `String`. O valor gravado já vem normalizado pelo VO |
+| Inteiro | `Int` |
+| Dinheiro | `Int` em centavos, com a unidade no nome (`priceInCents`) |
+| Booleano | `Boolean`. `@default(...)` só se o pedido der o valor |
+| Data e hora | `DateTime` |
+| Data sem hora (nascimento, vencimento) | `DateTime @db.Date`. Fora do adapter Prisma, é `string` `AAAA-MM-DD` |
+| Id de outro módulo | `String`, com `@@index` |
+| Lista de textos | `String[]` |
+| Enum de domínio | `String` |
+| Decimal que não é dinheiro, `Json`, objeto aninhado | Fora da receita. Parar e avisar |
 
 ## Bloco base
 
@@ -126,6 +147,25 @@ model Xxx {
   status    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+```
+
+Outros tipos, quando o pedido tiver o campo. O `@@index` fica no fim do model:
+
+```prisma
+model Xxx {
+  id           String    @id @default(uuid())
+  priceInCents Int
+  quantity     Int
+  isPublished  Boolean
+  publishedAt  DateTime?
+  birthDate    DateTime? @db.Date
+  categoryId   String
+  tags         String[]  @default([])
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([categoryId])
 }
 ```
 
@@ -189,6 +229,8 @@ Antes de responder, confirmar **todos**:
 - [ ] Model simples tem a trilha `id`, `createdAt`, `updatedAt`
 - [ ] Título usa `@db.VarChar(n)` (`256` quando o pedido não deu o `n`); texto longo usa `@db.Text`
 - [ ] Enum de domínio é coluna `String`, sem bloco `enum`
+- [ ] Tipo de cada coluna saiu da tabela "Tipo do campo"; dinheiro em centavos `Int`; nada de `Json`
+- [ ] Id de outro módulo e coluna filtrada da lista com `@@index`; `@unique` só se o pedido disse único
 - [ ] Título, texto e `status` só aparecem se o pedido tem esse campo
 - [ ] `@relation`, `@@unique` e `@@id` composto só no template de tabela no lugar de enum
 - [ ] Enum TypeScript, porta, module, adapter e seed não foram criados aqui

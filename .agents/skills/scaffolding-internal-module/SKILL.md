@@ -114,7 +114,7 @@ Use cases. Classe sem sufixo `Service`. Uma pasta por verbo que o pedido nomear.
 
 5. Localizar o consumidor (seção "Bloco base") e inserir `XxxModule` no array `imports`, mantendo os imports que já existem. Não editar `src/app.module.ts`. Não registrar este módulo no `AppModule`.
 
-6. Spec só aqui, não no meio da tabela. Em cada use case e no DAO, ler `inventorying-test-scenarios`. Com agregado, também na entidade, na factory e no repository. Bug possível: parar e perguntar. Sem pendência: `writing-unit-tests` se o inventário tiver seção unitária (use case; com agregado, entidade e factory); `writing-integration-tests` se tiver seção de integração (use case e DAO; com agregado, repository). DAO e repository sem spec unitário. Sem spec de DTO e sem spec de enum. Sem inventário, sem spec.
+6. Spec só aqui, não no meio da tabela. Em cada use case e no DAO, ler `inventorying-test-scenarios`. Com agregado, também na entidade, na factory e no repository. Bug possível: parar e perguntar. Sem pendência: `writing-unit-tests` se o inventário tiver seção unitária (use case; com agregado, entidade e factory); `writing-integration-tests` se tiver seção de integração (use case e DAO; com agregado, repository). DAO e repository sem spec unitário. Sem spec de DTO, porque módulo sem HTTP não tem DTO validado pelo `ValidationPipe`, e sem spec de enum. Sem inventário, sem spec.
 
 7. Checklist de entrega.
 

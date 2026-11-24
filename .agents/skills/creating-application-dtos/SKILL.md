@@ -1,6 +1,6 @@
 ---
 name: creating-application-dtos
-description: Escreve InputDto, OutputDto de create, QueryDto e read model do módulo. Use quando o usuário pedir para criar DTO, input, output, query de lista, read model, DTO de edição ou DTO com dado sensível.
+description: Escreve InputDto, OutputDto de create, QueryDto e read model do módulo. Use quando o usuário pedir para criar DTO, input, output, query de lista, read model, DTO de edição, DTO com dado sensível, ou campo de data, dinheiro, booleano, lista ou id de outro módulo.
 ---
 
 # DTO de aplicação
@@ -9,7 +9,7 @@ A skill produz as classes de entrada, saída de create, filtro de lista e leitur
 
 ## Esta skill é a única fonte da verdade
 
-**Proibido consultar outros arquivos do projeto para descobrir o padrão de DTO.** Todo o padrão — input com `class-validator` e `$property`, output `{ id }`, query que estende `Queries`, read model plano, `PATCH` explícito, `WithSensitiveData` — está definido aqui e apenas aqui.
+**Proibido consultar outros arquivos do projeto para descobrir o padrão de DTO.** Todo o padrão — input com `class-validator` e `$property`, output `{ id }`, query que estende `Queries`, read model plano, `PATCH` explícito, `WithSensitiveData`, tipos de campo — está definido nesta skill: aqui e em `references/tipos-de-campo.md`.
 
 Antes de escrever, **não**:
 
@@ -22,7 +22,8 @@ Se código existente contradiz esta skill, **esta skill vence**.
 **Permitido ler apenas para executar a tarefa (não para formato):**
 
 - o que o usuário indicou como entrada
-- arquivo que exporta `Queries`, `Params`, `SuccessMessage`, `Trim` ou `StringToNumber` — só para reusar o símbolo (seção "Bloco base")
+- arquivo que exporta `Queries`, `Params`, `SuccessMessage`, `Trim`, `StringToNumber`, `StringToBoolean` ou `StringToDate` — só para reusar o símbolo (seção "Bloco base")
+- `references/tipos-de-campo.md` desta skill, no passo 3, quando o campo não for texto nem enum
 - arquivo que exporta o enum do pedido — só para importar o símbolo. A skill `creating-domain-enum` cria o enum ausente
 
 Exceção: usuário apontar um arquivo, ou pedir edição de um arquivo que já existe — leia só esse arquivo.
@@ -32,9 +33,10 @@ Exceção: usuário apontar um arquivo, ou pedir edição de um arquivo que já 
 ```
 Progresso:
 - [ ] 1. Confirmar o formato: input de create, edição PATCH ou PUT, query ou read model
-- [ ] 2. Localizar Queries, Params, SuccessMessage, Trim e StringToNumber pelo export (ausente → seção "Bloco base")
-- [ ] 3. Escrever o DTO pelo template do formato. Trocar Example pelo recurso
-- [ ] 4. Checklist de entrega
+- [ ] 2. Localizar pelo export os símbolos do bloco base que o DTO usa (ausente → seção "Bloco base")
+- [ ] 3. Escrever o DTO pelo template do formato. Trocar Example pelo recurso. Campo que não é texto nem enum: leia references/tipos-de-campo.md antes de escrever o campo
+- [ ] 4. Spec: input e query, sim; read model e output, não. Dentro de scaffold, o spec nasce no passo de spec dela. Peça única: inventorying-test-scenarios, depois writing-unit-tests
+- [ ] 5. Checklist de entrega
 ```
 
 ## Quando usar
@@ -47,6 +49,7 @@ Progresso:
 | Filtro de lista | `FindAllExampleQueryDto extends Queries` |
 | Resposta de leitura | `ExampleDto` plano |
 | Leitura com senha, token ou documento | `ExampleWithSensitiveDataDto` no mesmo arquivo do read model |
+| Campo inteiro, dinheiro, booleano, data, id de outro módulo ou lista | Bloco do tipo em `references/tipos-de-campo.md` |
 
 Editar no estilo de campo opcional é PATCH. Um formato por arquivo pedido. Sem filtro extra, a query fica vazia.
 
@@ -73,6 +76,8 @@ Localizar pelo export. O símbolo existe: reusar, não escrever de novo. Ausente
 | `SuccessMessage` | `export class SuccessMessage` | `src/core/dtos/success-message.dto.ts` |
 | `Trim` | `export function Trim` | `src/infra/validators/class/decorators/trim/trim.ts` |
 | `StringToNumber` | `export function StringToNumber` | `src/infra/validators/class/decorators/string-number/string-number.ts` |
+| `StringToBoolean` | `export function StringToBoolean` | `src/infra/validators/class/decorators/string-boolean/string-boolean.ts` |
+| `StringToDate` | `export function StringToDate` | `src/infra/validators/class/decorators/string-date/string-date.ts` |
 
 ```bash
 grep -rn "export class Queries" src/infra/validators/class/dtos/queries/queries.dto.ts
@@ -80,6 +85,8 @@ grep -rn "export class Params" src/infra/validators/class/dtos/params/params.dto
 grep -rn "export class SuccessMessage" src/core/dtos/success-message.dto.ts
 grep -rn "export function Trim" src/infra/validators/class/decorators/trim/trim.ts
 grep -rn "export function StringToNumber" src/infra/validators/class/decorators/string-number/string-number.ts
+grep -rn "export function StringToBoolean" src/infra/validators/class/decorators/string-boolean/string-boolean.ts
+grep -rn "export function StringToDate" src/infra/validators/class/decorators/string-date/string-date.ts
 ```
 
 `src/infra/validators/class/dtos/queries/queries.dto.ts`
@@ -108,7 +115,7 @@ export class Queries {
   @ApiPropertyOptional()
   @Trim()
   @IsOptional()
-  @IsString({ message: '$property deve ser um texto' })
+  @IsString({ message: '$property deve ser uma string' })
   search?: string;
 }
 ```
@@ -120,7 +127,7 @@ import { IsNotEmpty, IsString } from 'class-validator';
 import { Trim } from 'src/infra/validators/class/decorators/trim/trim';
 
 export class Params {
-  @IsString({ message: '$property deve ser um texto' })
+  @IsString({ message: '$property deve ser uma string' })
   @IsNotEmpty({ message: '$property é obrigatório' })
   @Trim()
   id: string;
@@ -155,6 +162,33 @@ export function StringToNumber(opts?: TransformOptions): PropertyDecorator {
 }
 ```
 
+`StringToBoolean` e `StringToDate` são kernel, como o `StringToNumber`: nascem no primeiro DTO que precisar, sem esperar o segundo.
+
+`src/infra/validators/class/decorators/string-boolean/string-boolean.ts`
+
+```ts
+import { Transform, TransformOptions } from 'class-transformer';
+
+export function StringToBoolean(opts?: TransformOptions): PropertyDecorator {
+  return Transform(({ value }) => {
+    if (value === 'true') return true;
+    if (value === 'false') return false;
+    return value;
+  }, opts);
+}
+```
+
+`src/infra/validators/class/decorators/string-date/string-date.ts`
+
+```ts
+import { Transform, TransformOptions } from 'class-transformer';
+import { isISO8601 } from 'class-validator';
+
+export function StringToDate(opts?: TransformOptions): PropertyDecorator {
+  return Transform(({ value }) => (typeof value === 'string' && isISO8601(value, { strict: true })) ? new Date(value) : value, opts);
+}
+```
+
 ## Lei
 
 - Import absoluto `src/...`.
@@ -172,6 +206,15 @@ export function StringToNumber(opts?: TransformOptions): PropertyDecorator {
 - Valor de enum é `SCREAMING_SNAKE`. Esta skill não declara o enum.
 
 Ordem do campo opcional, de cima para baixo: `@ApiPropertyOptional`, validators com `message`, `@Trim()`, `@IsOptional`, propriedade `?:`.
+
+Tipos de campo:
+
+- Campo que não é texto nem enum: leia `references/tipos-de-campo.md` antes de escrever o campo. Inteiro e dinheiro em centavos com `@IsInt`. Booleano com `@IsBoolean`. Data e hora com `@IsDate` e `@StringToDate()`. Data sem hora é `string` `AAAA-MM-DD`, com `@Matches` e `@IsISO8601({ strict: true })`, sem `StringToDate`. Id de outro módulo com `@IsUUID('4')`. Lista com `@IsArray` e validadores `{ each: true }`.
+- Na query, número usa `@StringToNumber()` e booleano usa `@StringToBoolean()`.
+- Campo com formato (e-mail, CPF, CNPJ, telefone, CEP) usa o template de string. Sem `@IsEmail`, `@Matches` ou regex no DTO: o VO valida e normaliza no use case (anêmico) ou na factory (rico).
+- `Json`, objeto aninhado e número decimal que não é dinheiro: fora da receita. Parar e avisar.
+- Mensagens dos tipos: `$property deve ser um número inteiro`, `$property deve ser um número`, `$property deve ser um booleano`, `$property deve ser uma data ISO 8601 válida`, `$property deve ser uma data no formato AAAA-MM-DD`, `$property deve ser uma data válida`, `$property deve ser um UUID válido`, `$property deve ser uma lista`, `$property deve ser uma lista de strings`, `$property não pode ter item vazio`, `$property não pode ser uma lista vazia`, `$property não pode ser menor que N`, `$property não pode ser maior que N`.
+- Read model: inteiro e centavos são `number`, booleano é `boolean`, data e hora é `Date`, data sem hora é `string` `AAAA-MM-DD`, id é `string`, lista é `string[]`.
 
 ## Templates
 
@@ -209,8 +252,8 @@ export class CreateExampleOutputDto {
 Campo opcional no create. Omitir quando o body não tem campo opcional.
 
 ```ts
-@ApiPropertyOptional({ example: 'São Paulo' })
-@IsString({ message: '$property deve ser uma string' })
+@ApiPropertyOptional({ example: '3f1c2a5e-8b7d-4c1e-9a2b-6d5e4f3a2b1c' })
+@IsUUID('4', { message: '$property deve ser um UUID válido' })
 @Trim()
 @IsOptional()
 locationId?: string;
@@ -294,7 +337,7 @@ Com filtro. `@IsOptional` em cada campo extra. Enum com `@IsEnum`. `page`, `size
 
 ```ts
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsOptional, IsUUID } from 'class-validator';
 import { ExampleStatus } from 'src/app/example/domain/enums/example-status.enum';
 import { Queries } from 'src/infra/validators/class/dtos/queries/queries.dto';
 
@@ -306,7 +349,7 @@ export class FindAllExampleQueryDto extends Queries {
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsString({ message: '$property deve ser uma string' })
+  @IsUUID('4', { message: '$property deve ser um UUID válido' })
   locationId?: string;
 }
 ```
@@ -315,7 +358,7 @@ export class FindAllExampleQueryDto extends Queries {
 
 `src/app/example/application/dtos/example.dto.ts`
 
-Classe plana. Sem `class-validator` e sem `@ApiProperty`. Data é `Date`. Ausência é `| null`.
+Classe plana. Sem `class-validator` e sem `@ApiProperty`. Data e hora é `Date`; data sem hora é `string` `AAAA-MM-DD`. Ausência é `| null`.
 
 ```ts
 import { ExampleStatus } from 'src/app/example/domain/enums/example-status.enum';
@@ -359,7 +402,8 @@ Antes de responder, confirmar **todos**:
 - [ ] `FindAllExampleQueryDto extends Queries`. Sem reescrever `page`, `size` e `search`
 - [ ] Read model plano, sem `class-validator`. Senha, token e documento só em `ExampleWithSensitiveDataDto`
 - [ ] Sem DTO novo de id. Sem outro DTO de mensagem
-- [ ] `Queries`, `Params`, `SuccessMessage`, `Trim` e `StringToNumber` reusados. Arquivo ausente criado pelo bloco base, sem segunda cópia
+- [ ] `Queries`, `Params`, `SuccessMessage`, `Trim`, `StringToNumber`, `StringToBoolean` e `StringToDate` reusados. Arquivo ausente criado pelo bloco base, sem segunda cópia
 - [ ] Import absoluto `src/...`
-- [ ] Spec delegado a `writing-unit-tests`
+- [ ] Spec: input e query por `inventorying-test-scenarios` e `writing-unit-tests` (na scaffold, no passo de spec dela); read model e output sem spec
+- [ ] Tipo de campo pelo bloco de `references/tipos-de-campo.md`; campo com formato sem regex no DTO; `Json` e objeto aninhado fora
 - [ ] Nenhum padrão copiado de outros arquivos — apenas esta skill

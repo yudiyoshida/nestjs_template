@@ -18,7 +18,6 @@ Antes de responder, **não**:
 - leia `*.spec.ts` ou `*.integration.spec.ts` para copiar cenário ou formato
 - rode grep/glob para inferir convenção de teste
 - abra outra skill para aprender quais cenários listar
-- abra `src/app/_examples`
 
 Se código existente contradiz esta skill, **esta skill vence** no inventário.
 
@@ -87,6 +86,8 @@ Decisão:
 
 Não é decisão: getter que devolve campo sem lógica, `should be defined`, constraint do banco que o arquivo não consulta, branch interno de outra classe.
 
+No DTO de input ou de query, decisão é cada validator e cada transform de cada campo: obrigatório, tipo, limite, enum, trim, conversão de string.
+
 Fonte: função exportada, método público, `constructor` que valida ou transforma, getter com lógica. Método que o arquivo não tem não entra.
 
 ### Path
@@ -106,7 +107,8 @@ Cada cenário tem uma camada só.
 | Arquivo | Unitário | Integração |
 |---------|----------|------------|
 | DAO Prisma ou repository Prisma | nenhum | toda decisão do arquivo |
-| VO, entidade, factory, enum, decorator, função pura, mapper, DTO, controller, guard, filter, interceptor | toda decisão | nenhum |
+| VO, entidade, factory, enum, decorator, função pura, mapper, DTO de input ou de query, controller, guard, filter, interceptor | toda decisão | nenhum |
+| Read model, output de create | nenhum: classe plana, sem decisão | nenhum |
 | Use case | toda decisão em memória: `if`, throw, argumentos da porta, retorno montado a partir do mock | só efeito que o mock não executa: linha gravada, lida, atualizada ou apagada no Postgres |
 | Gateway de vendor | toda decisão com dependência substituível | nenhum |
 

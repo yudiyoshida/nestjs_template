@@ -34,6 +34,17 @@ Valem para código novo e para mudança em código que já existe. Toda geraçã
 | Módulo sem HTTP | Importado só pelo módulo que consome. `exports` levam os use cases. Fora do `AppModule` |
 | URL de CRUD | Plural em inglês da pasta do módulo: `admin/faqs`, `user/tips`. Módulo `authentication` já existe; rotas `auth/...` não seguem essa regra e não são recriadas |
 | Tag Swagger | Uma tag por módulo, nome do recurso no plural, o mesmo texto em admin e user. Sem prefixo de canal (`Portal Gerencial`, `Aplicativo`, `Público`) |
+| Dinheiro | Centavos em `Int`, com a unidade no nome (`priceInCents`). Sem `Decimal` |
+| Data e hora | Instante. DTO tipado `Date`, com `@IsDate` e `StringToDate` (ISO 8601 estrito); resposta em ISO com `Z`. Comparar ou derivar no domínio só via `UTCDate` |
+| Data sem hora | Data de calendário (nascimento, vencimento). `@db.Date` no banco; `string` `AAAA-MM-DD` no DTO e no read model, com `@Matches` e `@IsISO8601` estrito. A conversão para `Date` fica só no adapter Prisma |
+| Número e booleano na query | `StringToNumber` e `StringToBoolean`. No `where`, o filtro entra com `!== undefined` |
+| Campo com formato | E-mail, CPF, CNPJ, telefone, CEP: o DTO só valida string. O VO valida e normaliza antes de gravar: use case no anêmico, factory no rico |
+| Id de outro módulo | `@IsUUID('4')` no DTO. Coluna `String` solta, com `@@index` |
+| Lista de valores simples | `String[]` no Prisma. `@IsArray` e validadores com `{ each: true }` |
+| `Json` e objeto aninhado | Fora da receita |
+| Índice | `@@index` em id de outro módulo e em coluna filtrada da lista. `@unique` só quando o pedido disser único |
+| Edição parcial | Campo ausente chega do `ValidationPipe` como `undefined` e não sobrescreve o valor atual. Proibido mesclar com `{ ...atual, ...dto }` |
+| Spec de DTO | Input e query têm spec via `ValidationPipe(pipeOptions)`. Read model e output não |
 
 ## Regras compartilhadas
 

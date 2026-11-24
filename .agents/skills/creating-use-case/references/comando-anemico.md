@@ -27,6 +27,26 @@ export class CreateExample {
 
 Se o anêmico guarda dono, `execute(data, actorId: string)` e o `actorId` segue no objeto que `save` recebe.
 
+Campo com formato (e-mail, CPF, CNPJ, telefone, CEP). O DTO só garante string. O use case passa o valor pelo VO antes da porta e grava o `.value` normalizado. O erro do VO escapa, sem `try/catch`. Na edição, o VO só roda quando o campo veio; campo ausente segue `undefined`, que o `update` do Prisma ignora.
+
+```ts
+import { Email } from 'src/shared/value-objects/email/email.vo';
+
+const id = await this.exampleDao.save({
+  title: data.title,
+  email: new Email(data.email).value,
+});
+```
+
+```ts
+await this.exampleDao.edit(id, {
+  title: data.title,
+  email: data.email !== undefined ? new Email(data.email).value : undefined,
+});
+```
+
+VO ausente: skill `creating-value-objects`.
+
 `src/app/example/application/usecases/edit-example/edit-example.service.ts`
 
 ```ts

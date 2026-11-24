@@ -15,7 +15,7 @@ Antes de escrever, **não**:
 
 - leia arquivos existentes para copiar formato
 - rode grep/glob para inferir convenção
-- abra `src/app/_examples` nem skill vizinha para aprender seção, algoritmo ou template
+- abra skill vizinha para aprender seção, algoritmo ou template
 - copie template de DTO, porta, adapter, use case, controller, model Prisma ou erro
 
 Se código existente contradiz esta skill, **esta skill vence**.
@@ -140,9 +140,9 @@ Superfície user. Só os endpoints que o pedido nomear. Lista pública: `GET` em
 
 4. Escrever `src/app/<modulo>/<modulo>.module.ts` pelo template desta skill. `imports`: `XxxPersistenceModule` e, se algum controller tiver `RequiredRoles`, `AuthenticationGuardsModule`. `controllers`: os controllers criados no passo 3. `providers`: as cinco classes de use case. Sem `exports`.
 
-5. Localizar `AppModule` (seção "Bloco base") e inserir `XxxModule` no array `imports`, mantendo os imports que já existem. Não registrar módulo de `_examples`.
+5. Localizar `AppModule` (seção "Bloco base") e inserir `XxxModule` no array `imports`, mantendo os imports que já existem.
 
-6. Spec só aqui, não no meio da tabela. Em cada use case, em cada controller e no DAO, ler `inventorying-test-scenarios`. Bug possível: parar e perguntar. Sem pendência: `writing-unit-tests` se o inventário tiver seção unitária (use case e controller); `writing-integration-tests` se tiver seção de integração (use case e DAO). DAO sem spec unitário. Sem spec de DTO. Sem inventário, sem spec.
+6. Spec só aqui, não no meio da tabela. Em cada use case, em cada controller, em cada DTO de input e de query e no DAO, ler `inventorying-test-scenarios`. Bug possível: parar e perguntar. Sem pendência: `writing-unit-tests` se o inventário tiver seção unitária (use case, controller e DTO); `writing-integration-tests` se tiver seção de integração (use case e DAO). DAO sem spec unitário. Read model e output de create sem spec. Sem inventário, sem spec.
 
 7. Checklist de entrega.
 
@@ -293,5 +293,5 @@ Antes de responder, confirmar **todos**:
 - [ ] Admin com `RequiredRoles(AccountRole.ADMIN)`, `PATCH` na edição, sem `actorId`; user só se o pedido pediu, sem controller vazio
 - [ ] `<modulo>.module.ts` com import absoluto `src/...`, providers dos cinco use cases, sem `exports`
 - [ ] `AppModule` importa `XxxModule` e conserva os imports que já existiam
-- [ ] `inventorying-test-scenarios` rodou em cada use case, em cada controller e no DAO antes do spec; bug possível parou e perguntou; `writing-unit-tests` implementou só a seção unitária; `writing-integration-tests` só a de integração; DAO sem spec unitário; sem spec de DTO
+- [ ] `inventorying-test-scenarios` rodou em cada use case, em cada controller, em cada DTO de input e de query e no DAO antes do spec; bug possível parou e perguntou; `writing-unit-tests` implementou só a seção unitária; `writing-integration-tests` só a de integração; DAO sem spec unitário; read model e output sem spec
 - [ ] Nenhum padrão copiado de outros arquivos — apenas esta skill

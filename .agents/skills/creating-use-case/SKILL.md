@@ -108,6 +108,8 @@ grep -rn "export class Pagination" src/shared/value-objects/pagination/paginatio
 - Delete físico. Anêmico: `dao.delete(id)`. Rico: `repository.delete(id)` depois do load. Proibido método `remove()` na entidade. Proibido soft delete.
 - Status não é delete. Anêmico: `dao.edit` grava a coluna. Rico: método da entidade (molde `expire()`) e `repository.edit`.
 - Lista: a porta devolve `[Dto[], number]`. Use case faz `new Pagination(items, total, page, size).getDto()`.
+- Campo com formato (e-mail, CPF, CNPJ, telefone, CEP) no anêmico: o use case passa o valor pelo VO antes da porta e grava o `.value`. No rico, quem faz é a factory. Forma em `references/comando-anemico.md`.
+- Edição anêmica: campo ausente segue `undefined` até a porta. O `update` do Prisma ignora `undefined`; não preencher com o valor atual.
 - Comando interno: sem controller. Pode injetar DAO e repository. Registro ausente segue em frente, sem `NotFound`.
 - Erro de domínio escapa. Proibido `try/catch` em volta de factory ou método da entidade.
 - Proibido Prisma no use case, `process.env`, log no happy path.

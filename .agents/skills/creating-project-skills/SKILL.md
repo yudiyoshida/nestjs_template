@@ -23,7 +23,8 @@ Progresso:
 - [ ] 2. Escrever SKILL.md pelo esqueleto desta skill
 - [ ] 3. Colocar na pasta da skill todo código que ela manda recriar
 - [ ] 4. Se SKILL.md passar de 500 linhas, mover o bloco pesado para references/
-- [ ] 5. Rodar o checklist de entrega
+- [ ] 5. Criar os symlinks em .claude/skills e .cursor/skills (seção "Symlinks")
+- [ ] 6. Rodar o checklist de entrega
 ```
 
 ## Quando usar
@@ -162,6 +163,17 @@ Referência acima de ~300 linhas: índice no topo com as seções.
 
 Proibido partir a skill só para encurtar texto que cabe. Parte quando o `SKILL.md` passa de 500, ou quando um bloco de código de referência já empurra o arquivo para perto do teto.
 
+## Symlinks
+
+A pasta da skill existe só em `.agents/skills/<kebab>/`. O Claude Code lê `.claude/skills/` e o Cursor lê `.cursor/skills/`: cada um recebe um symlink relativo para a pasta. Proibido copiar a pasta ou o `SKILL.md`, porque a cópia não acompanha a edição.
+
+```bash
+ln -s ../../.agents/skills/<kebab> .claude/skills/<kebab>
+ln -s ../../.agents/skills/<kebab> .cursor/skills/<kebab>
+```
+
+Skill renomeada: apagar os dois links do nome antigo e criar os do nome novo. Skill apagada: apagar os dois links.
+
 ## Checklist de entrega
 
 Antes de responder, confirmar **todos**:
@@ -174,5 +186,6 @@ Antes de responder, confirmar **todos**:
 - [ ] Código que a skill manda recriar está na pasta da skill
 - [ ] Nenhum ponteiro manda abrir `src/` ou outra skill para aprender formato ou algoritmo
 - [ ] `SKILL.md` com menos de 500 linhas; se havia estouro, `references/` com "leia este arquivo quando for escrever X"
+- [ ] Symlinks `.claude/skills/<kebab>` e `.cursor/skills/<kebab>` apontam para `../../.agents/skills/<kebab>`; nenhuma cópia da pasta
 - [ ] Texto em português
 - [ ] Nenhum formato copiado de outra skill — apenas esta skill

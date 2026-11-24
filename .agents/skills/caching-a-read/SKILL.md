@@ -124,8 +124,8 @@ new CacheKeyBuilder().setAccount(accountId).setResource('account').setCommand('d
 new CacheKeyBuilder().setResource('product').setCommand('list', { page: 1, limit: 10 }).build();
 // cache:global:product:list:{"page":1,"limit":10}
 
-new CacheKeyBuilder().setResource('faq').setCommand('*').build();
-// cache:global:faq:*
+new CacheKeyBuilder().setResource('account').setCommand('*').build();
+// cache:global:account:*
 ```
 
 `setAccount` entra na cadeia só quando o pedido pede o id no segundo segmento. A leitura canônica de detail não chama `setAccount`.
@@ -167,7 +167,6 @@ type Resource =
   | 'account'
   | 'banner'
   | 'category'
-  | 'faq'
   | 'product'
   | 'refresh-token'
   | 'store'

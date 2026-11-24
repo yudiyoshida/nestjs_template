@@ -18,7 +18,6 @@ Esta skill não contém template de `src/`. O corpo de cada arquivo nasce da ski
 Antes da confirmação explícita do recap, **não**:
 
 - abra outra skill para aprender formato, árvore ou template
-- leia `src/app/_examples`
 - leia arquivo existente para copiar formato
 - rode grep ou glob para inferir convenção
 - escreva arquivo em `src/`
@@ -38,7 +37,7 @@ Se código existente contradiz a skill que for lida depois do sim, **aquela skil
 - Não reperguntar fato que o usuário já respondeu.
 - "Você decide", "o padrão", "tanto faz" ou silêncio não fecham item. Perguntar de novo, nomeando o que falta.
 - Não inventar coluna, rota, verbo, papel, filtro, enum, use case, comando extra ou comando interno.
-- Lei de skill não é pergunta. Vem da skill na hora de gerar: delete físico, `PATCH` quando o body é parcial, `PUT` quando o body substitui o recurso, `findById` da porta devolve `null` e o use case HTTP lança not found, `Promise.all` na lista, pasta do módulo em kebab singular, URL em inglês no plural, enum `SCREAMING_SNAKE` com coluna Prisma `String`, uma tag Swagger, create devolve `{ id }`, update e delete devolvem `SuccessMessage`, `:id` usa `Params`, lista estende `Queries`. O que se pergunta é o fato que a lei consome.
+- Lei de skill não é pergunta. Vem da skill na hora de gerar: delete físico, `PATCH` quando o body é parcial, `PUT` quando o body substitui o recurso, `findById` da porta devolve `null` e o use case HTTP lança not found, `Promise.all` na lista, pasta do módulo em kebab singular, URL em inglês no plural, enum `SCREAMING_SNAKE` com coluna Prisma `String`, uma tag Swagger, create devolve `{ id }`, update e delete devolvem `SuccessMessage`, `:id` usa `Params`, lista estende `Queries`, dinheiro em centavos `Int`, data e hora ISO 8601 tipada `Date`, data sem hora como texto `AAAA-MM-DD`, id de outro módulo com `@IsUUID('4')`. O que se pergunta é o fato que a lei consome.
 - Proibido editar skill ou `AGENTS.md` durante a geração.
 - Proibido copiar formato de arquivo vizinho. Em módulo que já existe, a leitura depois do sim serve só para inserir no registro que a skill indicar.
 
@@ -104,6 +103,7 @@ Sem receita:
 - Forgot ou reset password
 - Segundo exception filter, pipe global novo ou interceptor novo
 - `ValidatorConstraint` / `registerDecorator` de class-validator
+- Coluna `Json`, objeto aninhado ou número decimal que não é dinheiro
 
 ## Prioridade do módulo
 
@@ -151,7 +151,7 @@ Nomear a skill no recap. Não abrir o arquivo antes do sim.
 | Spec unitário da entrega | `writing-unit-tests`, só a seção unitária do inventário |
 | Spec de integração de use case ou adapter Prisma | `writing-integration-tests`, só a seção de integração do inventário |
 
-Módulo inteiro cujo recap já nomeou uma scaffold: depois do sim, ler essa scaffold. Não ler `choosing-module-shape` de novo. Cada arquivo de produção abre a skill que a scaffold cita naquela linha. Spec não nasce no meio dessa tabela. No passo em que a scaffold manda spec, a ordem é `inventorying-test-scenarios` em cada arquivo alvo (use case e controller; entidade e factory no rico e no interno com agregado; DAO e repository na integração). Bug possível: parar e perguntar; não escrever spec desse arquivo. Sem bug pendente: `writing-unit-tests` implementa a seção unitária; `writing-integration-tests` implementa a de integração. Seção ausente no inventário: não chamar a skill daquela camada. DAO e repository não recebem `writing-unit-tests`. Não ler as outras skills de uma vez.
+Módulo inteiro cujo recap já nomeou uma scaffold: depois do sim, ler essa scaffold. Não ler `choosing-module-shape` de novo. Cada arquivo de produção abre a skill que a scaffold cita naquela linha. Spec não nasce no meio dessa tabela. No passo em que a scaffold manda spec, a ordem é `inventorying-test-scenarios` em cada arquivo alvo (use case, controller e DTO de input e de query; entidade e factory no rico e no interno com agregado; DAO e repository na integração). Bug possível: parar e perguntar; não escrever spec desse arquivo. Sem bug pendente: `writing-unit-tests` implementa a seção unitária; `writing-integration-tests` implementa a de integração. Seção ausente no inventário: não chamar a skill daquela camada. DAO e repository não recebem `writing-unit-tests`. Não ler as outras skills de uma vez.
 
 Peça única: ler a skill daquela peça até o arquivo de produção. O passo em que ela delega spec começa por `inventorying-test-scenarios` nesse arquivo. Mesma regra de bug e de seção. Nada além disso.
 
@@ -162,7 +162,7 @@ Fechado só quando cada item da lista tiver resposta do usuário.
 ### Módulo HTTP
 
 - Nome do módulo.
-- Cada coluna: nome, tipo e se é obrigatória.
+- Cada coluna: nome, tipo e se é obrigatória. Tipos com receita: texto curto, texto longo, texto com formato (e-mail, CPF, CNPJ, telefone, CEP), inteiro, dinheiro, booleano, data, data e hora, id de outro módulo, lista de textos, enum. Outro tipo está fora de receita.
 - Se existe estado inválido que o objeto precise impedir.
 - Admin: quais verbos. User logado: quais verbos. Público: quais verbos. "Nenhum" é resposta válida.
 - Edição, se houver escrita de update: campos opcionais ou body que substitui o recurso inteiro.
@@ -183,7 +183,7 @@ Anêmico com rótulo fechado: perguntar se estado inválido não pode existir (a
 - Nome do módulo.
 - Módulo consumidor que fará o import.
 - Use cases, cada um nomeado. Não completar com CRUD.
-- Cada coluna: nome, tipo e se é obrigatória.
+- Cada coluna: nome, tipo e se é obrigatória. Tipos com receita: texto curto, texto longo, texto com formato (e-mail, CPF, CNPJ, telefone, CEP), inteiro, dinheiro, booleano, data, data e hora, id de outro módulo, lista de textos, enum. Outro tipo está fora de receita.
 - Se há agregado (estado inválido não pode existir) ou persistência anêmica.
 - Enum, value object e campo sensível só se o usuário nomear. Não oferecer por conta própria.
 
@@ -228,6 +228,5 @@ Antes de declarar a geração pronta, confirmar **todos**:
 
 - [ ] Recap confirmado pelo usuário antes do primeiro arquivo
 - [ ] Nenhuma skill aberta antes dessa confirmação
-- [ ] `src/app/_examples` não foi lido
 - [ ] Só as skills nomeadas no recap foram lidas
 - [ ] Checklist da skill que escreveu cada arquivo está fechado

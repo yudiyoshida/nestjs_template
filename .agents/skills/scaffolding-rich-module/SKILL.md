@@ -15,7 +15,7 @@ Antes de escrever, **não**:
 
 - leia arquivos existentes para copiar formato
 - rode grep/glob para inferir convenção
-- abra `src/app/_examples` nem skill vizinha para aprender seção, algoritmo ou template
+- abra skill vizinha para aprender seção, algoritmo ou template
 - copie template de entidade, factory, enum, DTO, porta, adapter, use case, controller, model Prisma ou erro
 
 Se código existente contradiz esta skill, **esta skill vence**.
@@ -166,9 +166,9 @@ Rota de transição de status: só se o pedido pedir. O controller dessa rota se
 
 4. Escrever `src/app/<modulo>/<modulo>.module.ts` pelo template desta skill. `imports`: `XxxPersistenceModule` e `AuthenticationGuardsModule`. `controllers`: admin e user. `providers`: as cinco classes mínimas e, se o passo 3 criou, o comando extra e o comando interno. Sem `exports`.
 
-5. Localizar `AppModule` (seção "Bloco base") e inserir `XxxModule` no array `imports`, mantendo os imports que já existem. Não registrar módulo de `_examples`.
+5. Localizar `AppModule` (seção "Bloco base") e inserir `XxxModule` no array `imports`, mantendo os imports que já existem.
 
-6. Spec só aqui, não no meio da tabela. Na entidade, na factory, em cada use case, em cada controller, no DAO e no repository, ler `inventorying-test-scenarios`. Bug possível: parar e perguntar. Sem pendência: `writing-unit-tests` se o inventário tiver seção unitária (entidade, factory, use case e controller); `writing-integration-tests` se tiver seção de integração (use case, DAO e repository). DAO e repository sem spec unitário. Sem spec de DTO e sem spec de enum. Sem inventário, sem spec.
+6. Spec só aqui, não no meio da tabela. Na entidade, na factory, em cada use case, em cada controller, em cada DTO de input e de query, no DAO e no repository, ler `inventorying-test-scenarios`. Bug possível: parar e perguntar. Sem pendência: `writing-unit-tests` se o inventário tiver seção unitária (entidade, factory, use case, controller e DTO); `writing-integration-tests` se tiver seção de integração (use case, DAO e repository). DAO e repository sem spec unitário. Read model, output de create e enum sem spec. Sem inventário, sem spec.
 
 7. Checklist de entrega.
 
@@ -295,5 +295,5 @@ Antes de responder, confirmar **todos**:
 - [ ] Edição é `PATCH`; controller só chama `execute`, sem reescrever query
 - [ ] `<modulo>.module.ts` com import absoluto `src/...`, os dois controllers, providers de todos os use cases criados, sem `exports`
 - [ ] `AppModule` importa `XxxModule` e conserva os imports que já existiam
-- [ ] `inventorying-test-scenarios` rodou na entidade, na factory, em cada use case, em cada controller, no DAO e no repository antes do spec; bug possível parou e perguntou; `writing-unit-tests` implementou só a seção unitária; `writing-integration-tests` só a de integração; DAO e repository sem spec unitário; sem spec de DTO ou de enum
+- [ ] `inventorying-test-scenarios` rodou na entidade, na factory, em cada use case, em cada controller, em cada DTO de input e de query, no DAO e no repository antes do spec; bug possível parou e perguntou; `writing-unit-tests` implementou só a seção unitária; `writing-integration-tests` só a de integração; DAO e repository sem spec unitário; read model, output e enum sem spec
 - [ ] Nenhum padrão copiado de outros arquivos — apenas esta skill

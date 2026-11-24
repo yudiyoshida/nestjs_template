@@ -1,6 +1,6 @@
 ---
 name: writing-unit-tests
-description: Analisa um arquivo TypeScript e gera todos os cenários de teste possíveis (happy path, error path, edge cases) em um arquivo Jest *.spec.ts com describes aninhados e padrão AAA comentado. Suporta classes Nest com Test.createTestingModule e createMock. Use quando o usuário pedir para criar, gerar, escrever, completar ou revisar testes unitários de um arquivo, função, classe, service, use case, value object, controller, guard ou filter.
+description: Analisa um arquivo TypeScript e gera todos os cenários de teste possíveis (happy path, error path, edge cases) em um arquivo Jest *.spec.ts com describes aninhados e padrão AAA comentado. Suporta classes Nest com Test.createTestingModule e createMock. Use quando o usuário pedir para criar, gerar, escrever, completar ou revisar testes unitários de um arquivo, função, classe, service, use case, value object, DTO, controller, guard ou filter.
 ---
 
 # Writing Unit Tests
@@ -88,7 +88,8 @@ Omita um describe de path que não tenha nenhum cenário.
 
 Seguir as seções "Estrutura obrigatória do arquivo" e "Hooks". Classe Nest com DI
 (`@Injectable`, `@Controller`, guard, filter, interceptor, gateway): leia
-`references/nestjs-di.md` antes de escrever o spec.
+`references/nestjs-di.md` antes de escrever o spec. DTO de input ou de query:
+leia `references/dto.md` antes de escrever o spec.
 
 ### 4. Rodar e iterar
 
@@ -110,6 +111,7 @@ Arquivo TypeScript do projeto com comportamento a verificar em isolamento:
 |------|----------|
 | VO, função pura, mapper | `new` direto |
 | Classe Nest com DI no construtor (`@Injectable`, `@Controller`, guard, filter, interceptor, gateway) | `Test.createTestingModule` + `createMock` — leia `references/nestjs-di.md` antes de escrever o spec |
+| DTO de input ou de query (`class-validator`) | `ValidationPipe(pipeOptions)` — leia `references/dto.md` antes de escrever o spec |
 
 ### Quando não usar
 
@@ -118,6 +120,7 @@ Arquivo TypeScript do projeto com comportamento a verificar em isolamento:
 | DAO ou repository Prisma | Skill `writing-integration-tests`. Sem spec unitário com mock |
 | Teste com módulo real ou Prisma (`*.integration.spec.ts`) | Skill `writing-integration-tests` |
 | Teste HTTP ponta a ponta | Fora (sem skill; planejada writing-e2e-tests) |
+| Read model ou output de create | Sem spec. Classe plana, sem decisão |
 
 ## Estrutura obrigatória do arquivo
 
@@ -427,6 +430,16 @@ Aplicável somente quando o alvo usa injeção de dependência do Nest.
 - [ ] Nenhum módulo de infra real, nenhum `PrismaService`, nenhum I/O
 - [ ] `afterEach(() => jest.restoreAllMocks())` quando há `jest.spyOn`
 - [ ] Nenhum `it('should be defined')` gerado
+
+### DTO (`references/dto.md`)
+
+Aplicável somente quando o alvo é DTO de input ou de query.
+
+- [ ] `sut` é `new ValidationPipe(pipeOptions)`, com `pipeOptions` importado do arquivo do projeto
+- [ ] `metadata` com `type: 'body'` no input e `'query'` na query, atribuído no `beforeEach`
+- [ ] Cada campo é uma fonte, com os paths dentro; campo herdado de `Queries` fora
+- [ ] Erro conferido pela mensagem pt-BR em `response.message`
+- [ ] Read model e output não ganharam spec
 
 ### Processo (topo da skill e passo 4)
 

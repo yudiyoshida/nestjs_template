@@ -15,7 +15,6 @@ Antes de escrever, **não**:
 
 - leia `*.spec.ts` ou `*.integration.spec.ts` existentes para copiar formato
 - rode grep/glob para inferir convenção
-- abra `src/app/_examples`
 
 Se código existente contradiz esta skill, **esta skill vence**.
 

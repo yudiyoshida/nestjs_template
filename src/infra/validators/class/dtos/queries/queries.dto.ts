@@ -21,6 +21,6 @@ export class Queries {
   @ApiPropertyOptional()
   @Trim()
   @IsOptional()
-  @IsString({ message: '$property deve ser um texto' })
+  @IsString({ message: '$property deve ser uma string' })
   search?: string;
 }

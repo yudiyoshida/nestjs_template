@@ -95,8 +95,8 @@ Mudou o JSON da ViaCEP / a API do S3 / o comando Redis? **Só** o adapter real e
 
 | Situação | Onde vai |
 |----------|----------|
-| Persistência de entidade do módulo (Prisma `save`/`findById`) | Fora (sem skill; planejada creating-persistence-adapters) — port `IXxxRepository` / `IXxxDao` no módulo |
-| HTTP de entrada (controller) | Fora (sem skill; planejada creating-controllers) — driving adapter no módulo (`infra/drivers/http`) |
+| Persistência de entidade do módulo (Prisma `save`/`findById`) | Skills `creating-persistence-ports`, `creating-persistence-module` e `implementing-prisma-adapters` — port `IXxxRepository` / `IXxxDao` no módulo |
+| HTTP de entrada (controller) | Skill `creating-controllers` — driving adapter no módulo (`infra/drivers/http`) |
 | Validação de request, Swagger/OpenAPI, filter Nest | Fora (sem skill) — não são ports |
 | `PrismaService` / `DatabaseModule` | Cliente compartilhado, não é `IXxxGateway` |
 | Helper puro in-process (montar chave de cache) | Função/classe no próprio recorte, sem porta |
@@ -249,8 +249,8 @@ Não lançar `HttpException` / `Error` nativo no adapter.
 | `<kebab>.module.spec.ts` | Skill `writing-unit-tests` (**recomendado**) |
 | `helpers/<helper>/<helper>.builder.spec.ts` | Skill `writing-unit-tests` (**obrigatório** se tiver lógica) |
 | Classe de erro nova | Skill `creating-custom-errors` |
-| DAO/Repository Prisma do módulo | Fora (sem skill; planejada creating-persistence-adapters) — não usar esta skill |
-| Controller HTTP | Fora (sem skill; planejada creating-controllers) |
+| DAO/Repository Prisma do módulo | Skills `creating-persistence-ports`, `creating-persistence-module` e `implementing-prisma-adapters` — não usar esta skill |
+| Controller HTTP | Skill `creating-controllers` |
 | Ligar o VO/use case além do `@Inject` | Fora (sem skill) — só se o usuário pedir |
 
 ## Checklist de entrega

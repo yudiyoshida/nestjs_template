@@ -41,7 +41,8 @@ No passo 2, arquivo novo sai do template. Edição de adapter que já existe: al
 |---------|------|
 | Módulo rico (entidade + factory) | Template "DAO rico" e template "Repository" |
 | CRUD sem invariante, ou módulo interno sem agregado | Template "DAO anêmico" |
-| Coluna `String` com cast de enum no DAO anêmico | `mapToDto` do DAO rico em `findAll` e `findById` |
+| Coluna `String` com cast de enum, ou data sem hora, no DAO anêmico | `mapToDto` do DAO rico em `findAll` e `findById` |
+| Coluna `@db.Date` (data sem hora) | Bloco "Data sem hora" |
 | Pedido pede senha, token ou documento | Bloco "Dado sensível" no DAO |
 | Valor guardado em tabela relacionada (`Role.role`) | Mapa da seção "Lei" |
 
@@ -67,9 +68,11 @@ No passo 2, arquivo novo sai do template. Edição de adapter que já existe: al
 - `const XxxSelect = { ... } satisfies Prisma.XxxSelect`. Select padrão sem senha, token ou documento.
 - `this.prisma.paginationFactory(query.page, query.size)` entrega `skip` e `take`.
 - Busca: `contains` + `mode: 'insensitive'` num `OR` dos campos de texto do pedido. Filtro opcional só entra se o QueryDto tem esse campo.
+- Filtro numérico ou booleano entra com `!== undefined`: `...(query.isPublished !== undefined ? { isPublished: query.isPublished } : {})`. `false` e `0` são filtro válido. Texto, enum e id seguem por truthiness, como no template.
 - `orderBy: { createdAt: 'desc' }`.
 - `Promise.all` de `findMany` e `count`. Sem `prisma.$transaction`.
-- `mapToDto` quando a coluna `String` precisa de cast (`as XxxStatus`). Sem enum, `findAll` devolve o payload do select.
+- `mapToDto` quando a coluna `String` precisa de cast (`as XxxStatus`) ou quando há data sem hora. Sem os dois, `findAll` devolve o payload do select.
+- Data sem hora (`@db.Date`) é `string` `AAAA-MM-DD` fora do adapter. O adapter converte nos dois sentidos, pelo bloco "Data sem hora". Nenhuma outra camada converte.
 - `findById` ausente devolve `null`. O adapter não lança `NotFound` e não tem regra de negócio.
 - Repository: cada coluna sai de `entity.props`. Sem spread do objeto. `save` grava o `id`. `edit` usa o `id` no `where` e não o manda em `data`.
 - `findById` do repository, quando acha, volta de `XxxFactory.load`.
@@ -96,7 +99,7 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { XxxDto } from 'src/app/<modulo>/application/dtos/<modulo>.dto';
 import { IXxxDao } from 'src/app/<modulo>/application/persistence/dao/<modulo>-dao.interface';
-import { FindAllXxxQueryDto } from 'src/app/<modulo>/application/usecases/find-all-<modulo>/dtos/find-all-<modulo>-query.dto';
+import { FindAllXxxQueryDto } from 'src/app/<modulo>/application/usecases/find-all-<modulo>/dtos/find-all-<modulo>.dto';
 import { XxxStatus } from 'src/app/<modulo>/domain/enums/<modulo>-status.enum';
 import { XxxType } from 'src/app/<modulo>/domain/enums/<modulo>-type.enum';
 import { PrismaService } from 'src/infra/database/prisma/prisma.service';
@@ -183,7 +186,7 @@ export class XxxDaoAdapterPrisma implements IXxxDao {
 
 `src/app/<modulo>/infra/driven/persistence/prisma/<modulo>-prisma.dao.ts`
 
-Sem cast de enum, `findAll` devolve o payload do select. Com cast, `findAll` e `findById` passam pelo `mapToDto` do DAO rico.
+Sem cast de enum nem data sem hora, `findAll` devolve o payload do select. Com um dos dois, `findAll` e `findById` passam pelo `mapToDto` do DAO rico.
 
 ```ts
 import { Injectable } from '@nestjs/common';
@@ -302,6 +305,21 @@ public async findByIdWithSensitiveData(id: string): Promise<XxxWithSensitiveData
 }
 ```
 
+### Data sem hora
+
+Só quando o model tem coluna `@db.Date`. O Prisma lê e grava `Date` à meia-noite UTC; fora do adapter, o valor é `string` `AAAA-MM-DD`. Campo obrigatório dispensa o ternário.
+
+```ts
+// leitura: mapToDto do DAO e load do repository
+birthDate: row.birthDate ? row.birthDate.toISOString().slice(0, 10) : null,
+
+// gravação no DAO anêmico: create({ data: { ...data, birthDate: ... } }), e o mesmo no update
+birthDate: data.birthDate ? new Date(`${data.birthDate}T00:00:00.000Z`) : data.birthDate,
+
+// gravação no repository: a partir de entity.props
+birthDate: entity.props.birthDate ? new Date(`${entity.props.birthDate}T00:00:00.000Z`) : null,
+```
+
 ### Repository
 
 `src/app/<modulo>/infra/driven/persistence/prisma/<modulo>-prisma.repository.ts`
@@ -401,8 +419,10 @@ Antes de responder, confirmar **todos**:
 - [ ] Classe `XxxDaoAdapterPrisma` em `infra/driven/persistence/prisma/<modulo>-prisma.dao.ts`
 - [ ] Rico: também `XxxRepositoryAdapterPrisma`; anêmico: sem repository
 - [ ] `findAll` usa `paginationFactory`, `Promise.all`, `orderBy: { createdAt: 'desc' }` e `contains` insensitive
+- [ ] Filtro booleano ou numérico com `!== undefined`
 - [ ] Select padrão sem senha, token ou documento
-- [ ] `mapToDto` só quando há cast de enum; `findById` devolve `null`
+- [ ] `mapToDto` só quando há cast de enum ou data sem hora; `findById` devolve `null`
+- [ ] Data sem hora: lê com `toISOString().slice(0, 10)` e grava com ``new Date(`${valor}T00:00:00.000Z`)``; fora do adapter é `string`
 - [ ] Dado sensível só no segundo select e em `findByIdWithSensitiveData`, se o pedido pediu
 - [ ] Repository lista `entity.props` campo a campo; `findById` presente volta de `XxxFactory.load`
 - [ ] Delete físico; anêmico `save` devolve `result.id`
